@@ -126,40 +126,57 @@ const getMockSearchResults = (query: string): SearchResults => {
   const lowerQuery = query.toLowerCase()
   const results: SearchResults = []
 
+  // Special case for "Compliance Check"
   if (lowerQuery.includes("compliance check")) {
-    results.push({
-      category: "Assignments",
-      items: [mockAllData.assignments.find((a) => a.id === "as1")!],
-    })
-    results.push({
-      category: "Risks",
-      items: [mockAllData.risks.find((r) => r.id === "rs1")!],
-    })
+    const assignment = mockAllData.assignments.find((a) => a.id === "as1")
+    const risk = mockAllData.risks.find((r) => r.id === "rs1")
+    if (assignment) {
+      results.push({
+        category: "Assignments",
+        items: [assignment],
+      })
+    }
+    if (risk) {
+      results.push({
+        category: "Risks",
+        items: [risk],
+      })
+    }
     return results
   }
 
   const assignmentItems = mockAllData.assignments.filter(
-    (item) => item.title.toLowerCase().includes(lowerQuery) || item.detail?.toLowerCase().includes(lowerQuery),
+    (item) =>
+      item.title.toLowerCase().includes(lowerQuery) ||
+      (typeof item.detail === "string" && item.detail.toLowerCase().includes(lowerQuery)),
   )
   if (assignmentItems.length > 0) results.push({ category: "Assignments", items: assignmentItems })
 
   const riskItems = mockAllData.risks.filter(
-    (item) => item.title.toLowerCase().includes(lowerQuery) || item.detail?.toLowerCase().includes(lowerQuery),
+    (item) =>
+      item.title.toLowerCase().includes(lowerQuery) ||
+      (typeof item.detail === "string" && item.detail.toLowerCase().includes(lowerQuery)),
   )
   if (riskItems.length > 0) results.push({ category: "Risks", items: riskItems })
 
   const findingItems = mockAllData.findings.filter(
-    (item) => item.title.toLowerCase().includes(lowerQuery) || item.detail?.toLowerCase().includes(lowerQuery),
+    (item) =>
+      item.title.toLowerCase().includes(lowerQuery) ||
+      (typeof item.detail === "string" && item.detail.toLowerCase().includes(lowerQuery)),
   )
   if (findingItems.length > 0) results.push({ category: "Findings", items: findingItems })
 
   const stakeholderItems = mockAllData.stakeholders.filter(
-    (item) => item.title.toLowerCase().includes(lowerQuery) || item.detail?.toLowerCase().includes(lowerQuery),
+    (item) =>
+      item.title.toLowerCase().includes(lowerQuery) ||
+      (typeof item.detail === "string" && item.detail.toLowerCase().includes(lowerQuery)),
   )
   if (stakeholderItems.length > 0) results.push({ category: "Stakeholders", items: stakeholderItems })
 
   const reportItems = mockAllData.reports.filter(
-    (item) => item.title.toLowerCase().includes(lowerQuery) || item.detail?.toLowerCase().includes(lowerQuery),
+    (item) =>
+      item.title.toLowerCase().includes(lowerQuery) ||
+      (typeof item.detail === "string" && item.detail.toLowerCase().includes(lowerQuery)),
   )
   if (reportItems.length > 0) results.push({ category: "Reports", items: reportItems })
 
