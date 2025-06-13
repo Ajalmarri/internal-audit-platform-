@@ -28,6 +28,7 @@ import {
   BuildingIcon,
   Users,
   Briefcase,
+  ShieldCheck,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 
@@ -35,6 +36,7 @@ const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/audit-plans", label: "Audit Plans", icon: FileText },
   { href: "/risks", label: "Risks", icon: ShieldAlert },
+  { href: "/controls", label: "Controls", icon: ShieldCheck },
   { href: "/assignments", label: "Assignments", icon: ClipboardList },
   { href: "/findings", label: "Findings", icon: ClipboardCheck },
   { href: "/action-plans", label: "Action Plans", icon: ListChecks },
