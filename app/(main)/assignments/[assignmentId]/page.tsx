@@ -11,6 +11,7 @@ import DocumentManagementCard from "./_components/document-management-card"
 import CommentsSection from "./_components/comments-section"
 import AssignedTeamCard from "./_components/assigned-team-card"
 import type { Assignment, AuditTask, Comment, DocumentFile, RelatedRiskEntry } from "./_types/assignment-types"
+import DataAnalysisCard from "./_components/data-analysis-card"
 
 // Mock Data
 const mockAssignment: Assignment = {
@@ -131,6 +132,7 @@ export default function AssignmentDetailPage({ params }: { params: { assignmentI
         {/* Main Content Column (2/3 width on lg) */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           <FulfilmentTasksCard tasks={tasks} />
+          <DataAnalysisCard />
           <RelatedRisksCard initialRisks={relatedRisksData} />
           <DocumentManagementCard initialDocuments={documents} />
           <CommentsSection initialComments={comments} />
