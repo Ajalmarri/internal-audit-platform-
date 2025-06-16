@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react" // Ensure 'type' import for React if only types are used from it directly
+import type React from "react"
 import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,6 +46,8 @@ import { DatePicker } from "@/components/ui/date-picker"
 import AuditPlansTimelineView from "./_components/audit-plans-timeline-view"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+// Import the new ResourceWorkloadView component
+import ResourceWorkloadView from "./_components/resource-workload-view"
 
 type AuditPlanStatus = "Draft" | "In Progress" | "Pending Review" | "Completed" | "Cancelled"
 
@@ -329,8 +331,8 @@ export default function AuditPlansPage() {
       objectives: currentObjectives,
       scope: currentScope,
       status: currentStatus,
-      startDate: currentStartDate || new Date(), // Ensure date is not undefined
-      endDate: currentEndDate || new Date(), // Ensure date is not undefined
+      startDate: currentStartDate || new Date(),
+      endDate: currentEndDate || new Date(),
       personnel: currentPersonnel
         .split(",")
         .map((p) => p.trim())
@@ -570,7 +572,7 @@ export default function AuditPlansPage() {
                                           ? "bg-green-500 hover:bg-green-600 text-white"
                                           : plan.status === "In Progress"
                                             ? "bg-sky-100 hover:bg-sky-200 text-sky-700 border-sky-300"
-                                            : "" // Ensure other statuses have appropriate default or specific styles
+                                            : ""
                                       }
                                     >
                                       <StatusIcon className={`mr-1.5 h-3.5 w-3.5 ${statusColor}`} />
@@ -673,15 +675,8 @@ export default function AuditPlansPage() {
           </TabsContent>
 
           <TabsContent value="resourceWorkload">
-            <Card>
-              <CardHeader>
-                <CardTitle>Resource Workload</CardTitle>
-                <CardDescription>Visualize team member allocation and availability.</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6 min-h-[300px] flex items-center justify-center">
-                <p className="text-muted-foreground">Resource workload content will be displayed here.</p>
-              </CardContent>
-            </Card>
+            {/* Render the new ResourceWorkloadView component here */}
+            <ResourceWorkloadView />
           </TabsContent>
         </Tabs>
       </div>
