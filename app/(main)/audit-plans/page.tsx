@@ -45,6 +45,10 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { DatePicker } from "@/components/ui/date-picker"
 import AuditPlansTimelineView from "./_components/audit-plans-timeline-view" // New component
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+// 1. Add Tabs imports
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+
+// ... other imports remain the same
 
 type AuditPlanStatus = "Draft" | "In Progress" | "Pending Review" | "Completed" | "Cancelled"
 
@@ -278,7 +282,7 @@ export default function AuditPlansPage() {
   const [auditPlans, setAuditPlans] = useState<AuditPlan[]>(initialMockAuditPlans)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState<AuditPlan | null>(null)
-  const [viewMode, setViewMode] = useState<"list" | "timeline">("list")
+  const [viewMode, setViewMode] = useState<"list" | "timeline">("list"); // This controls content within the first tab
 
   // Form state
   const [currentTitle, setCurrentTitle] = useState("")
@@ -365,300 +369,332 @@ export default function AuditPlansPage() {
   const timelineStartDate = new Date("2025-06-16")
   const timelineEndDate = new Date("2025-12-31")
 
+  // 2. Modify the return statement to include Tabs
   return (
     <TooltipProvider>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <h1 className="text-3xl font-semibold text-foreground">Manage Audit Plans</h1>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-md bg-muted p-0.5">
-              <Button
-                variant={viewMode === "list" ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className="px-3 py-1.5 h-auto"
-              >
-                <List className="mr-2 h-4 w-4" />
-                List
-              </Button>
-              <Button
-                variant={viewMode === "timeline" ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("timeline")}
-                className="px-3 py-1.5 h-auto"
-              >
-                <CalendarDays className="mr-2 h-4 w-4" />
-                Timeline
-              </Button>
-            </div>
-            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={openAddPlanForm} className="w-full sm:w-auto">
-                  <PlusCircle className="mr-2 h-5 w-5" /> Add New Audit Plan
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>{editingPlan ? "Edit Audit Plan" : "Add New Audit Plan"}</DialogTitle>
-                  <DialogDescription>
-                    {editingPlan
-                      ? "Update the details of the existing audit plan."
-                      : "Specify objectives, scope, timeline, and personnel for the new audit plan."}
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleFormSubmit}>
-                  <ScrollArea className="max-h-[70vh] p-1">
-                    <div className="grid gap-4 py-4 pr-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="title" className="text-right">
-                          Plan Title
-                        </Label>
+          {/* The "Add New Audit Plan" button will be moved into the "List & Timeline" tab's controls */}
+        </div>
+
+        <Tabs defaultValue="listAndTimeline" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-grid sm:grid-cols-[auto_auto] mb-6">
+            <TabsTrigger value="listAndTimeline">List & Timeline</TabsTrigger>
+            <TabsTrigger value="resourceWorkload">Resource Workload</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="listAndTimeline">
+            <div className="flex flex-col gap-4">
+              {/* Controls specific to List/Timeline View: Add Button and View Switcher */}
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+                <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={openAddPlanForm} className="w-full sm:w-auto">
+                      <PlusCircle className="mr-2 h-5 w-5" /> Add New Audit Plan
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>{editingPlan ? "Edit Audit Plan" : "Add New Audit Plan"}</DialogTitle>
+                      <DialogDescription>
+                        {editingPlan
+                          ? "Update the details of the existing audit plan."
+                          : "Specify objectives, scope, timeline, and personnel for the new audit plan."}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleFormSubmit}>
+                      <ScrollArea className="max-h-[70vh] p-1">
+                        <div className="grid gap-4 py-4 pr-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="title" className="text-right">
+                              Plan Title
+                            </Label>
+                            <Input
+                              id="title"
+                              value={currentTitle}
+                              onChange={(e) => setCurrentTitle(e.target.value)}
+                              className="col-span-3"
+                              required
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-start gap-4">
+                            <Label htmlFor="objectives" className="text-right pt-2">
+                              Objectives
+                            </Label>
+                            <Textarea
+                              id="objectives"
+                              value={currentObjectives}
+                              onChange={(e) => setCurrentObjectives(e.target.value)}
+                              className="col-span-3 min-h-[80px]"
+                              required
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-start gap-4">
+                            <Label htmlFor="scope" className="text-right pt-2">
+                              Scope
+                            </Label>
+                            <Textarea
+                              id="scope"
+                              value={currentScope}
+                              onChange={(e) => setCurrentScope(e.target.value)}
+                              className="col-span-3 min-h-[80px]"
+                              required
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="status" className="text-right">
+                              Status
+                            </Label>
+                            <select
+                              id="status"
+                              value={currentStatus}
+                              onChange={(e) => setCurrentStatus(e.target.value as AuditPlanStatus)}
+                              className="col-span-3 p-2 border rounded-md bg-background"
+                            >
+                              {Object.keys(statusConfig).map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="startDate" className="text-right">
+                              Start Date
+                            </Label>
+                            <DatePicker date={currentStartDate} setDate={setCurrentStartDate} className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="endDate" className="text-right">
+                              End Date
+                            </Label>
+                            <DatePicker date={currentEndDate} setDate={setCurrentEndDate} className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="personnel" className="text-right">
+                              Personnel
+                            </Label>
+                            <Input
+                              id="personnel"
+                              value={currentPersonnel}
+                              onChange={(e) => setCurrentPersonnel(e.target.value)}
+                              className="col-span-3"
+                              placeholder="Comma-separated names, e.g., John D, Jane S"
+                            />
+                          </div>
+                        </div>
+                      </ScrollArea>
+                      <DialogFooter className="pt-4 pr-4">
+                        <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">{editingPlan ? "Save Changes" : "Create Plan"}</Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+
+                <div className="flex items-center rounded-md bg-muted p-0.5">
+                  <Button
+                    variant={viewMode === "list" ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="px-3 py-1.5 h-auto"
+                  >
+                    <List className="mr-2 h-4 w-4" />
+                    List
+                  </Button>
+                  <Button
+                    variant={viewMode === "timeline" ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("timeline")}
+                    className="px-3 py-1.5 h-auto"
+                  >
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    Timeline
+                  </Button>
+                </div>
+              </div>
+
+              {/* Content for List/Timeline View */}
+              {viewMode === "list" ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Audit Plan Overview</CardTitle>
+                    <CardDescription>A list of all ongoing and planned audits.</CardDescription>
+                    <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
+                      <div className="relative w-full sm:flex-grow">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
-                          id="title"
-                          value={currentTitle}
-                          onChange={(e) => setCurrentTitle(e.target.value)}
-                          className="col-span-3"
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-start gap-4">
-                        <Label htmlFor="objectives" className="text-right pt-2">
-                          Objectives
-                        </Label>
-                        <Textarea
-                          id="objectives"
-                          value={currentObjectives}
-                          onChange={(e) => setCurrentObjectives(e.target.value)}
-                          className="col-span-3 min-h-[80px]"
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-start gap-4">
-                        <Label htmlFor="scope" className="text-right pt-2">
-                          Scope
-                        </Label>
-                        <Textarea
-                          id="scope"
-                          value={currentScope}
-                          onChange={(e) => setCurrentScope(e.target.value)}
-                          className="col-span-3 min-h-[80px]"
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="status" className="text-right">
-                          Status
-                        </Label>
-                        <select
-                          id="status"
-                          value={currentStatus}
-                          onChange={(e) => setCurrentStatus(e.target.value as AuditPlanStatus)}
-                          className="col-span-3 p-2 border rounded-md bg-background"
-                        >
-                          {Object.keys(statusConfig).map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="startDate" className="text-right">
-                          Start Date
-                        </Label>
-                        <DatePicker date={currentStartDate} setDate={setCurrentStartDate} className="col-span-3" />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="endDate" className="text-right">
-                          End Date
-                        </Label>
-                        <DatePicker date={currentEndDate} setDate={setCurrentEndDate} className="col-span-3" />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="personnel" className="text-right">
-                          Personnel
-                        </Label>
-                        <Input
-                          id="personnel"
-                          value={currentPersonnel}
-                          onChange={(e) => setCurrentPersonnel(e.target.value)}
-                          className="col-span-3"
-                          placeholder="Comma-separated names, e.g., John D, Jane S"
+                          placeholder="Search plans by title, objectives, or personnel..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 w-full"
                         />
                       </div>
                     </div>
-                  </ScrollArea>
-                  <DialogFooter className="pt-4 pr-4">
-                    <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit">{editingPlan ? "Save Changes" : "Create Plan"}</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-
-        {viewMode === "list" ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Audit Plan Overview</CardTitle>
-              <CardDescription>A list of all ongoing and planned audits.</CardDescription>
-              <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
-                <div className="relative w-full sm:flex-grow">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="Search plans by title, objectives, or personnel..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-full"
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="w-full whitespace-nowrap rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[250px]">Plan Title</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Dates</TableHead>
-                      <TableHead>Personnel</TableHead>
-                      <TableHead className="w-[150px]">Progress</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredAuditPlans.length > 0 ? (
-                      filteredAuditPlans.map((plan) => {
-                        const config = statusConfig[plan.status]
-                        const StatusIcon = config.icon
-                        const statusColor = config.color
-                        const badgeVariant = config.badgeVariant
-
-                        let progressColor = "bg-sky-500"
-                        if (plan.status === "Completed") progressColor = "bg-green-500"
-                        else if (plan.status === "Pending Review") progressColor = "bg-yellow-500"
-                        else if (plan.status === "Draft") progressColor = "bg-gray-400"
-                        else if (plan.status === "Cancelled") progressColor = "bg-red-500"
-
-                        return (
-                          <TableRow key={plan.id}>
-                            <TableCell>
-                              <div className="font-medium truncate w-60" title={plan.title}>
-                                {plan.title}
-                              </div>
-                              <div className="text-xs text-muted-foreground truncate w-60" title={plan.objectives}>
-                                {plan.objectives}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={badgeVariant}
-                                className={
-                                  plan.status === "Completed"
-                                    ? "bg-green-500 hover:bg-green-600 text-white"
-                                    : plan.status === "In Progress"
-                                      ? "bg-sky-100 hover:bg-sky-200 text-sky-700 border-sky-300"
-                                      : ""
-                                }
-                              >
-                                <StatusIcon className={`mr-1.5 h-3.5 w-3.5 ${statusColor}`} />
-                                {plan.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-col text-xs">
-                                <span>Start: {plan.startDate.toLocaleDateString()}</span>
-                                <span>End: {plan.endDate.toLocaleDateString()}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex -space-x-2 overflow-hidden">
-                                {plan.personnel.slice(0, 3).map((p, i) => (
-                                  <Tooltip key={i}>
-                                    <TooltipTrigger asChild>
-                                      <div className="inline-block h-7 w-7 rounded-full ring-2 ring-background bg-muted-foreground text-muted text-xs flex items-center justify-center cursor-default">
-                                        {p.substring(0, 1).toUpperCase()}
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>{p}</TooltipContent>
-                                  </Tooltip>
-                                ))}
-                                {plan.personnel.length > 3 && (
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className="inline-block h-7 w-7 rounded-full ring-2 ring-background bg-primary text-primary-foreground text-xs flex items-center justify-center cursor-default">
-                                        +{plan.personnel.length - 3}
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>{plan.personnel.slice(3).join(", ")}</TooltipContent>
-                                  </Tooltip>
-                                )}
-                              </div>
-                              {plan.personnel.length === 0 && (
-                                <span className="text-xs text-muted-foreground">N/A</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Progress
-                                  value={plan.progress}
-                                  className="h-2 flex-grow"
-                                  indicatorClassName={progressColor}
-                                />
-                                <span className="text-xs text-muted-foreground">{plan.progress}%</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="h-5 w-5" />
-                                    <span className="sr-only">Actions</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => console.log("View details for", plan.id)}>
-                                    <Eye className="mr-2 h-4 w-4" /> View Details
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => openEditPlanForm(plan)}>
-                                    <Edit3 className="mr-2 h-4 w-4" /> Edit Plan
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-red-600" onClick={() => handleDeletePlan(plan.id)}>
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Plan
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="w-full whitespace-nowrap rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[250px]">Plan Title</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Dates</TableHead>
+                            <TableHead>Personnel</TableHead>
+                            <TableHead className="w-[150px]">Progress</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        )
-                      })
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center">
-                          No audit plans found.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        ) : (
-          <AuditPlansTimelineView
-            auditPlans={filteredAuditPlans}
-            assignments={mockAssignments}
-            timelineStartDate={timelineStartDate}
-            timelineEndDate={timelineEndDate}
-          />
-        )}
+                        </TableHeader>
+                        <TableBody>
+                          {filteredAuditPlans.length > 0 ? (
+                            filteredAuditPlans.map((plan) => {
+                              const config = statusConfig[plan.status];
+                              const StatusIcon = config.icon;
+                              const statusColor = config.color;
+                              const badgeVariant = config.badgeVariant;
+
+                              let progressColor = "bg-sky-500";
+                              if (plan.status === "Completed") progressColor = "bg-green-500";
+                              else if (plan.status === "Pending Review") progressColor = "bg-yellow-500";
+                              else if (plan.status === "Draft") progressColor = "bg-gray-400";
+                              else if (plan.status === "Cancelled") progressColor = "bg-red-500";
+
+                              return (
+                                <TableRow key={plan.id}>
+                                  <TableCell>
+                                    <div className="font-medium truncate w-60" title={plan.title}>
+                                      {plan.title}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground truncate w-60" title={plan.objectives}>
+                                      {plan.objectives}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      variant={badgeVariant}
+                                      className={
+                                        plan.status === "Completed"
+                                          ? "bg-green-500 hover:bg-green-600 text-white"
+                                          : plan.status === "In Progress"
+                                            ? "bg-sky-100 hover:bg-sky-200 text-sky-700 border-sky-300"
+                                            : ""
+                                      }
+                                    >
+                                      <StatusIcon className={`mr-1.5 h-3.5 w-3.5 ${statusColor}`} />
+                                      {plan.status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex flex-col text-xs">
+                                      <span>Start: {plan.startDate.toLocaleDateString()}</span>
+                                      <span>End: {plan.endDate.toLocaleDateString()}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex -space-x-2 overflow-hidden">
+                                      {plan.personnel.slice(0, 3).map((p, i) => (
+                                        <Tooltip key={i}>
+                                          <TooltipTrigger asChild>
+                                            <div className="inline-block h-7 w-7 rounded-full ring-2 ring-background bg-muted-foreground text-muted text-xs flex items-center justify-center cursor-default">
+                                              {p.substring(0, 1).toUpperCase()}
+                                            </div>
+                                          </TooltipTrigger>
+                                          <TooltipContent>{p}</TooltipContent>
+                                        </Tooltip>
+                                      ))}
+                                      {plan.personnel.length > 3 && (
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <div className="inline-block h-7 w-7 rounded-full ring-2 ring-background bg-primary text-primary-foreground text-xs flex items-center justify-center cursor-default">
+                                              +{plan.personnel.length - 3}
+                                            </div>
+                                          </TooltipTrigger>
+                                          <TooltipContent>{plan.personnel.slice(3).join(", ")}</TooltipContent>
+                                        </Tooltip>
+                                      )}
+                                    </div>
+                                    {plan.personnel.length === 0 && (
+                                      <span className="text-xs text-muted-foreground">N/A</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <Progress
+                                        value={plan.progress}
+                                        className="h-2 flex-grow"
+                                        indicatorClassName={progressColor}
+                                      />
+                                      <span className="text-xs text-muted-foreground">{plan.progress}%</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                          <MoreHorizontal className="h-5 w-5" />
+                                          <span className="sr-only">Actions</span>
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => console.log("View details for", plan.id)}>
+                                          <Eye className="mr-2 h-4 w-4" /> View Details
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => openEditPlanForm(plan)}>
+                                          <Edit3 className="mr-2 h-4 w-4" /> Edit Plan
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="text-red-600" onClick={() => handleDeletePlan(plan.id)}>
+                                          <Trash2 className="mr-2 h-4 w-4" /> Delete Plan
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={6} className="h-24 text-center">
+                                No audit plans found.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                      <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              ) : (
+                <AuditPlansTimelineView
+                  auditPlans={filteredAuditPlans}
+                  assignments={mockAssignments}
+                  timelineStartDate={timelineStartDate}
+                  timelineEndDate={timelineEndDate}
+                />
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="resourceWorkload">
+            <Card>
+              <CardHeader>
+                <CardTitle>Resource Workload</CardTitle>
+                <CardDescription>
+                  Visualize team member allocation and availability.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 min-h-[300px] flex items-center justify-center">
+                <p className="text-muted-foreground">
+                  Resource workload content will be displayed here.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </TooltipProvider>
-  )
+  );
 }
