@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import type React from "react" // Ensure 'type' import for React if only types are used from it directly
 import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,12 +43,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { DatePicker } from "@/components/ui/date-picker"
-import AuditPlansTimelineView from "./_components/audit-plans-timeline-view" // New component
+import AuditPlansTimelineView from "./_components/audit-plans-timeline-view"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-// 1. Add Tabs imports
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-
-// ... other imports remain the same
 
 type AuditPlanStatus = "Draft" | "In Progress" | "Pending Review" | "Completed" | "Cancelled"
 
@@ -65,7 +62,6 @@ interface AuditPlan {
   lastUpdated: string
 }
 
-// Assignment Type for Timeline View
 export interface Assignment {
   id: string
   name: string
@@ -126,7 +122,6 @@ const initialMockAuditPlans: AuditPlan[] = [
     progress: 100,
     lastUpdated: "2025-04-15",
   },
-  // New Audit Plan for 2025 to show in timeline
   {
     id: "AP006",
     title: "2025 Q3 Internal Controls Audit",
@@ -203,7 +198,6 @@ export const mockAssignments: Assignment[] = [
     assignees: ["Aisha B."],
     dependencies: ["ASGN004"],
   },
-
   {
     id: "ASGN006",
     name: "Risk Identification",
@@ -243,8 +237,6 @@ export const mockAssignments: Assignment[] = [
     assignees: ["Yusuf A."],
     dependencies: ["ASGN008"],
   },
-
-  // For AP001, shifted to 2025 for timeline visibility
   {
     id: "ASGN010",
     name: "AP001 - FY25 Kick-off",
@@ -282,9 +274,8 @@ export default function AuditPlansPage() {
   const [auditPlans, setAuditPlans] = useState<AuditPlan[]>(initialMockAuditPlans)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState<AuditPlan | null>(null)
-  const [viewMode, setViewMode] = useState<"list" | "timeline">("list"); // This controls content within the first tab
+  const [viewMode, setViewMode] = useState<"list" | "timeline">("list")
 
-  // Form state
   const [currentTitle, setCurrentTitle] = useState("")
   const [currentObjectives, setCurrentObjectives] = useState("")
   const [currentScope, setCurrentScope] = useState("")
@@ -338,8 +329,8 @@ export default function AuditPlansPage() {
       objectives: currentObjectives,
       scope: currentScope,
       status: currentStatus,
-      startDate: currentStartDate || new Date(),
-      endDate: currentEndDate || new Date(),
+      startDate: currentStartDate || new Date(), // Ensure date is not undefined
+      endDate: currentEndDate || new Date(), // Ensure date is not undefined
       personnel: currentPersonnel
         .split(",")
         .map((p) => p.trim())
@@ -369,13 +360,11 @@ export default function AuditPlansPage() {
   const timelineStartDate = new Date("2025-06-16")
   const timelineEndDate = new Date("2025-12-31")
 
-  // 2. Modify the return statement to include Tabs
   return (
     <TooltipProvider>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <h1 className="text-3xl font-semibold text-foreground">Manage Audit Plans</h1>
-          {/* The "Add New Audit Plan" button will be moved into the "List & Timeline" tab's controls */}
         </div>
 
         <Tabs defaultValue="listAndTimeline" className="w-full">
@@ -386,7 +375,6 @@ export default function AuditPlansPage() {
 
           <TabsContent value="listAndTimeline">
             <div className="flex flex-col gap-4">
-              {/* Controls specific to List/Timeline View: Add Button and View Switcher */}
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                   <DialogTrigger asChild>
@@ -493,6 +481,7 @@ export default function AuditPlansPage() {
                       </DialogFooter>
                     </form>
                   </DialogContent>
+                </Dialog>
 
                 <div className="flex items-center rounded-md bg-muted p-0.5">
                   <Button
@@ -516,7 +505,6 @@ export default function AuditPlansPage() {
                 </div>
               </div>
 
-              {/* Content for List/Timeline View */}
               {viewMode === "list" ? (
                 <Card>
                   <CardHeader>
@@ -550,16 +538,16 @@ export default function AuditPlansPage() {
                         <TableBody>
                           {filteredAuditPlans.length > 0 ? (
                             filteredAuditPlans.map((plan) => {
-                              const config = statusConfig[plan.status];
-                              const StatusIcon = config.icon;
-                              const statusColor = config.color;
-                              const badgeVariant = config.badgeVariant;
+                              const config = statusConfig[plan.status]
+                              const StatusIcon = config.icon
+                              const statusColor = config.color
+                              const badgeVariant = config.badgeVariant
 
-                              let progressColor = "bg-sky-500";
-                              if (plan.status === "Completed") progressColor = "bg-green-500";
-                              else if (plan.status === "Pending Review") progressColor = "bg-yellow-500";
-                              else if (plan.status === "Draft") progressColor = "bg-gray-400";
-                              else if (plan.status === "Cancelled") progressColor = "bg-red-500";
+                              let progressColor = "bg-sky-500"
+                              if (plan.status === "Completed") progressColor = "bg-green-500"
+                              else if (plan.status === "Pending Review") progressColor = "bg-yellow-500"
+                              else if (plan.status === "Draft") progressColor = "bg-gray-400"
+                              else if (plan.status === "Cancelled") progressColor = "bg-red-500"
 
                               return (
                                 <TableRow key={plan.id}>
@@ -567,7 +555,10 @@ export default function AuditPlansPage() {
                                     <div className="font-medium truncate w-60" title={plan.title}>
                                       {plan.title}
                                     </div>
-                                    <div className="text-xs text-muted-foreground truncate w-60" title={plan.objectives}>
+                                    <div
+                                      className="text-xs text-muted-foreground truncate w-60"
+                                      title={plan.objectives}
+                                    >
                                       {plan.objectives}
                                     </div>
                                   </TableCell>
@@ -579,7 +570,7 @@ export default function AuditPlansPage() {
                                           ? "bg-green-500 hover:bg-green-600 text-white"
                                           : plan.status === "In Progress"
                                             ? "bg-sky-100 hover:bg-sky-200 text-sky-700 border-sky-300"
-                                            : ""
+                                            : "" // Ensure other statuses have appropriate default or specific styles
                                       }
                                     >
                                       <StatusIcon className={`mr-1.5 h-3.5 w-3.5 ${statusColor}`} />
@@ -645,14 +636,17 @@ export default function AuditPlansPage() {
                                           <Edit3 className="mr-2 h-4 w-4" /> Edit Plan
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem className="text-red-600" onClick={() => handleDeletePlan(plan.id)}>
+                                        <DropdownMenuItem
+                                          className="text-red-600"
+                                          onClick={() => handleDeletePlan(plan.id)}
+                                        >
                                           <Trash2 className="mr-2 h-4 w-4" /> Delete Plan
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
                                     </DropdownMenu>
                                   </TableCell>
                                 </TableRow>
-                              );
+                              )
                             })
                           ) : (
                             <TableRow>
@@ -682,19 +676,15 @@ export default function AuditPlansPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Resource Workload</CardTitle>
-                <CardDescription>
-                  Visualize team member allocation and availability.
-                </CardDescription>
+                <CardDescription>Visualize team member allocation and availability.</CardDescription>
               </CardHeader>
               <CardContent className="pt-6 min-h-[300px] flex items-center justify-center">
-                <p className="text-muted-foreground">
-                  Resource workload content will be displayed here.
-                </p>
+                <p className="text-muted-foreground">Resource workload content will be displayed here.</p>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
     </TooltipProvider>
-  );
+  )
 }
