@@ -383,54 +383,55 @@ export default function ResourceWorkloadView() {
                         <div className="text-xs text-muted-foreground">{auditor.department}</div>
                       </TableCell>
                       {auditor.weeklyWorkload.map((weekLoad, index) => (
-                        <Tooltip key={index} delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <TableCell
-                              className={`text-center p-0 ${getWorkloadColor(weekLoad.allocatedHours, weekLoad.capacityHours)}`}
-                            >
-                              <div className="p-2 h-full flex flex-col justify-center items-center">
+                        <TableCell
+                          key={index}
+                          className={`text-center p-0 ${getWorkloadColor(weekLoad.allocatedHours, weekLoad.capacityHours)}`}
+                        >
+                          <Tooltip delayDuration={100}>
+                            <TooltipTrigger asChild>
+                              <div className="p-2 h-full w-full flex flex-col justify-center items-center cursor-default">
                                 <span className="font-semibold text-sm">{weekLoad.allocatedHours}h</span>
                                 <span className="text-xs opacity-80">/ {weekLoad.capacityHours}h</span>
                               </div>
-                            </TableCell>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              {auditor.name} - Week {getISOWeek(weekLoad.weekStart)}
-                            </p>
-                            <p>Allocated: {weekLoad.allocatedHours}h</p>
-                            <p>Capacity: {weekLoad.capacityHours}h</p>
-                            <p>
-                              Utilization:{" "}
-                              {weekLoad.capacityHours > 0
-                                ? ((weekLoad.allocatedHours / weekLoad.capacityHours) * 100).toFixed(0)
-                                : 0}
-                              %
-                            </p>
-                            <hr className="my-1" />
-                            <p className="text-xs text-muted-foreground">Tasks this week:</p>
-                            <ul className="list-disc list-inside text-xs">
-                              {mockTasks
-                                .filter(
-                                  (t) =>
-                                    t.auditorId === auditor.id &&
-                                    (isWithinInterval(t.startDate, {
-                                      start: weekLoad.weekStart,
-                                      end: endOfWeek(weekLoad.weekStart, { weekStartsOn: 1 }),
-                                    }) ||
-                                      isWithinInterval(t.endDate, {
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="font-semibold">
+                                {auditor.name} - Week {getISOWeek(weekLoad.weekStart)}
+                              </p>
+                              <p>Allocated: {weekLoad.allocatedHours}h</p>
+                              <p>Capacity: {weekLoad.capacityHours}h</p>
+                              <p>
+                                Utilization:{" "}
+                                {weekLoad.capacityHours > 0
+                                  ? ((weekLoad.allocatedHours / weekLoad.capacityHours) * 100).toFixed(0)
+                                  : 0}
+                                %
+                              </p>
+                              <hr className="my-1" />
+                              <p className="text-xs text-muted-foreground">Tasks this week:</p>
+                              <ul className="list-disc list-inside text-xs max-w-xs">
+                                {mockTasks
+                                  .filter(
+                                    (t) =>
+                                      t.auditorId === auditor.id &&
+                                      (isWithinInterval(t.startDate, {
                                         start: weekLoad.weekStart,
                                         end: endOfWeek(weekLoad.weekStart, { weekStartsOn: 1 }),
                                       }) ||
-                                      (t.startDate < weekLoad.weekStart &&
-                                        t.endDate > endOfWeek(weekLoad.weekStart, { weekStartsOn: 1 }))),
-                                )
-                                .map((task) => (
-                                  <li key={task.id}>{task.title}</li>
-                                ))}
-                            </ul>
-                          </TooltipContent>
-                        </Tooltip>
+                                        isWithinInterval(t.endDate, {
+                                          start: weekLoad.weekStart,
+                                          end: endOfWeek(weekLoad.weekStart, { weekStartsOn: 1 }),
+                                        }) ||
+                                        (t.startDate < weekLoad.weekStart &&
+                                          t.endDate > endOfWeek(weekLoad.weekStart, { weekStartsOn: 1 }))),
+                                  )
+                                  .map((task) => (
+                                    <li key={task.id}>{task.title}</li>
+                                  ))}
+                              </ul>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableCell>
                       ))}
                     </TableRow>
                   ))}
