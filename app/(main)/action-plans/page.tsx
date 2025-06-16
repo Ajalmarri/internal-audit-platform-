@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { BadgeProps } from "@/components/ui/badge"
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
@@ -286,6 +287,27 @@ export default function ActionPlansPage() {
     return "bg-blue-400"
   }
 
+  const getActionPlanStatusBadgeVariant = (status: ActionPlan["status"]): BadgeProps["variant"] => {
+    switch (status) {
+      case "Completed":
+        return "success" // Assuming 'success' variant is green or defined in badge.tsx
+      case "In Progress":
+        return "inProgress"
+      case "Overdue":
+        return "destructive"
+      case "At Risk":
+        // Assuming 'warning' variant is orange/yellow or defined in badge.tsx
+        // If not, you might use 'destructive' or a custom class still.
+        // For now, let's use 'outline' and rely on icon color, or create a 'warning' variant.
+        // Let's assume a 'warning' variant exists or will be added for consistency.
+        return "warning"
+      case "Not Started":
+        return "secondary"
+      default:
+        return "secondary"
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -374,18 +396,7 @@ export default function ActionPlansPage() {
                           {plan.businessOwner}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={plan.status === "Completed" ? "default" : "secondary"}
-                            className={
-                              plan.status === "Completed"
-                                ? "bg-green-500 hover:bg-green-600 text-white"
-                                : plan.status === "Overdue"
-                                  ? "bg-red-500 hover:bg-red-600 text-white"
-                                  : plan.status === "At Risk"
-                                    ? "bg-orange-500 hover:bg-orange-600 text-white"
-                                    : ""
-                            }
-                          >
+                          <Badge variant={getActionPlanStatusBadgeVariant(plan.status)}>
                             <statusInfo.icon className={`mr-1.5 h-3.5 w-3.5 ${statusInfo.color}`} />
                             {plan.status}
                           </Badge>
