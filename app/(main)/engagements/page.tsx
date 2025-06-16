@@ -100,7 +100,7 @@ const mockEngagements: Engagement[] = [
 const getStatusBadgeVariant = (status: EngagementStatus): BadgeProps["variant"] => {
   switch (status) {
     case "In Progress":
-      return "inProgress"
+      return "default"
     case "Planning":
       return "secondary"
     case "On Hold":

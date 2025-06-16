@@ -34,7 +34,7 @@ const assignments = [
 ]
 
 const statusColors: { [key: string]: string } = {
-  "In Progress": "bg-sky-100 text-sky-700 hover:bg-sky-200 dark:bg-sky-800 dark:text-sky-100 dark:hover:bg-sky-700",
+  "In Progress": "bg-blue-500 hover:bg-blue-600",
   "Due Soon": "bg-yellow-500 hover:bg-yellow-600 text-black",
   Completed: "bg-green-500 hover:bg-green-600",
   Pending: "bg-gray-500 hover:bg-gray-600",
