@@ -29,26 +29,42 @@ import {
   Users,
   Briefcase,
   ShieldCheck,
+  FileQuestion,
+  Bell,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { useMockUser } from "@/hooks/use-mock-user"
 
-const menuItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/audit-plans", label: "Audit Plans", icon: FileText },
-  { href: "/risks", label: "Risks", icon: ShieldAlert },
-  { href: "/controls", label: "Controls", icon: ShieldCheck },
-  { href: "/assignments", label: "Assignments", icon: ClipboardList },
-  { href: "/findings", label: "Findings", icon: ClipboardCheck },
-  { href: "/action-plans", label: "Action Plans", icon: ListChecks },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/stakeholders", label: "Stakeholders", icon: Users },
-  { href: "/engagements", label: "Engagements", icon: Briefcase },
-  { href: "/settings", label: "Settings", icon: Settings },
+// Define all possible menu items with the roles that can see them
+const allMenuItems = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["Auditor", "Audit Manager"] },
+  { href: "/dashboard/business-owner", label: "Dashboard", icon: LayoutDashboard, roles: ["Business Owner"] },
+  { href: "/audit-plans", label: "Audit Plans", icon: FileText, roles: ["Auditor", "Audit Manager"] },
+  { href: "/risks", label: "Risks", icon: ShieldAlert, roles: ["Auditor", "Audit Manager"] },
+  { href: "/controls", label: "Controls", icon: ShieldCheck, roles: ["Auditor", "Audit Manager"] },
+  { href: "/assignments", label: "Assignments", icon: ClipboardList, roles: ["Auditor", "Audit Manager"] },
+  { href: "/findings", label: "Findings", icon: ClipboardCheck, roles: ["Auditor", "Audit Manager", "Business Owner"] },
+  {
+    href: "/action-plans",
+    label: "Action Plans",
+    icon: ListChecks,
+    roles: ["Auditor", "Audit Manager", "Business Owner"],
+  },
+  { href: "/reports", label: "Reports", icon: BarChart3, roles: ["Auditor", "Audit Manager"] },
+  { href: "/stakeholders", label: "Stakeholders", icon: Users, roles: ["Audit Manager"] },
+  { href: "/engagements", label: "Engagements", icon: Briefcase, roles: ["Audit Manager"] },
+  { href: "/requests", label: "My Requests", icon: FileQuestion, roles: ["Business Owner"] },
+  { href: "/notifications", label: "Notifications", icon: Bell, roles: ["Business Owner"] },
+  { href: "/settings", label: "Settings", icon: Settings, roles: ["Auditor", "Audit Manager"] },
 ]
 
 export default function AppSidebar() {
   const pathname = usePathname()
   const { state, isMobile } = useSidebar()
+  const { user } = useMockUser() // Get the current mock user
+
+  // Filter menu items based on the user's role
+  const visibleMenuItems = allMenuItems.filter((item) => item.roles.includes(user.role))
 
   return (
     <TooltipProvider>
@@ -64,11 +80,14 @@ export default function AppSidebar() {
 
         <SidebarContent className="flex-1">
           <SidebarMenu>
-            {menuItems.map((item) => (
+            {visibleMenuItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))}
+                  isActive={
+                    pathname === item.href ||
+                    (item.href !== "/dashboard" && !item.href.includes("/dashboard") && pathname.startsWith(item.href))
+                  }
                   tooltip={{ children: item.label, side: "right", align: "center" }}
                   className="[&>svg]:shrink-0"
                 >
@@ -86,12 +105,12 @@ export default function AppSidebar() {
           {state === "expanded" && (
             <div className="flex items-center gap-3 px-1">
               <Avatar className="h-9 w-9">
-                <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Name" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage src={user.avatarUrl || "/placeholder.svg"} alt={user.name} />
+                <AvatarFallback>{user.fallback}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm font-medium">John Doe</p>
-                <p className="text-xs text-muted-foreground">Audit Manager</p>
+                <p className="text-sm font-medium">{user.name}</p>
+                <p className="text-xs text-muted-foreground">{user.title}</p>
               </div>
             </div>
           )}
@@ -99,20 +118,20 @@ export default function AppSidebar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Avatar className="h-9 w-9 mx-auto cursor-pointer">
-                  <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Name" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarImage src={user.avatarUrl || "/placeholder.svg"} alt={user.name} />
+                  <AvatarFallback>{user.fallback}</AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
               <TooltipContent side="right" align="center">
-                <p>John Doe</p>
-                <p className="text-xs text-muted-foreground">Audit Manager</p>
+                <p>{user.name}</p>
+                <p className="text-xs text-muted-foreground">{user.title}</p>
               </TooltipContent>
             </Tooltip>
           )}
           {state === "collapsed" && isMobile && (
             <Avatar className="h-9 w-9 mx-auto">
-              <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Name" />
-              <AvatarFallback>JD</AvatarFallback>
+              <AvatarImage src={user.avatarUrl || "/placeholder.svg"} alt={user.name} />
+              <AvatarFallback>{user.fallback}</AvatarFallback>
             </Avatar>
           )}
 
