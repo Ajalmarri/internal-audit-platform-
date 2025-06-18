@@ -5,7 +5,8 @@ import { AuditUniverseDiagram } from "./_components/audit-universe-diagram"
 import { EntityDetailsPanel } from "./_components/entity-details-panel"
 import type { AuditableEntity, TreemapNode } from "./_types/audit-universe-types"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Terminal } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Layers } from "lucide-react" // Using Layers icon for universe/map
 
 // Mock Data - Replace with API call
 const mockAuditUniverseData: TreemapNode[] = [
@@ -17,7 +18,7 @@ const mockAuditUniverseData: TreemapNode[] = [
     lastAuditDate: "2025-01-15",
     nextAuditDate: "2026-01-15",
     description: "Handles all financial operations, reporting, and compliance for the organization.",
-    owner: "Jane Doe",
+    owner: "Jane Doe, CFO",
     department: "Finance",
     audits: [
       {
@@ -73,7 +74,7 @@ const mockAuditUniverseData: TreemapNode[] = [
     lastAuditDate: "2024-11-20",
     nextAuditDate: "2025-11-20",
     description: "Manages all information technology infrastructure, systems, and security.",
-    owner: "John Smith",
+    owner: "John Smith, CIO",
     department: "Information Technology",
     audits: [
       {
@@ -124,7 +125,7 @@ const mockAuditUniverseData: TreemapNode[] = [
     lastAuditDate: "2025-03-10",
     nextAuditDate: "2026-03-10",
     description: "Oversees the core business operations and production processes.",
-    owner: "Alice Brown",
+    owner: "Alice Brown, COO",
     department: "Operations",
     audits: [
       {
@@ -174,7 +175,7 @@ const mockAuditUniverseData: TreemapNode[] = [
     lastAuditDate: "2024-08-01",
     nextAuditDate: "2025-08-01",
     description: "Manages employee relations, payroll, recruitment, and HR compliance.",
-    owner: "Robert Green",
+    owner: "Robert Green, CHRO",
     department: "Human Resources",
     audits: [
       {
@@ -195,7 +196,7 @@ const mockAuditUniverseData: TreemapNode[] = [
     lastAuditDate: "2025-05-01",
     nextAuditDate: "2026-05-01",
     description: "Responsible for sourcing and purchasing goods and services.",
-    owner: "Emily White",
+    owner: "Emily White, CPO",
     department: "Procurement",
     audits: [{ id: "PR001", title: "Vendor Management Audit", period: "Q2 2025", status: "In Progress" }],
   },
@@ -208,8 +209,8 @@ export default function AuditUniversePage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate API call
     setIsLoading(true)
+    // Simulate API call
     setTimeout(() => {
       setUniverseData(mockAuditUniverseData)
       setIsLoading(false)
@@ -224,18 +225,21 @@ export default function AuditUniversePage() {
   const handlePanelOpenChange = (open: boolean) => {
     setIsPanelOpen(open)
     if (!open) {
-      setSelectedEntity(null)
+      // Optionally clear selected entity when panel closes
+      // setSelectedEntity(null);
     }
   }
 
   if (isLoading) {
-    // Basic loading state, you can replace this with the loading.tsx skeleton
     return (
       <div className="container mx-auto p-4 md:p-6 lg:p-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded w-1/4 mb-2"></div>
-          <div className="h-4 bg-muted rounded w-1/2 mb-8"></div>
-          <div className="h-[600px] bg-muted rounded"></div>
+        <header className="mb-8">
+          <Skeleton className="h-9 w-1/3 mb-2" />
+          <Skeleton className="h-5 w-2/3" />
+        </header>
+        <Skeleton className="h-20 w-full mb-6" /> {/* For Alert */}
+        <div className="bg-card p-4 rounded-lg shadow-sm">
+          <Skeleton className="h-[550px] w-full" /> {/* For Treemap */}
         </div>
       </div>
     )
@@ -244,24 +248,24 @@ export default function AuditUniversePage() {
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Audit Universe</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Audit Universe</h1>
         <p className="text-muted-foreground mt-1">
           An interactive overview of all auditable entities, their risk profiles, and audit cycles.
         </p>
       </header>
 
-      <Alert className="mb-6">
-        <Terminal className="h-4 w-4" />
-        <AlertTitle>Interactive Diagram</AlertTitle>
+      <Alert className="mb-6 bg-background">
+        <Layers className="h-5 w-5" />
+        <AlertTitle className="font-semibold">Interactive Diagram Guide</AlertTitle>
         <AlertDescription>
           Hover over an entity for a quick summary. Click on an entity to view detailed information in a side panel.
-          Colors indicate risk level: <span className="font-semibold text-red-500">Red (High)</span>,{" "}
-          <span className="font-semibold text-yellow-500">Yellow (Medium)</span>,{" "}
-          <span className="font-semibold text-green-500">Green (Low)</span>.
+          Colors indicate risk level: <span className="font-semibold text-red-600 dark:text-red-400">Red (High)</span>,{" "}
+          <span className="font-semibold text-blue-600 dark:text-blue-400">Blue (Medium - using primary color)</span>,{" "}
+          <span className="font-semibold text-gray-600 dark:text-gray-400">Gray (Low - using secondary color)</span>.
         </AlertDescription>
       </Alert>
 
-      <div className="bg-card p-4 rounded-lg shadow">
+      <div className="bg-card p-4 rounded-lg shadow-sm border">
         <AuditUniverseDiagram data={universeData} onEntityClick={handleEntityClick} />
       </div>
 

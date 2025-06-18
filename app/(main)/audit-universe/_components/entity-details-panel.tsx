@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import type { AuditableEntity, AuditRecord } from "../_types/audit-universe-types"
+import type { AuditableEntity, AuditRecord, RiskLevel } from "../_types/audit-universe-types"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ExternalLink, FileText } from "lucide-react"
 import Link from "next/link"
@@ -23,20 +23,22 @@ interface EntityDetailsPanelProps {
   onOpenChange: (isOpen: boolean) => void
 }
 
-const getRiskLevelBadgeVariant = (riskLevel: AuditableEntity["riskLevel"]) => {
+const getRiskLevelBadgeVariant = (riskLevel: RiskLevel): "destructive" | "secondary" | "default" | "outline" => {
   switch (riskLevel) {
     case "High":
       return "destructive"
     case "Medium":
-      return "secondary" // Or 'warning' if you have one
+      return "secondary" // Consider a 'warning' variant if available in your theme
     case "Low":
-      return "default" // Or 'success'
+      return "default" // Consider a 'success' variant if available
     default:
       return "outline"
   }
 }
 
-const getAuditStatusBadgeVariant = (status: AuditRecord["status"]) => {
+const getAuditStatusBadgeVariant = (
+  status: AuditRecord["status"],
+): "destructive" | "secondary" | "default" | "outline" => {
   switch (status) {
     case "Completed":
       return "default"
@@ -58,8 +60,8 @@ export function EntityDetailsPanel({ entity, isOpen, onOpenChange }: EntityDetai
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-lg w-[90vw] p-0">
-        <ScrollArea className="h-full">
+      <SheetContent className="sm:max-w-lg w-[90vw] p-0 flex flex-col">
+        <ScrollArea className="flex-grow">
           <div className="p-6">
             <SheetHeader className="mb-6">
               <SheetTitle className="text-2xl">{entity.name}</SheetTitle>
@@ -118,7 +120,7 @@ export function EntityDetailsPanel({ entity, isOpen, onOpenChange }: EntityDetai
                         <TableCell>
                           {audit.reportLink ? (
                             <Button variant="outline" size="sm" asChild>
-                              <Link href={audit.reportLink} target="_blank">
+                              <Link href={audit.reportLink} target="_blank" rel="noopener noreferrer">
                                 <FileText className="h-4 w-4 mr-2" />
                                 View
                               </Link>
@@ -136,18 +138,20 @@ export function EntityDetailsPanel({ entity, isOpen, onOpenChange }: EntityDetai
               )}
             </div>
           </div>
-          <SheetFooter className="p-6 pt-0 sticky bottom-0 bg-background border-t">
-            <SheetClose asChild>
-              <Button type="button" variant="outline">
-                Close
-              </Button>
-            </SheetClose>
-            <Button type="button">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              View Full Entity Profile
-            </Button>
-          </SheetFooter>
         </ScrollArea>
+        <SheetFooter className="p-6 pt-4 border-t bg-background">
+          <SheetClose asChild>
+            <Button type="button" variant="outline">
+              Close
+            </Button>
+          </SheetClose>
+          <Button type="button" disabled>
+            {" "}
+            {/* Placeholder for future functionality */}
+            <ExternalLink className="h-4 w-4 mr-2" />
+            View Full Entity Profile
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   )

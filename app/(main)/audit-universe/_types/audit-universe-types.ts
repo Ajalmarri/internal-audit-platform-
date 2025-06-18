@@ -18,13 +18,11 @@ export interface AuditableEntity {
   value: number // For Treemap sizing, could be budget, risk score, etc.
   children?: AuditableEntity[] // For hierarchical data
   audits: AuditRecord[]
-  // Add any other relevant properties
   owner?: string
   department?: string
 }
 
-// Sample data structure for the Treemap
+// Recharts Treemap expects children to be of the same type
 export interface TreemapNode extends AuditableEntity {
-  // Recharts Treemap expects children to be of the same type
   children?: TreemapNode[]
 }
