@@ -29,6 +29,7 @@ import {
   Users,
   Briefcase,
   ShieldCheck,
+  Archive,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 
@@ -43,6 +44,7 @@ const menuItems = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/stakeholders", label: "Stakeholders", icon: Users },
   { href: "/engagements", label: "Engagements", icon: Briefcase },
+  { href: "/evidence-locker", label: "Evidence Hub", icon: Archive },
   { href: "/settings", label: "Settings", icon: Settings },
 ]
 
