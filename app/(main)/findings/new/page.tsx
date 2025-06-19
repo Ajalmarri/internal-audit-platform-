@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -22,9 +22,47 @@ import {
   Paperclip,
   UploadCloud,
   X,
+  Sparkles,
+  Loader2,
 } from "lucide-react"
 import type { FindingCreationData, FindingSeverity } from "../_types/finding-creation-types"
 import { mockFindingTemplates, mockBusinessUnits, initialFindingCreationData } from "../_types/finding-creation-types"
+
+// Mock AI Processor Function
+const mockAiProcessor = async (notes: string): Promise<Partial<FindingCreationData>> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // Simple keyword-based parsing for demonstration
+      const lowerNotes = notes.toLowerCase()
+      let title = "AI Draft: Review Required"
+      let observation = ""
+      let impact = ""
+      let recommendation = ""
+
+      if (lowerNotes.includes("unpatched server") && lowerNotes.includes("data breach")) {
+        title = "Potential Data Breach from Unpatched Server"
+        observation =
+          "During the review of server logs for SRV-042, it was noted that critical security patch KB5001330, released on April 14, 2025, has not been applied. The server is currently exposed to the 'DataLeach' vulnerability."
+        impact =
+          "Failure to apply critical security patches in a timely manner exposes the organization to significant risk, including potential unauthorized access, data exfiltration, and system compromise. This could lead to financial loss, reputational damage, and regulatory fines."
+        recommendation =
+          "1. Immediately apply security patch KB5001330 to SRV-042.\n2. Conduct a full vulnerability scan on the server to identify any signs of compromise.\n3. Review and improve the patch management policy to ensure critical patches are applied within 72 hours of release."
+      } else {
+        // Generic fallback
+        observation = `Based on the provided notes, the primary observation is: ${notes.split(".")[0] || notes}.`
+        impact = "The potential impact of this observation needs to be assessed."
+        recommendation = "A recommendation should be formulated to address this observation."
+      }
+
+      resolve({
+        observationTitle: title,
+        detailedObservation: observation,
+        impactRiskAssociated: impact,
+        recommendation: recommendation,
+      })
+    }, 1500) // Simulate AI processing time
+  })
+}
 
 export default function CreateNewFindingPage() {
   const router = useRouter()
@@ -33,22 +71,54 @@ export default function CreateNewFindingPage() {
   const assignmentId = searchParams.get("assignmentId")
 
   const [formData, setFormData] = useState<FindingCreationData>(initialFindingCreationData)
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>(mockFindingTemplates[0].id) // Default to "Blank"
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>(mockFindingTemplates[0].id)
+  const [aiNotes, setAiNotes] = useState("")
+  const [isGenerating, setIsGenerating] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // Apply blank template by default or if selectedTemplateId changes to blank
     if (selectedTemplateId === "TPL000" || !selectedTemplateId) {
       setFormData(initialFindingCreationData)
     }
   }, [selectedTemplateId])
+
+  const handleGenerateDraft = async () => {
+    if (!aiNotes.trim()) {
+      toast({
+        title: "AI Assistant",
+        description: "Please enter some notes for the AI to process.",
+        variant: "destructive",
+      })
+      return
+    }
+    setIsGenerating(true)
+    try {
+      const draft = await mockAiProcessor(aiNotes)
+      setFormData((prev) => ({
+        ...prev,
+        ...draft,
+      }))
+      toast({
+        title: "AI Draft Generated",
+        description: "The form fields have been populated. Please review and edit as needed.",
+      })
+    } catch (error) {
+      toast({
+        title: "AI Error",
+        description: "Could not generate draft. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsGenerating(false)
+    }
+  }
 
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplateId(templateId)
     const template = mockFindingTemplates.find((t) => t.id === templateId)
     if (template && template.id !== "TPL000") {
       setFormData({
-        ...initialFindingCreationData, // Reset to default then apply template
+        ...initialFindingCreationData,
         templateId: template.id,
         observationTitle: template.prefilledObservationTitle || "",
         detailedObservation: template.prefilledDetailedObservation || "",
@@ -58,10 +128,9 @@ export default function CreateNewFindingPage() {
         recommendation: template.prefilledRecommendation || "",
         affectedBusinessUnit: template.prefilledAffectedBusinessUnit || "",
         rootCause: template.prefilledRootCause || "",
-        attachments: [], // Reset attachments when template changes
+        attachments: [],
       })
     } else {
-      // Reset to blank if "Blank Template" is chosen or no template found
       setFormData(initialFindingCreationData)
     }
   }
@@ -78,7 +147,6 @@ export default function CreateNewFindingPage() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const newFiles = Array.from(event.target.files)
-      // Prevent duplicates by name, simple check
       const uniqueNewFiles = newFiles.filter((file) => !formData.attachments.some((f) => f.name === file.name))
       setFormData((prev) => ({
         ...prev,
@@ -92,7 +160,6 @@ export default function CreateNewFindingPage() {
       ...prev,
       attachments: prev.attachments.filter((file) => file.name !== fileName),
     }))
-    // Reset file input to allow re-adding the same file if needed
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -111,29 +178,25 @@ export default function CreateNewFindingPage() {
     const findingToSubmit = {
       ...formData,
       status: action === "saveDraft" ? "Draft" : "Pending Verification",
-      auditPlanId, // Include context if available
+      auditPlanId,
       assignmentId,
     }
 
     console.log("Finding Data:", findingToSubmit)
-    // In a real app, you'd send this to the backend.
-    // For attachments, you'd typically upload them first and then send their URLs/IDs.
 
     toast({
       title: `Finding ${action === "saveDraft" ? "Saved as Draft" : "Submitted for Verification"}`,
       description: `Title: ${formData.observationTitle}`,
     })
 
-    // Optionally, redirect or clear form
-    // router.push(assignmentId ? `/assignments/${assignmentId}` : "/findings");
-    setFormData(initialFindingCreationData) // Clear form for next entry
-    setSelectedTemplateId(mockFindingTemplates[0].id) // Reset template
+    setFormData(initialFindingCreationData)
+    setSelectedTemplateId(mockFindingTemplates[0].id)
+    setAiNotes("")
   }
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
-        {/* Contextual Information Placeholder */}
         {(auditPlanId || assignmentId) && (
           <div className="mb-4 text-sm text-muted-foreground p-3 bg-muted/50 rounded-md">
             {auditPlanId && (
@@ -166,6 +229,37 @@ export default function CreateNewFindingPage() {
       </div>
 
       <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+        {/* AI Assistant Section */}
+        <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center">
+              <Sparkles className="mr-2 h-5 w-5 text-primary" />
+              AI Assistant
+            </CardTitle>
+            <CardDescription>
+              Enter your raw notes, observations, and evidence references below. The AI will help you draft a structured
+              finding.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              id="aiNotes"
+              name="aiNotes"
+              value={aiNotes}
+              onChange={(e) => setAiNotes(e.target.value)}
+              placeholder="Example: 'Server SRV-042 is missing critical patch KB5001330 from April. This exposes us to the DataLeach vulnerability. Recommend immediate patching and a full system scan.'"
+              rows={5}
+              className="bg-background/50"
+            />
+          </CardContent>
+          <CardFooter>
+            <Button onClick={handleGenerateDraft} disabled={isGenerating}>
+              {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+              Generate Draft
+            </Button>
+          </CardFooter>
+        </Card>
+
         {/* Finding Template Selection */}
         <Card>
           <CardHeader>
@@ -287,7 +381,8 @@ export default function CreateNewFindingPage() {
                 <Select
                   name="affectedBusinessUnit"
                   value={formData.affectedBusinessUnit}
-                  onValueChange={(value) => handleSelectChange(value, "affectedBusinessUnit")}
+                  onValuecha
+                  nge={(value) => handleSelectChange(value, "affectedBusinessUnit")}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select unit/department..." />
@@ -364,7 +459,7 @@ export default function CreateNewFindingPage() {
                 type="file"
                 multiple
                 onChange={handleFileChange}
-                className="sr-only" // Hidden, triggered by label
+                className="sr-only"
               />
               <p className="mt-1 text-xs text-muted-foreground">Supported formats: PDF, DOCX, XLSX, PNG, JPG, etc.</p>
             </div>

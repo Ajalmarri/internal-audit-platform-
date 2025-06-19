@@ -14,12 +14,16 @@ export interface ReportRecipient {
   email?: string // For notification or direct sharing
 }
 
+// In GeneratedReport interface, update status type
+export type ReportStatus = "Draft" | "Awaiting Approval" | "Finalized" | "Archived"
+
 export interface GeneratedReport {
   id: string
   title: string
   templateId: string
   generatedDate: string // ISO Date
-  status: "Draft" | "Finalized" | "Archived"
+  status: ReportStatus // Updated type
+  version: string
   filePath?: string // URL to the generated report file (e.g., PDF)
   recipients: ReportRecipient[] // For access control
   includedFindingIds: string[]
@@ -41,9 +45,9 @@ export interface FindingSummaryForReport {
 
 // Mock Business Owners for selection
 export const mockBusinessOwnersForReport: ReportRecipient[] = [
-  { id: "BO001", name: "Finance Department Head", type: "BusinessOwner" },
-  { id: "BO002", name: "IT Security Manager", type: "BusinessOwner" },
-  { id: "BO003", name: "Operations Lead", type: "BusinessOwner" },
+  { id: "BO001", name: "Finance Department Head", type: "BusinessOwner", email: "finance.head@example.com" },
+  { id: "BO002", name: "IT Security Manager", type: "BusinessOwner", email: "it.security@example.com" },
+  { id: "BO003", name: "Operations Lead", type: "BusinessOwner", email: "ops.lead@example.com" },
   { id: "BO004", name: "All Departments (Summary)", type: "Group" }, // Example for a general report
 ]
 
@@ -70,7 +74,7 @@ export const mockReportTemplates: ReportTemplate[] = [
   },
 ]
 
-// Add mock generated reports if not already present or expand it
+// Update mockGeneratedReports with new statuses
 export const mockGeneratedReports: GeneratedReport[] = [
   {
     id: "REP001",
@@ -78,7 +82,8 @@ export const mockGeneratedReports: GeneratedReport[] = [
     templateId: "TPL_FULL_AUDIT",
     generatedDate: "2025-06-02T10:00:00Z",
     status: "Finalized",
-    filePath: "/reports/REP001_Q3_Financial_Audit.pdf", // Example path
+    version: "v1.1",
+    filePath: "/reports/REP001_Q3_Financial_Audit.pdf",
     recipients: [mockBusinessOwnersForReport[0]],
     includedFindingIds: ["FND001", "FND002"],
     dateRange: { from: "2025-04-01T00:00:00Z", to: "2025-06-01T00:00:00Z" },
@@ -88,10 +93,11 @@ export const mockGeneratedReports: GeneratedReport[] = [
     title: "IT Security Report - For IT Manager",
     templateId: "TPL_BO_SPECIFIC",
     generatedDate: "2025-06-03T14:30:00Z",
-    status: "Finalized",
+    status: "Awaiting Approval", // New status
+    version: "v1.0",
     filePath: "/reports/REP002_IT_Security_Report_IT_Manager.pdf",
     recipients: [mockBusinessOwnersForReport[1]],
-    includedFindingIds: ["FND001", "FND003"], // Assuming FND003 is IT related
+    includedFindingIds: ["FND001", "FND003"],
     targetBusinessOwnerId: "BO002",
   },
   {
@@ -100,7 +106,61 @@ export const mockGeneratedReports: GeneratedReport[] = [
     templateId: "TPL_EXECUTIVE_SUMMARY",
     generatedDate: "2025-06-01T09:00:00Z",
     status: "Draft",
+    version: "v0.8 (Draft)",
     recipients: [],
     includedFindingIds: ["FND002", "FND003"],
   },
+  {
+    id: "REP004",
+    title: "Annual Compliance Review",
+    templateId: "TPL_FULL_AUDIT",
+    generatedDate: "2025-05-15T11:00:00Z",
+    status: "Finalized",
+    version: "v2.0",
+    filePath: "/reports/REP004_Annual_Compliance_Review.pdf",
+    recipients: [mockBusinessOwnersForReport[0], mockBusinessOwnersForReport[2]],
+    includedFindingIds: ["FND004", "FND005"],
+  },
+  {
+    id: "REP005",
+    title: "Q2 Operational Audit",
+    templateId: "TPL_FULL_AUDIT",
+    generatedDate: "2025-06-10T09:00:00Z",
+    status: "Awaiting Approval", // New status
+    version: "v1.0",
+    filePath: "/reports/REP005_Q2_Operational_Audit.pdf",
+    recipients: [mockBusinessOwnersForReport[2]],
+    includedFindingIds: ["FND006", "FND007"],
+  },
+]
+
+// Types for Sharing
+export type ReportPermission = "view" | "comment"
+
+export interface PlatformUserOrGroup {
+  id: string
+  name: string
+  type: "User" | "Group"
+  email?: string // Optional, might be relevant for users
+}
+
+export interface SelectedRecipient extends PlatformUserOrGroup {
+  permission: ReportPermission
+}
+
+export interface ShareDetailsPayload {
+  reportId: string
+  recipients: SelectedRecipient[]
+  message?: string
+}
+
+// Mock users and groups for sharing recipient selection
+export const mockUsersAndGroupsForSharing: PlatformUserOrGroup[] = [
+  { id: "USR001", name: "Alice Wonderland", type: "User", email: "alice@example.com" },
+  { id: "USR002", name: "Bob The Builder", type: "User", email: "bob@example.com" },
+  { id: "GRP001", name: "Finance Committee", type: "Group" },
+  { id: "GRP002", name: "Steering Group", type: "Group" },
+  { id: "USR003", name: "Charlie Brown", type: "User", email: "charlie@example.com" },
+  { id: "BO001", name: "Finance Department Head", type: "User", email: "finance.head@example.com" }, // Re-using from business owners
+  { id: "BO002", name: "IT Security Manager", type: "User", email: "it.security@example.com" },
 ]

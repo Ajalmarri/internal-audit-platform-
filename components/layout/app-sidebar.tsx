@@ -28,6 +28,14 @@ import {
   BuildingIcon,
   Users,
   Briefcase,
+  ShieldCheck,
+  Archive,
+  MapIcon as Sitemap,
+  Gauge,
+  History,
+  CheckSquare,
+  BookHeart,
+  BarChartHorizontalBig,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 
@@ -35,12 +43,20 @@ const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/audit-plans", label: "Audit Plans", icon: FileText },
   { href: "/risks", label: "Risks", icon: ShieldAlert },
+  { href: "/controls", label: "Controls", icon: ShieldCheck },
   { href: "/assignments", label: "Assignments", icon: ClipboardList },
   { href: "/findings", label: "Findings", icon: ClipboardCheck },
   { href: "/action-plans", label: "Action Plans", icon: ListChecks },
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/stakeholders", label: "Stakeholders", icon: Users },
   { href: "/engagements", label: "Engagements", icon: Briefcase },
+  { href: "/executive-command-center", label: "Executive Command Center", icon: Gauge },
+  { href: "/data-analytics-hub", label: "Analytics Hub", icon: BarChartHorizontalBig }, // Added Analytics Hub
+  { href: "/audit-universe", label: "Audit Universe", icon: Sitemap },
+  { href: "/evidence-locker", label: "Evidence Locker", icon: Archive }, // Renamed from Evidence Hub
+  { href: "/global-activity-log", label: "Global Activity Log", icon: History },
+  { href: "/quality-assurance-reviews", label: "Quality Assurance", icon: CheckSquare },
+  { href: "/knowledge-center", label: "Knowledge Center", icon: BookHeart },
   { href: "/settings", label: "Settings", icon: Settings },
 ]
 
