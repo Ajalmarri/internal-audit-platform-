@@ -1,4 +1,6 @@
-export type FindingSeverity = "Low" | "Medium" | "High" | "Critical"
+import type { FindingSeverity } from "./finding-creation-types"
+
+export type { FindingSeverity }
 
 export interface FindingTemplate {
   id: string
@@ -15,8 +17,32 @@ export interface FindingTemplate {
   prefilledRootCause?: string
 }
 
+export interface MockAssignment {
+  id: string
+  name: string
+  auditPlanName?: string
+}
+
+export const mockAssignments: MockAssignment[] = [
+  { id: "ASGN001", name: "Q2 Financial Controls Audit", auditPlanName: "Annual Financial Audit Plan 2025" },
+  {
+    id: "ASGN002",
+    name: "IT Security Assessment - Network Infrastructure",
+    auditPlanName: "Cybersecurity Audit Program",
+  },
+  {
+    id: "ASGN003",
+    name: "Vendor Compliance Review - Tier 1 Suppliers",
+    auditPlanName: "Third-Party Risk Management Plan",
+  },
+  { id: "ASGN004", name: "HR Payroll Process Audit", auditPlanName: "Internal Controls Review 2025" },
+  { id: "ASGN005", name: "Data Privacy Compliance Check (GDPR)", auditPlanName: "Regulatory Compliance Audit Plan" },
+  { id: "ASGN_NONE", name: "N/A - Standalone Finding", auditPlanName: "General" },
+]
+
 export interface FindingCreationData {
   templateId?: string
+  parentAssignmentId?: string // Added
   observationTitle: string
   detailedObservation: string
   criteriaExpectation: string
@@ -81,4 +107,5 @@ export const initialFindingCreationData: FindingCreationData = {
   affectedBusinessUnit: "",
   rootCause: "",
   attachments: [],
+  parentAssignmentId: "", // Added
 }

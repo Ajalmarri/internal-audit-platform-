@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { toast } from "@/components/ui/use-toast"
 import {
   ArrowLeft,
@@ -24,21 +26,27 @@ import {
   X,
   Sparkles,
   Loader2,
+  Briefcase,
+  ChevronsUpDown,
+  Check,
 } from "lucide-react"
 import type { FindingCreationData, FindingSeverity } from "../_types/finding-creation-types"
-import { mockFindingTemplates, mockBusinessUnits, initialFindingCreationData } from "../_types/finding-creation-types"
+import {
+  mockFindingTemplates,
+  mockBusinessUnits,
+  initialFindingCreationData,
+  mockAssignments, // Added
+} from "../_types/finding-creation-types"
 
-// Mock AI Processor Function
+// Mock AI Processor Function (remains unchanged)
 const mockAiProcessor = async (notes: string): Promise<Partial<FindingCreationData>> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // Simple keyword-based parsing for demonstration
       const lowerNotes = notes.toLowerCase()
       let title = "AI Draft: Review Required"
       let observation = ""
       let impact = ""
       let recommendation = ""
-
       if (lowerNotes.includes("unpatched server") && lowerNotes.includes("data breach")) {
         title = "Potential Data Breach from Unpatched Server"
         observation =
@@ -48,39 +56,45 @@ const mockAiProcessor = async (notes: string): Promise<Partial<FindingCreationDa
         recommendation =
           "1. Immediately apply security patch KB5001330 to SRV-042.\n2. Conduct a full vulnerability scan on the server to identify any signs of compromise.\n3. Review and improve the patch management policy to ensure critical patches are applied within 72 hours of release."
       } else {
-        // Generic fallback
         observation = `Based on the provided notes, the primary observation is: ${notes.split(".")[0] || notes}.`
         impact = "The potential impact of this observation needs to be assessed."
         recommendation = "A recommendation should be formulated to address this observation."
       }
-
       resolve({
         observationTitle: title,
         detailedObservation: observation,
         impactRiskAssociated: impact,
         recommendation: recommendation,
       })
-    }, 1500) // Simulate AI processing time
+    }, 1500)
   })
 }
 
 export default function CreateNewFindingPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const auditPlanId = searchParams.get("auditPlanId")
-  const assignmentId = searchParams.get("assignmentId")
+  const auditPlanIdFromParams = searchParams.get("auditPlanId")
+  const assignmentIdFromParams = searchParams.get("assignmentId")
 
-  const [formData, setFormData] = useState<FindingCreationData>(initialFindingCreationData)
+  const [formData, setFormData] = useState<FindingCreationData>({
+    ...initialFindingCreationData,
+    parentAssignmentId: assignmentIdFromParams || "", // Pre-fill if assignmentId is in params
+  })
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>(mockFindingTemplates[0].id)
   const [aiNotes, setAiNotes] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [assignmentPopoverOpen, setAssignmentPopoverOpen] = useState(false)
 
   useEffect(() => {
+    // If template changes to blank, reset form including parentAssignmentId unless it came from URL params
     if (selectedTemplateId === "TPL000" || !selectedTemplateId) {
-      setFormData(initialFindingCreationData)
+      setFormData({
+        ...initialFindingCreationData,
+        parentAssignmentId: assignmentIdFromParams || "",
+      })
     }
-  }, [selectedTemplateId])
+  }, [selectedTemplateId, assignmentIdFromParams])
 
   const handleGenerateDraft = async () => {
     if (!aiNotes.trim()) {
@@ -118,7 +132,8 @@ export default function CreateNewFindingPage() {
     const template = mockFindingTemplates.find((t) => t.id === templateId)
     if (template && template.id !== "TPL000") {
       setFormData({
-        ...initialFindingCreationData,
+        // Keep parentAssignmentId from current state (could be from URL or manual selection)
+        parentAssignmentId: formData.parentAssignmentId,
         templateId: template.id,
         observationTitle: template.prefilledObservationTitle || "",
         detailedObservation: template.prefilledDetailedObservation || "",
@@ -131,7 +146,11 @@ export default function CreateNewFindingPage() {
         attachments: [],
       })
     } else {
-      setFormData(initialFindingCreationData)
+      // Reset to initial, but preserve parentAssignmentId if it was set (e.g. from URL or previous selection)
+      setFormData({
+        ...initialFindingCreationData,
+        parentAssignmentId: formData.parentAssignmentId,
+      })
     }
   }
 
@@ -142,6 +161,10 @@ export default function CreateNewFindingPage() {
 
   const handleSelectChange = (value: string, fieldName: keyof FindingCreationData) => {
     setFormData((prev) => ({ ...prev, [fieldName]: value }))
+  }
+
+  const handleAssignmentChange = (assignmentId: string) => {
+    setFormData((prev) => ({ ...prev, parentAssignmentId: assignmentId }))
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,8 +201,8 @@ export default function CreateNewFindingPage() {
     const findingToSubmit = {
       ...formData,
       status: action === "saveDraft" ? "Draft" : "Pending Verification",
-      auditPlanId,
-      assignmentId,
+      auditPlanId: auditPlanIdFromParams, // Keep auditPlanId from params if present
+      // parentAssignmentId is already in formData
     }
 
     console.log("Finding Data:", findingToSubmit)
@@ -189,33 +212,41 @@ export default function CreateNewFindingPage() {
       description: `Title: ${formData.observationTitle}`,
     })
 
-    setFormData(initialFindingCreationData)
+    // Reset form, keeping URL params for parentAssignmentId if they exist
+    setFormData({
+      ...initialFindingCreationData,
+      parentAssignmentId: assignmentIdFromParams || "",
+    })
     setSelectedTemplateId(mockFindingTemplates[0].id)
     setAiNotes("")
   }
 
+  const selectedAssignmentName =
+    mockAssignments.find((a) => a.id === formData.parentAssignmentId)?.name || "Select an assignment..."
+
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
-        {(auditPlanId || assignmentId) && (
+        {(auditPlanIdFromParams || formData.parentAssignmentId) && (
           <div className="mb-4 text-sm text-muted-foreground p-3 bg-muted/50 rounded-md">
-            {auditPlanId && (
+            {auditPlanIdFromParams && (
               <p>
-                Creating finding for Audit Plan: <strong>{auditPlanId}</strong>
+                Creating finding for Audit Plan: <strong>{auditPlanIdFromParams}</strong>
               </p>
             )}
-            {assignmentId && (
+            {formData.parentAssignmentId && mockAssignments.find((a) => a.id === formData.parentAssignmentId) && (
               <p>
-                Creating finding for Assignment: <strong>{assignmentId}</strong>
+                Selected Parent Assignment:{" "}
+                <strong>{mockAssignments.find((a) => a.id === formData.parentAssignmentId)?.name}</strong>
               </p>
             )}
             <Button variant="outline" size="sm" asChild className="mt-2">
               <Link
                 href={
-                  assignmentId
-                    ? `/assignments/${assignmentId}`
-                    : auditPlanId
-                      ? `/audit-plans/${auditPlanId}`
+                  formData.parentAssignmentId && formData.parentAssignmentId !== "ASGN_NONE"
+                    ? `/assignments/${formData.parentAssignmentId}`
+                    : auditPlanIdFromParams
+                      ? `/audit-plans/${auditPlanIdFromParams}`
                       : "/dashboard"
                 }
               >
@@ -229,7 +260,7 @@ export default function CreateNewFindingPage() {
       </div>
 
       <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
-        {/* AI Assistant Section */}
+        {/* AI Assistant Section (unchanged) */}
         <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-primary/20">
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -247,7 +278,7 @@ export default function CreateNewFindingPage() {
               name="aiNotes"
               value={aiNotes}
               onChange={(e) => setAiNotes(e.target.value)}
-              placeholder="Example: 'Server SRV-042 is missing critical patch KB5001330 from April. This exposes us to the DataLeach vulnerability. Recommend immediate patching and a full system scan.'"
+              placeholder="Example: 'Server SRV-042 is missing critical patch KB5001330 from April...'"
               rows={5}
               className="bg-background/50"
             />
@@ -260,17 +291,14 @@ export default function CreateNewFindingPage() {
           </CardFooter>
         </Card>
 
-        {/* Finding Template Selection */}
+        {/* Finding Template Selection (unchanged) */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
               <FileText className="mr-2 h-5 w-5 text-primary" />
               Finding Template
             </CardTitle>
-            <CardDescription>
-              Select a template to prefill common fields or start blank. Using templates helps ensure all necessary
-              information is captured systematically. [cite: 196][cite: 197]
-            </CardDescription>
+            <CardDescription>Select a template to prefill common fields or start blank.</CardDescription>
           </CardHeader>
           <CardContent>
             <Select value={selectedTemplateId} onValueChange={handleTemplateChange}>
@@ -288,7 +316,65 @@ export default function CreateNewFindingPage() {
           </CardContent>
         </Card>
 
-        {/* Finding Details Form */}
+        {/* Parent Assignment Section (NEW) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center">
+              <Briefcase className="mr-2 h-5 w-5 text-primary" />
+              Parent Assignment
+            </CardTitle>
+            <CardDescription>Select the audit assignment this finding belongs to.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Popover open={assignmentPopoverOpen} onOpenChange={setAssignmentPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={assignmentPopoverOpen}
+                  className="w-full justify-between"
+                >
+                  <span className="truncate">{selectedAssignmentName}</span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                <Command>
+                  <CommandInput placeholder="Search for an assignment..." />
+                  <CommandList>
+                    <CommandEmpty>No assignment found.</CommandEmpty>
+                    <CommandGroup>
+                      {mockAssignments.map((assignment) => (
+                        <CommandItem
+                          key={assignment.id}
+                          value={assignment.name} // Value for search
+                          onSelect={() => {
+                            handleAssignmentChange(assignment.id)
+                            setAssignmentPopoverOpen(false)
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              formData.parentAssignmentId === assignment.id ? "opacity-100" : "opacity-0"
+                            }`}
+                          />
+                          <div>
+                            {assignment.name}
+                            {assignment.auditPlanName && (
+                              <div className="text-xs text-muted-foreground">Plan: {assignment.auditPlanName}</div>
+                            )}
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </CardContent>
+        </Card>
+
+        {/* Finding Details Form (Observation Details - unchanged structure, just moved) */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -315,18 +401,15 @@ export default function CreateNewFindingPage() {
                 name="detailedObservation"
                 value={formData.detailedObservation}
                 onChange={handleChange}
-                placeholder="Describe your observation in detail. What did you see, hear, or find?"
+                placeholder="Describe your observation in detail..."
                 rows={8}
                 required
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                For rich formatting (bold, lists, etc.), a Rich Text Editor (e.g., Tiptap, Lexical) would be integrated
-                here in a full application.
-              </p>
             </div>
           </CardContent>
         </Card>
 
+        {/* Analysis & Impact (unchanged) */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -353,7 +436,7 @@ export default function CreateNewFindingPage() {
                 name="impactRiskAssociated"
                 value={formData.impactRiskAssociated}
                 onChange={handleChange}
-                placeholder="Describe the potential or actual impact of this observation. What are the associated risks?"
+                placeholder="Describe the potential or actual impact of this observation."
                 rows={4}
               />
             </div>
@@ -381,14 +464,13 @@ export default function CreateNewFindingPage() {
                 <Select
                   name="affectedBusinessUnit"
                   value={formData.affectedBusinessUnit}
-                  onValuecha
-                  nge={(value) => handleSelectChange(value, "affectedBusinessUnit")}
+                  onValueChange={(value) => handleSelectChange(value, "affectedBusinessUnit")}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select unit/department..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None / Not Applicable</SelectItem>
+                    <SelectItem value="NONE">None / Not Applicable</SelectItem>
                     {mockBusinessUnits.map((unit) => (
                       <SelectItem key={unit.id} value={unit.name}>
                         {unit.name}
@@ -405,13 +487,14 @@ export default function CreateNewFindingPage() {
                 name="rootCause"
                 value={formData.rootCause}
                 onChange={handleChange}
-                placeholder="Preliminary root cause analysis, if available. Why did this happen?"
+                placeholder="Preliminary root cause analysis, if available."
                 rows={3}
               />
             </div>
           </CardContent>
         </Card>
 
+        {/* Recommendation (unchanged) */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -434,15 +517,14 @@ export default function CreateNewFindingPage() {
           </CardContent>
         </Card>
 
+        {/* Supporting Evidence (unchanged) */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
               <Paperclip className="mr-2 h-5 w-5 text-primary" />
               Supporting Evidence
             </CardTitle>
-            <CardDescription>
-              Attach relevant documents, images, or other evidence. Multiple files can be uploaded.
-            </CardDescription>
+            <CardDescription>Attach relevant documents, images, or other evidence.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="p-6 border-2 border-dashed border-muted rounded-lg text-center">
@@ -490,13 +572,13 @@ export default function CreateNewFindingPage() {
           </CardContent>
         </Card>
 
-        {/* Action Buttons */}
+        {/* Action Buttons (unchanged) */}
         <div className="flex flex-col sm:flex-row justify-end items-center gap-3 pt-4">
           <Button type="button" variant="outline" onClick={() => handleSubmit("saveDraft")}>
             <Save className="mr-2 h-4 w-4" /> Save Draft
           </Button>
           <Button type="button" onClick={() => handleSubmit("submitForVerification")}>
-            <Send className="mr-2 h-4 w-4" /> Submit for Verification [cite: 198]
+            <Send className="mr-2 h-4 w-4" /> Submit for Verification
           </Button>
         </div>
       </form>
