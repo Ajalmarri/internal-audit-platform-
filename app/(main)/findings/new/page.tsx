@@ -29,13 +29,14 @@ import {
   Briefcase,
   ChevronsUpDown,
   Check,
+  RotateCw,
 } from "lucide-react"
-import type { FindingCreationData, FindingSeverity } from "../_types/finding-creation-types"
+import type { FindingCreationData, FindingSeverity, MockAssignment } from "../_types/finding-creation-types" // Added MockAssignment
 import {
   mockFindingTemplates,
   mockBusinessUnits,
   initialFindingCreationData,
-  mockAssignments, // Added
+  // mockAssignments is no longer imported here
 } from "../_types/finding-creation-types"
 
 // Mock AI Processor Function (remains unchanged)
@@ -78,16 +79,47 @@ export default function CreateNewFindingPage() {
 
   const [formData, setFormData] = useState<FindingCreationData>({
     ...initialFindingCreationData,
-    parentAssignmentId: assignmentIdFromParams || "", // Pre-fill if assignmentId is in params
+    parentAssignmentId: assignmentIdFromParams || "",
   })
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>(mockFindingTemplates[0].id)
   const [aiNotes, setAiNotes] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // State for assignments
+  const [availableAssignments, setAvailableAssignments] = useState<MockAssignment[]>([])
+  const [assignmentsLoading, setAssignmentsLoading] = useState(true)
+  const [assignmentsError, setAssignmentsError] = useState<string | null>(null)
   const [assignmentPopoverOpen, setAssignmentPopoverOpen] = useState(false)
 
+  const fetchAssignments = async () => {
+    setAssignmentsLoading(true)
+    setAssignmentsError(null)
+    try {
+      const response = await fetch("/api/assignments")
+      if (!response.ok) {
+        throw new Error(`Failed to fetch assignments: ${response.statusText}`)
+      }
+      const data: MockAssignment[] = await response.json()
+      setAvailableAssignments(data)
+    } catch (error) {
+      console.error("Error fetching assignments:", error)
+      setAssignmentsError(error instanceof Error ? error.message : "An unknown error occurred")
+      toast({
+        title: "Error Loading Assignments",
+        description: "Could not load assignments for selection. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAssignmentsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    // If template changes to blank, reset form including parentAssignmentId unless it came from URL params
+    fetchAssignments()
+  }, [])
+
+  useEffect(() => {
     if (selectedTemplateId === "TPL000" || !selectedTemplateId) {
       setFormData({
         ...initialFindingCreationData,
@@ -132,7 +164,6 @@ export default function CreateNewFindingPage() {
     const template = mockFindingTemplates.find((t) => t.id === templateId)
     if (template && template.id !== "TPL000") {
       setFormData({
-        // Keep parentAssignmentId from current state (could be from URL or manual selection)
         parentAssignmentId: formData.parentAssignmentId,
         templateId: template.id,
         observationTitle: template.prefilledObservationTitle || "",
@@ -146,7 +177,6 @@ export default function CreateNewFindingPage() {
         attachments: [],
       })
     } else {
-      // Reset to initial, but preserve parentAssignmentId if it was set (e.g. from URL or previous selection)
       setFormData({
         ...initialFindingCreationData,
         parentAssignmentId: formData.parentAssignmentId,
@@ -201,8 +231,7 @@ export default function CreateNewFindingPage() {
     const findingToSubmit = {
       ...formData,
       status: action === "saveDraft" ? "Draft" : "Pending Verification",
-      auditPlanId: auditPlanIdFromParams, // Keep auditPlanId from params if present
-      // parentAssignmentId is already in formData
+      auditPlanId: auditPlanIdFromParams,
     }
 
     console.log("Finding Data:", findingToSubmit)
@@ -212,7 +241,6 @@ export default function CreateNewFindingPage() {
       description: `Title: ${formData.observationTitle}`,
     })
 
-    // Reset form, keeping URL params for parentAssignmentId if they exist
     setFormData({
       ...initialFindingCreationData,
       parentAssignmentId: assignmentIdFromParams || "",
@@ -222,7 +250,7 @@ export default function CreateNewFindingPage() {
   }
 
   const selectedAssignmentName =
-    mockAssignments.find((a) => a.id === formData.parentAssignmentId)?.name || "Select an assignment..."
+    availableAssignments.find((a) => a.id === formData.parentAssignmentId)?.name || "Select an assignment..."
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -234,16 +262,17 @@ export default function CreateNewFindingPage() {
                 Creating finding for Audit Plan: <strong>{auditPlanIdFromParams}</strong>
               </p>
             )}
-            {formData.parentAssignmentId && mockAssignments.find((a) => a.id === formData.parentAssignmentId) && (
+            {formData.parentAssignmentId && availableAssignments.find((a) => a.id === formData.parentAssignmentId) && (
               <p>
                 Selected Parent Assignment:{" "}
-                <strong>{mockAssignments.find((a) => a.id === formData.parentAssignmentId)?.name}</strong>
+                <strong>{availableAssignments.find((a) => a.id === formData.parentAssignmentId)?.name}</strong>
               </p>
             )}
             <Button variant="outline" size="sm" asChild className="mt-2">
               <Link
                 href={
-                  formData.parentAssignmentId && formData.parentAssignmentId !== "ASGN_NONE"
+                  formData.parentAssignmentId &&
+                  availableAssignments.find((a) => a.id === formData.parentAssignmentId && a.id !== "ASGN_NONE")
                     ? `/assignments/${formData.parentAssignmentId}`
                     : auditPlanIdFromParams
                       ? `/audit-plans/${auditPlanIdFromParams}`
@@ -260,7 +289,7 @@ export default function CreateNewFindingPage() {
       </div>
 
       <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
-        {/* AI Assistant Section (unchanged) */}
+        {/* AI Assistant Section */}
         <Card className="bg-gradient-to-br from-muted/30 to-muted/50 border-primary/20">
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -291,7 +320,7 @@ export default function CreateNewFindingPage() {
           </CardFooter>
         </Card>
 
-        {/* Finding Template Selection (unchanged) */}
+        {/* Finding Template Selection */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -316,7 +345,7 @@ export default function CreateNewFindingPage() {
           </CardContent>
         </Card>
 
-        {/* Parent Assignment Section (NEW) */}
+        {/* Parent Assignment Section */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -333,8 +362,15 @@ export default function CreateNewFindingPage() {
                   role="combobox"
                   aria-expanded={assignmentPopoverOpen}
                   className="w-full justify-between"
+                  disabled={assignmentsLoading || !!assignmentsError}
                 >
-                  <span className="truncate">{selectedAssignmentName}</span>
+                  <span className="truncate">
+                    {assignmentsLoading
+                      ? "Loading assignments..."
+                      : assignmentsError
+                        ? "Error loading"
+                        : selectedAssignmentName}
+                  </span>
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -342,31 +378,48 @@ export default function CreateNewFindingPage() {
                 <Command>
                   <CommandInput placeholder="Search for an assignment..." />
                   <CommandList>
-                    <CommandEmpty>No assignment found.</CommandEmpty>
-                    <CommandGroup>
-                      {mockAssignments.map((assignment) => (
-                        <CommandItem
-                          key={assignment.id}
-                          value={assignment.name} // Value for search
-                          onSelect={() => {
-                            handleAssignmentChange(assignment.id)
-                            setAssignmentPopoverOpen(false)
-                          }}
-                        >
-                          <Check
-                            className={`mr-2 h-4 w-4 ${
-                              formData.parentAssignmentId === assignment.id ? "opacity-100" : "opacity-0"
-                            }`}
-                          />
-                          <div>
-                            {assignment.name}
-                            {assignment.auditPlanName && (
-                              <div className="text-xs text-muted-foreground">Plan: {assignment.auditPlanName}</div>
-                            )}
-                          </div>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
+                    {assignmentsLoading && (
+                      <div className="p-4 text-sm text-center text-muted-foreground">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin inline" /> Loading...
+                      </div>
+                    )}
+                    {assignmentsError && !assignmentsLoading && (
+                      <div className="p-4 text-sm text-center text-destructive">
+                        <p>{assignmentsError}</p>
+                        <Button variant="outline" size="sm" onClick={fetchAssignments} className="mt-2">
+                          <RotateCw className="mr-2 h-4 w-4" /> Retry
+                        </Button>
+                      </div>
+                    )}
+                    {!assignmentsLoading && !assignmentsError && availableAssignments.length === 0 && (
+                      <CommandEmpty>No assignment found.</CommandEmpty>
+                    )}
+                    {!assignmentsLoading && !assignmentsError && availableAssignments.length > 0 && (
+                      <CommandGroup>
+                        {availableAssignments.map((assignment) => (
+                          <CommandItem
+                            key={assignment.id}
+                            value={assignment.name}
+                            onSelect={() => {
+                              handleAssignmentChange(assignment.id)
+                              setAssignmentPopoverOpen(false)
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                formData.parentAssignmentId === assignment.id ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            <div>
+                              {assignment.name}
+                              {assignment.auditPlanName && (
+                                <div className="text-xs text-muted-foreground">Plan: {assignment.auditPlanName}</div>
+                              )}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
                   </CommandList>
                 </Command>
               </PopoverContent>
@@ -374,7 +427,7 @@ export default function CreateNewFindingPage() {
           </CardContent>
         </Card>
 
-        {/* Finding Details Form (Observation Details - unchanged structure, just moved) */}
+        {/* Observation Details */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -409,7 +462,7 @@ export default function CreateNewFindingPage() {
           </CardContent>
         </Card>
 
-        {/* Analysis & Impact (unchanged) */}
+        {/* Analysis & Impact */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -494,7 +547,7 @@ export default function CreateNewFindingPage() {
           </CardContent>
         </Card>
 
-        {/* Recommendation (unchanged) */}
+        {/* Recommendation */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -517,7 +570,7 @@ export default function CreateNewFindingPage() {
           </CardContent>
         </Card>
 
-        {/* Supporting Evidence (unchanged) */}
+        {/* Supporting Evidence */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center">
@@ -572,7 +625,7 @@ export default function CreateNewFindingPage() {
           </CardContent>
         </Card>
 
-        {/* Action Buttons (unchanged) */}
+        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-end items-center gap-3 pt-4">
           <Button type="button" variant="outline" onClick={() => handleSubmit("saveDraft")}>
             <Save className="mr-2 h-4 w-4" /> Save Draft
