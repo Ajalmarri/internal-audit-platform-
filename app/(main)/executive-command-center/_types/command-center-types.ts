@@ -4,15 +4,28 @@ export interface ComplianceStatusData {
   summary: string
 }
 
+// New interface for detailed risk data at a specific point in time
+export interface RiskDetail {
+  score: number
+  description: string
+  relatedLinks: { title: string; url: string }[]
+}
+
 export interface RiskTrendDataPoint {
-  month: string // e.g., "Jan", "Feb"
+  month: string // e.g., "January 2024"
   year: number
-  // Each key represents a risk, value is its score/level
-  [riskName: string]: number | string
+  // Each risk ID will now map to a RiskDetail object
+  cybersecurity?: RiskDetail
+  regulatory?: RiskDetail
+  supplyChain?: RiskDetail
+  talent?: RiskDetail
+  economic?: RiskDetail
+  // Allow other string keys for flexibility
+  [key: string]: RiskDetail | number | string | undefined
 }
 
 export interface TopEnterpriseRisk {
-  id: string
+  id: "cybersecurity" | "regulatory" | "supplyChain" | "talent" | "economic"
   name: string
   color: string // For chart line
 }

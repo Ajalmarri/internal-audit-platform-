@@ -2,14 +2,15 @@ import { ComplianceStatusWidget } from "./_components/compliance-status-widget"
 import { RiskTrendWidget } from "./_components/risk-trend-widget"
 import { AuditPlanPerformanceWidget } from "./_components/audit-plan-performance-widget"
 import { ResourceAllocationWidget } from "./_components/resource-allocation-widget"
-import { KriWidget } from "./_components/kri-widget" // Import the new widget
+import { KriWidget } from "./_components/kri-widget"
 import type {
   ComplianceStatusData,
   RiskTrendDataPoint,
   AuditPlanPerformanceData,
   ResourceAllocationDataPoint,
   TopEnterpriseRisk,
-  KriData, // Import KriData type
+  KriData,
+  RiskDetail,
 } from "./_types/command-center-types"
 
 // Mock Data
@@ -27,15 +28,45 @@ const mockTopRisks: TopEnterpriseRisk[] = [
   { id: "economic", name: "Economic Downturn", color: "hsl(var(--chart-5))" },
 ]
 
+// Helper to generate detailed mock risk data
+const generateRiskDetail = (baseScore: number, riskName: string, month: string): RiskDetail => {
+  const score = Math.max(1, Math.min(10, baseScore + (Math.random() - 0.5) * 2))
+  const descriptions: { [key: string]: string[] } = {
+    cybersecurity: [
+      `Minor phishing attempts detected and blocked on ${month}.`,
+      `System patch applied for vulnerability CVE-2025-1234 on ${month}.`,
+      `Increased brute-force attempts on external services noted on ${month}.`,
+    ],
+    regulatory: [
+      `New data privacy guideline draft released by regulators on ${month}.`,
+      `Quarterly compliance report submitted on ${month}.`,
+      `Internal review of GDPR policies completed on ${month}.`,
+    ],
+  }
+  const riskId = riskName.split(" ")[0].toLowerCase()
+  return {
+    score: Number.parseFloat(score.toFixed(1)),
+    description:
+      descriptions[riskId]?.[Math.floor(Math.random() * 3)] ||
+      `Standard monitoring activities for ${riskName} on ${month}.`,
+    relatedLinks: [
+      { title: `Q2 ${riskName} Report`, url: "#" },
+      { title: "Relevant Policy Doc", url: "#" },
+    ],
+  }
+}
+
 const mockRiskTrendData: RiskTrendDataPoint[] = Array.from({ length: 12 }, (_, i) => {
-  const monthDate = new Date(2024, 5 + i, 1) // Start from June 2024
-  const month = monthDate.toLocaleString("default", { month: "short" })
+  const monthDate = new Date(2024, 5 + i, 1)
+  const month = monthDate.toLocaleString("default", { month: "long", year: "numeric" })
   const year = monthDate.getFullYear()
-  const baseData: RiskTrendDataPoint = { month, year }
-  mockTopRisks.forEach((risk) => {
-    baseData[risk.id] = Math.floor(Math.random() * 5) + 1 + i * 0.1 // Random trend
+
+  const dataPoint: RiskTrendDataPoint = { month, year }
+  mockTopRisks.forEach((risk, riskIndex) => {
+    const baseScore = 3 + riskIndex + Math.sin(i / 3) * 2
+    dataPoint[risk.id] = generateRiskDetail(baseScore, risk.name, month)
   })
-  return baseData
+  return dataPoint
 })
 
 const mockAuditPlanPerformance: AuditPlanPerformanceData = {
@@ -52,40 +83,11 @@ const mockResourceAllocation: ResourceAllocationDataPoint[] = [
   { name: "Compliance Audits", value: 10, fill: "hsl(var(--chart-4))" },
 ]
 
-// New Mock Data for KRIs
 const mockKriData: KriData[] = [
-  {
-    id: "it-downtime",
-    name: "IT System Downtime",
-    value: "0.5%",
-    status: "Normal",
-    percentage: 15, // e.g. 0-33% is Normal
-    description: "Percentage of unplanned IT system unavailability.",
-  },
-  {
-    id: "employee-turnover",
-    name: "Employee Turnover Rate",
-    value: "15%",
-    status: "Elevated",
-    percentage: 50, // e.g. 34-66% is Elevated
-    description: "Annualized rate of employees leaving the company.",
-  },
-  {
-    id: "vendor-compliance",
-    name: "Vendor Compliance Failures",
-    value: "8%",
-    status: "Critical",
-    percentage: 85, // e.g. 67-100% is Critical
-    description: "Percentage of vendors failing compliance checks.",
-  },
-  {
-    id: "overdue-training",
-    name: "Overdue Mandatory Training",
-    value: "12%",
-    status: "Elevated",
-    percentage: 60,
-    description: "Percentage of employees with overdue mandatory training.",
-  },
+  { id: "it-downtime", name: "IT System Downtime", value: "0.5%", status: "Normal", percentage: 15 },
+  { id: "employee-turnover", name: "Employee Turnover Rate", value: "15%", status: "Elevated", percentage: 50 },
+  { id: "vendor-compliance", name: "Vendor Compliance Failures", value: "8%", status: "Critical", percentage: 85 },
+  { id: "overdue-training", name: "Overdue Mandatory Training", value: "12%", status: "Elevated", percentage: 60 },
 ]
 
 export default function ExecutiveCommandCenterPage() {
@@ -98,7 +100,6 @@ export default function ExecutiveCommandCenterPage() {
       <div className="grid grid-cols-1 gap-6">
         <ComplianceStatusWidget data={mockComplianceStatus} />
         <RiskTrendWidget data={mockRiskTrendData} topRisks={mockTopRisks} />
-        {/* Add the new KRI Widget here */}
         <KriWidget kris={mockKriData} />
         <AuditPlanPerformanceWidget data={mockAuditPlanPerformance} />
         <ResourceAllocationWidget data={mockResourceAllocation} />
