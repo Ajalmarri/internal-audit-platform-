@@ -343,8 +343,6 @@ export default function ActionPlansPage() {
                           {plan.businessOwner}
                         </TableCell>
                         <TableCell className="truncate max-w-[150px]" title={plan.auditorInCharge}>
-                          {" "}
-                          {/* New Cell */}
                           {plan.auditorInCharge || "N/A"}
                         </TableCell>
                         <TableCell>
