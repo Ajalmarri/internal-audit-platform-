@@ -13,27 +13,31 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import type { TooltipProps } from "recharts"
 import type { RiskTrendDataPoint, TopEnterpriseRisk, RiskDetail } from "../_types/command-center-types"
-import { RiskDetailSheet } from "./risk-detail-sheet"
+import { RiskDetailSheet } from "./risk-detail-sheet" // Corrected: This file now exists
 
-interface RiskTrendWidgetProps {
+// Define SelectedRiskData here or move to _types/command-center-types.ts if used elsewhere
+export interface SelectedRiskData {
+  // Exporting for RiskDetailSheet
+  riskId: string
+  riskName: string
+  date: string // This is the 'month' field from RiskTrendDataPoint
+  details: RiskDetail // This is the specific risk's data for that month
+}
+
+export interface RiskTrendWidgetProps {
   data: RiskTrendDataPoint[]
   topRisks: TopEnterpriseRisk[]
 }
 
-interface SelectedRiskData {
-  riskId: string
-  riskName: string
-  date: string
-  details: RiskDetail
-}
-
 const tooltipFormatter = (
   value: number,
-  name: string,
+  name: string, // This is topRisks[i].name
   item: TooltipProps<number, string>["payload"] extends (infer U)[] ? U : never,
 ): [React.ReactNode, string] => {
+  // 'value' here is actually the riskDetail.score
   const numericValue = typeof value === "number" ? value : Number.parseFloat(String(value))
   const formattedValue = `Score: ${numericValue.toFixed(1)}`
+  // 'name' is the series name (e.g., "Cybersecurity Risk")
   return [formattedValue, `Risk: ${name}`]
 }
 
@@ -47,19 +51,23 @@ export function RiskTrendWidget({ data, topRisks }: RiskTrendWidgetProps) {
 
   const handleChartClick = (chartState: any) => {
     if (chartState && chartState.activePayload && chartState.activePayload.length > 0) {
-      const payload = chartState.activePayload[0].payload
-      const dataKey = chartState.activePayload[0].dataKey
-      const riskId = dataKey.split(".")[0] as TopEnterpriseRisk["id"]
+      const activeItem = chartState.activePayload[0] // The specific line/point clicked
+      const dataPoint = activeItem.payload // The whole data object for that X-axis point (month)
+
+      // dataKey from the active line (e.g., "cyberRisk.score")
+      const fullDataKey = activeItem.dataKey
+      const riskId = fullDataKey.split(".")[0] as TopEnterpriseRisk["id"]
 
       const riskInfo = topRisks.find((r) => r.id === riskId)
-      const riskDetails = payload[riskId] as RiskDetail
+      // The riskDetail object for the clicked riskId within the dataPoint
+      const riskDetailsForClickedRisk = dataPoint[riskId] as RiskDetail
 
-      if (riskInfo && riskDetails) {
+      if (riskInfo && riskDetailsForClickedRisk) {
         setSelectedRisk({
           riskId: riskId,
           riskName: riskInfo.name,
-          date: payload.month,
-          details: riskDetails,
+          date: dataPoint.month, // The month/year for this data point
+          details: riskDetailsForClickedRisk, // The specific details for the clicked risk
         })
       }
     }
@@ -82,11 +90,11 @@ export function RiskTrendWidget({ data, topRisks }: RiskTrendWidgetProps) {
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
-                  tickFormatter={(value) => value.split(" ")[0].slice(0, 3)}
+                  tickFormatter={(value) => value.split(" ")[0].slice(0, 3)} // Assumes "Month Year" format
                 />
                 <YAxis tickLine={false} axisLine={false} tickMargin={8} domain={[0, "dataMax + 1"]} />
                 <ChartTooltip
-                  cursor={true}
+                  cursor={true} // Show cursor line
                   content={<ChartTooltipContent indicator="dot" formatter={tooltipFormatter} />}
                 />
                 <ChartLegend content={<ChartLegendContent />} />
@@ -98,8 +106,8 @@ export function RiskTrendWidget({ data, topRisks }: RiskTrendWidgetProps) {
                     stroke={risk.color}
                     strokeWidth={2}
                     dot={false}
-                    activeDot={{ r: 5 }}
-                    name={risk.name}
+                    activeDot={{ r: 5, strokeWidth: 1, fill: risk.color }} // Enhanced activeDot
+                    name={risk.name} // Used by legend and tooltipFormatter
                   />
                 ))}
               </LineChart>
