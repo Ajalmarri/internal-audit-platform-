@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 
+// Example notification options
 const notificationOptions = [
   {
     id: "new-assignment",
@@ -29,6 +30,12 @@ const notificationOptions = [
     title: "Finding Approved/Rejected",
     description: "Receive a notification when a finding you submitted is approved or rejected.",
     defaultChecked: false,
+  },
+  {
+    id: "system-updates",
+    title: "System Updates & Announcements",
+    description: "Receive notifications about new features and important system announcements.",
+    defaultChecked: true,
   },
 ]
 
