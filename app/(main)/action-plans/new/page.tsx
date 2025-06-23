@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
 import { toast } from "@/components/ui/use-toast"
-import { ArrowLeft, Save, Send, PlusCircle, Trash2, FileText, Target, Users } from "lucide-react"
+import { ArrowLeft, FileText, Target, Briefcase } from "lucide-react"
 
 // Types
 interface ActionPlanItem {
@@ -33,6 +33,9 @@ interface ActionPlanFormData {
   estimatedEffort: string
   successCriteria: string
   riskMitigation: string
+  requiredPersonnel: string
+  estimatedBudget: string
+  necessaryTools: string
 }
 
 // Mock data for dropdowns
@@ -87,6 +90,9 @@ const initialFormData: ActionPlanFormData = {
   estimatedEffort: "",
   successCriteria: "",
   riskMitigation: "",
+  requiredPersonnel: "",
+  estimatedBudget: "",
+  necessaryTools: "",
 }
 
 export default function CreateActionPlanPage() {
@@ -375,121 +381,58 @@ export default function CreateActionPlanPage() {
           </CardContent>
         </Card>
 
-        {/* Action Items */}
+        {/* Resource & Budget Allocation */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg flex items-center">
-                <Users className="mr-2 h-5 w-5 text-primary" />
-                Action Items
-              </CardTitle>
-              <CardDescription>
-                Break down the action plan into specific, actionable tasks with clear ownership and deadlines.
-              </CardDescription>
-            </div>
-            <Button type="button" variant="outline" size="sm" onClick={addActionItem}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Action Item
-            </Button>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center">
+              <Briefcase className="mr-2 h-5 w-5 text-primary" />
+              Resource & Budget Allocation
+            </CardTitle>
+            <CardDescription>Detail the personnel, budget, and tools required for this action plan.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {formData.items.map((item, index) => (
-              <Card key={item.id} className="p-4 bg-muted/30">
-                <div className="flex justify-between items-start mb-4">
-                  <h4 className="text-sm font-semibold">Action Item #{index + 1}</h4>
-                  {formData.items.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => removeActionItem(index)}
-                      className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor={`action-${item.id}`}>Action Description *</Label>
-                    <Textarea
-                      id={`action-${item.id}`}
-                      value={item.action}
-                      onChange={(e) => handleItemChange(index, "action", e.target.value)}
-                      placeholder="Describe the specific action to be taken..."
-                      rows={2}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`description-${item.id}`}>Additional Details (Optional)</Label>
-                    <Textarea
-                      id={`description-${item.id}`}
-                      value={item.description || ""}
-                      onChange={(e) => handleItemChange(index, "description", e.target.value)}
-                      placeholder="Provide additional context, requirements, or specifications..."
-                      rows={2}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor={`responsible-${item.id}`}>Responsible Person *</Label>
-                      <Select
-                        value={item.responsiblePerson}
-                        onValueChange={(value) => handleItemChange(index, "responsiblePerson", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select person/team..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {mockPersonnel.map((person) => (
-                            <SelectItem key={person} value={person}>
-                              {person}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor={`dueDate-${item.id}`}>Due Date *</Label>
-                      <DatePicker
-                        date={item.dueDate}
-                        setDate={(date) => handleItemChange(index, "dueDate", date)}
-                        placeholder="Select due date"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`status-${item.id}`}>Initial Status</Label>
-                      <Select value={item.status} onValueChange={(value) => handleItemChange(index, "status", value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="To Do">To Do</SelectItem>
-                          <SelectItem value="In Progress">In Progress</SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
-                          <SelectItem value="Blocked">Blocked</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+            <div>
+              <Label htmlFor="requiredPersonnel">Required Personnel/Skills</Label>
+              <Textarea
+                id="requiredPersonnel"
+                value={formData.requiredPersonnel}
+                onChange={(e) => handleInputChange("requiredPersonnel", e.target.value)}
+                placeholder="e.g., 1 Senior Developer, 1 Database Administrator, external consultant..."
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="estimatedBudget">Estimated Budget</Label>
+                <div className="relative">
+                  <Input
+                    id="estimatedBudget"
+                    type="text"
+                    value={formData.estimatedBudget}
+                    onChange={(e) => handleInputChange("estimatedBudget", e.target.value)}
+                    placeholder="15,000"
+                    className="pl-14"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-muted-foreground font-semibold">AED</span>
                   </div>
                 </div>
-              </Card>
-            ))}
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="necessaryTools">Necessary Tools/Software</Label>
+              <Textarea
+                id="necessaryTools"
+                value={formData.necessaryTools}
+                onChange={(e) => handleInputChange("necessaryTools", e.target.value)}
+                placeholder="List any required software licenses, cloud services, or physical tools needed to complete the action plan."
+                rows={3}
+              />
+            </div>
           </CardContent>
         </Card>
 
-        {/* Form Actions */}
-        <div className="flex flex-col sm:flex-row justify-end items-center gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={() => handleSubmit("draft")} disabled={isSubmitting}>
-            <Save className="mr-2 h-4 w-4" />
-            Save as Draft
-          </Button>
-          <Button type="button" onClick={() => handleSubmit("submit")} disabled={isSubmitting}>
-            <Send className="mr-2 h-4 w-4" />
-            Submit Action Plan
-          </Button>
-        </div>
-      </form>
-    </div>
-  )
-}
+        {/* Action Items */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">\
+            <div>
