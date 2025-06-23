@@ -54,7 +54,7 @@ export function RiskTrendWidget({ data, topRisks }: RiskTrendWidgetProps) {
                 tickMargin={8}
                 domain={[0, "dataMax + 1"]} // Ensure some padding at the top
               />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" hideLabel />} />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
               <ChartLegend content={<ChartLegendContent />} />
               {topRisks.map((risk) => (
                 <Line
@@ -63,7 +63,8 @@ export function RiskTrendWidget({ data, topRisks }: RiskTrendWidgetProps) {
                   type="monotone"
                   stroke={risk.color}
                   strokeWidth={2}
-                  dot={false}
+                  dot={false} // Keeps static dots hidden
+                  activeDot={{ r: 5 }} // Shows a slightly larger dot on hover (default activeDot is r:4 with white stroke)
                   name={risk.name}
                 />
               ))}
