@@ -316,8 +316,8 @@ export default function ActionPlansPage() {
                   <TableHead className="w-[80px]">ID</TableHead>
                   <TableHead className="min-w-[250px]">Finding</TableHead>
                   <TableHead>Business Owner</TableHead>
-                  <TableHead className="min-w-[150px]">Auditor-in-Charge</TableHead> {/* New Column */}
-                  <TableHead className="min-w-[200px]">Status</TableHead> {/* Increased width for buttons */}
+                  <TableHead className="min-w-[150px]">Auditor-in-Charge</TableHead>
+                  <TableHead className="min-w-[200px]">Status</TableHead>
                   <TableHead className="w-[150px]">Progress</TableHead>
                   <TableHead>Last Updated</TableHead>
                   <TableHead className="text-right sticky right-0 bg-card z-10">Actions</TableHead>
@@ -343,6 +343,7 @@ export default function ActionPlansPage() {
                           {plan.businessOwner}
                         </TableCell>
                         <TableCell className="truncate max-w-[150px]" title={plan.auditorInCharge}>
+                          {/* New Cell - Removed leading space and comment */}
                           {plan.auditorInCharge || "N/A"}
                         </TableCell>
                         <TableCell>
@@ -431,8 +432,7 @@ export default function ActionPlansPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={8} className="h-24 text-center">
-                      {" "}
-                      {/* Updated colSpan */}
+                      {/* Updated colSpan - Removed leading space and comment */}
                       No action plans match your criteria.
                     </TableCell>
                   </TableRow>
