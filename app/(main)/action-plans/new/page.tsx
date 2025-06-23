@@ -482,7 +482,7 @@ export default function CreateActionPlanPage() {
                             value={control.name} // Search by name
                             onSelect={() => {
                               handleMappedControlsChange(control.id)
-                              // setControlsPopoverOpen(false); // Keep open for multi-select
+                              setControlsPopoverOpen(false) // Close popover after selection
                             }}
                           >
                             <Check
