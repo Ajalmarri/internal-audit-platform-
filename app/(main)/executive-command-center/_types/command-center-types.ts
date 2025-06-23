@@ -29,3 +29,14 @@ export interface ResourceAllocationDataPoint {
   value: number // Percentage or FTE count
   fill: string // Color for the chart segment
 }
+
+export type KriStatus = "Normal" | "Elevated" | "Critical"
+
+export interface KriData {
+  id: string
+  name: string
+  value: string
+  status: KriStatus
+  percentage: number // 0-100, for gauge positioning
+  description?: string // Optional description for the KRI
+}

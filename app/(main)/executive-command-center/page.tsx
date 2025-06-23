@@ -2,12 +2,14 @@ import { ComplianceStatusWidget } from "./_components/compliance-status-widget"
 import { RiskTrendWidget } from "./_components/risk-trend-widget"
 import { AuditPlanPerformanceWidget } from "./_components/audit-plan-performance-widget"
 import { ResourceAllocationWidget } from "./_components/resource-allocation-widget"
+import { KriWidget } from "./_components/kri-widget" // Import the new widget
 import type {
   ComplianceStatusData,
   RiskTrendDataPoint,
   AuditPlanPerformanceData,
   ResourceAllocationDataPoint,
   TopEnterpriseRisk,
+  KriData, // Import KriData type
 } from "./_types/command-center-types"
 
 // Mock Data
@@ -50,6 +52,42 @@ const mockResourceAllocation: ResourceAllocationDataPoint[] = [
   { name: "Compliance Audits", value: 10, fill: "hsl(var(--chart-4))" },
 ]
 
+// New Mock Data for KRIs
+const mockKriData: KriData[] = [
+  {
+    id: "it-downtime",
+    name: "IT System Downtime",
+    value: "0.5%",
+    status: "Normal",
+    percentage: 15, // e.g. 0-33% is Normal
+    description: "Percentage of unplanned IT system unavailability.",
+  },
+  {
+    id: "employee-turnover",
+    name: "Employee Turnover Rate",
+    value: "15%",
+    status: "Elevated",
+    percentage: 50, // e.g. 34-66% is Elevated
+    description: "Annualized rate of employees leaving the company.",
+  },
+  {
+    id: "vendor-compliance",
+    name: "Vendor Compliance Failures",
+    value: "8%",
+    status: "Critical",
+    percentage: 85, // e.g. 67-100% is Critical
+    description: "Percentage of vendors failing compliance checks.",
+  },
+  {
+    id: "overdue-training",
+    name: "Overdue Mandatory Training",
+    value: "12%",
+    status: "Elevated",
+    percentage: 60,
+    description: "Percentage of employees with overdue mandatory training.",
+  },
+]
+
 export default function ExecutiveCommandCenterPage() {
   return (
     <div className="flex-1 space-y-6 p-4 md:p-6 lg:p-8">
@@ -60,6 +98,8 @@ export default function ExecutiveCommandCenterPage() {
       <div className="grid grid-cols-1 gap-6">
         <ComplianceStatusWidget data={mockComplianceStatus} />
         <RiskTrendWidget data={mockRiskTrendData} topRisks={mockTopRisks} />
+        {/* Add the new KRI Widget here */}
+        <KriWidget kris={mockKriData} />
         <AuditPlanPerformanceWidget data={mockAuditPlanPerformance} />
         <ResourceAllocationWidget data={mockResourceAllocation} />
       </div>
