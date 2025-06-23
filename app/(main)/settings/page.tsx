@@ -9,7 +9,7 @@ import StrategicGoalsSettings from "./_components/strategic-goals-settings" // I
 import { useMockUser } from "@/hooks/use-mock-user"
 
 export default function SettingsPage() {
-  const { user } = useMockUser()
+  const user = useMockUser()
   const isAdmin = user.role === "Audit Manager" // Or a more specific admin role
 
   // Determine the number of tabs for grid layout
