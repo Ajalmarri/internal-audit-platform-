@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusCircle, Edit3, Trash2, TargetIcon } from "lucide-react" // Renamed Target to TargetIcon
+import { PlusCircle, Edit3, Trash2, TargetIcon } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,26 +16,18 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { type StrategicGoal, mockStrategicGoals } from "../_types/settings-types"
-// It's good practice to have a proper modal for add/edit forms.
-// For this example, we'll use prompts for simplicity, but a modal component would be better.
-// import AddEditStrategicGoalModal from './add-edit-strategic-goal-modal';
 
 export default function StrategicGoalsSettings() {
   const [goals, setGoals] = useState<StrategicGoal[]>(mockStrategicGoals)
-  // const [showAddEditModal, setShowAddEditModal] = useState(false);
-  // const [currentGoalToEdit, setCurrentGoalToEdit] = useState<StrategicGoal | null>(null);
   const [goalToDelete, setGoalToDelete] = useState<StrategicGoal | null>(null)
 
   const handleAddNewGoal = () => {
-    // setCurrentGoalToEdit(null);
-    // setShowAddEditModal(true);
-    // Simplified version using prompt:
     const title = prompt("Enter new goal title:")
     if (title) {
       const description = prompt("Enter goal description:")
       if (description) {
         const newGoal: StrategicGoal = {
-          id: `sg${Date.now()}${Math.random().toString(16).slice(2)}`, // More unique ID
+          id: `sg${Date.now()}${Math.random().toString(16).slice(2)}`,
           title,
           description,
         }
@@ -45,12 +37,8 @@ export default function StrategicGoalsSettings() {
   }
 
   const handleEditGoal = (goal: StrategicGoal) => {
-    // setCurrentGoalToEdit(goal);
-    // setShowAddEditModal(true);
-    // Simplified version using prompt:
     const newTitle = prompt("Edit goal title:", goal.title)
     if (newTitle !== null) {
-      // Check if prompt was cancelled
       const newDescription = prompt("Edit goal description:", goal.description)
       if (newDescription !== null) {
         setGoals((prevGoals) =>
@@ -63,7 +51,7 @@ export default function StrategicGoalsSettings() {
   const confirmDeleteGoal = () => {
     if (goalToDelete) {
       setGoals((prevGoals) => prevGoals.filter((g) => g.id !== goalToDelete.id))
-      setGoalToDelete(null) // Close the dialog
+      setGoalToDelete(null)
     }
   }
 
@@ -136,24 +124,6 @@ export default function StrategicGoalsSettings() {
           </div>
         )}
       </CardContent>
-      {/* 
-        Placeholder for a proper modal:
-        {showAddEditModal && (
-          <AddEditStrategicGoalModal
-            isOpen={showAddEditModal}
-            onClose={() => setShowAddEditModal(false)}
-            goal={currentGoalToEdit}
-            onSave={(savedGoal) => {
-              if (currentGoalToEdit) {
-                setGoals(goals.map(g => g.id === savedGoal.id ? savedGoal : g));
-              } else {
-                setGoals([...goals, savedGoal]);
-              }
-              setShowAddEditModal(false);
-            }}
-          />
-        )}
-      */}
     </Card>
   )
 }

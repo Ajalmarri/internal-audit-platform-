@@ -11,9 +11,6 @@ import { useMockUser } from "@/hooks/use-mock-user"
 export default function SettingsPage() {
   const user = useMockUser()
   const isAdmin = user.role === "Audit Manager" || user.role === "System Administrator"
-
-  // Determine the number of tabs for grid layout
-  // Profile, Notifications always visible. System, Strategic Goals for admin.
   const tabCount = isAdmin ? 4 : 2
 
   return (
@@ -27,7 +24,6 @@ export default function SettingsPage() {
       <Tabs defaultValue="profile" className="w-full">
         <TabsList
           className="grid w-full mb-6 sm:w-auto"
-          // Dynamically set grid columns based on the number of tabs
           style={{ gridTemplateColumns: `repeat(${tabCount}, minmax(0, 1fr))` }}
         >
           <TabsTrigger value="profile">
