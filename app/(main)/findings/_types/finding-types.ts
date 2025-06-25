@@ -48,6 +48,7 @@ export interface RemediationEvidence {
 export interface Finding {
   id: string
   assignmentId?: string
+  assignmentName?: string // Ensure this line exists
   templateId?: string
   title: string
   description: string
