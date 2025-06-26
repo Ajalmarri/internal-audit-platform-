@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type ChangeEvent, type FormEvent } from "react"
+import { useState, type ChangeEvent, type FormEvent, useEffect } from "react" // Added useEffect
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import ProcessTracker from "../[assignmentId]/_components/process-tracker"
 import type { RiskRating, UserStub, Risk } from "../[assignmentId]/_types/assignment-types"
 import { Save, XCircle, PlusCircle, Users, LinkIcon, Trash2 } from "lucide-react"
+import { Combobox } from "@/components/ui/combobox" // Added Combobox import
 
 // Mock data (can be fetched from API in a real app)
 const mockRequirementTypes: string[] = [
@@ -70,8 +71,14 @@ const mockRiskLibrary: Risk[] = [
 
 const assignmentStages: string[] = ["Planning", "Preparation", "Fieldwork", "Reporting", "Follow-up"]
 
+interface AuditPlanOption {
+  id: string
+  title: string
+}
+
 interface NewAssignmentFormState {
   title: string
+  parentAuditPlanId?: string // Added for Parent Audit Plan
   requirementType: string
   riskLikelihood: RiskRating
   impact: RiskRating
@@ -82,6 +89,7 @@ interface NewAssignmentFormState {
 
 const initialFormState: NewAssignmentFormState = {
   title: "",
+  parentAuditPlanId: undefined, // Initialized
   requirementType: mockRequirementTypes[0] || "",
   riskLikelihood: "Medium",
   impact: "Medium",
@@ -98,13 +106,38 @@ export default function CreateNewAssignmentPage() {
   const [selectedTeamMemberIds, setSelectedTeamMemberIds] = useState<Set<string>>(new Set())
   const [selectedRiskIds, setSelectedRiskIds] = useState<Set<string>>(new Set())
 
+  const [availableAuditPlans, setAvailableAuditPlans] = useState<AuditPlanOption[]>([])
+  const [isLoadingAuditPlans, setIsLoadingAuditPlans] = useState(false)
+  const [auditPlansError, setAuditPlansError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchAuditPlans = async () => {
+      setIsLoadingAuditPlans(true)
+      setAuditPlansError(null)
+      try {
+        const response = await fetch("/api/audit-plans")
+        if (!response.ok) {
+          throw new Error(`Failed to fetch audit plans: ${response.statusText}`)
+        }
+        const data: AuditPlanOption[] = await response.json()
+        setAvailableAuditPlans(data)
+      } catch (error) {
+        console.error("Error fetching audit plans:", error)
+        setAuditPlansError((error as Error).message || "An unknown error occurred")
+      } finally {
+        setIsLoadingAuditPlans(false)
+      }
+    }
+    fetchAuditPlans()
+  }, [])
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormState((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSelectChange = (name: keyof NewAssignmentFormState) => (value: string) => {
-    setFormState((prev) => ({ ...prev, [name]: value as RiskRating })) // Cast needed for RiskRating fields
+    setFormState((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSaveAssignment = (e: FormEvent) => {
@@ -181,6 +214,11 @@ export default function CreateNewAssignmentPage() {
       linkedRisks: prev.linkedRisks.filter((r) => r.id !== riskId),
     }))
   }
+
+  const auditPlanComboboxOptions = availableAuditPlans.map((plan) => ({
+    value: plan.id,
+    label: plan.title,
+  }))
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-6 lg:p-8">
@@ -275,6 +313,29 @@ export default function CreateNewAssignmentPage() {
                 <CardDescription>Specify the core requirement for this assignment.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Parent Audit Plan Dropdown */}
+                <div>
+                  <Label htmlFor="parentAuditPlanId">
+                    Parent Audit Plan <span className="text-red-500">*</span>
+                  </Label>
+                  <Combobox
+                    options={auditPlanComboboxOptions}
+                    value={formState.parentAuditPlanId}
+                    onChange={handleSelectChange("parentAuditPlanId")}
+                    placeholder={isLoadingAuditPlans ? "Loading plans..." : "Select a parent audit plan"}
+                    searchPlaceholder="Search audit plans..."
+                    emptyMessage={
+                      isLoadingAuditPlans
+                        ? "Loading..."
+                        : auditPlansError
+                          ? "Failed to load plans"
+                          : "No audit plans found."
+                    }
+                    disabled={isLoadingAuditPlans || !!auditPlansError}
+                  />
+                  {auditPlansError && <p className="text-sm text-red-500 mt-1">{auditPlansError}</p>}
+                </div>
+
                 <div>
                   <Label htmlFor="requirementType">Type</Label>
                   <Select
