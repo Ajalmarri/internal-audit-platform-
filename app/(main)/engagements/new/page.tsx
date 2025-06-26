@@ -10,10 +10,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { DatePicker } from "@/components/ui/date-picker" // Assuming you have this
+import { DatePicker } from "@/components/ui/date-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
+import { Combobox } from "@/components/ui/combobox" // Import the new component
 
 // Mock data - replace with actual data fetching or props
 const mockStakeholders = [
@@ -33,6 +34,12 @@ const mockManagers = [
   { id: "manager-4", name: "Jane Smith" },
 ]
 
+// Define a type for assignments
+type AssignmentOption = {
+  id: string
+  title: string
+}
+
 const engagementSchema = z
   .object({
     title: z.string().min(5, "Title must be at least 5 characters long"),
@@ -42,6 +49,7 @@ const engagementSchema = z
     managerId: z.string().min(1, "Engagement Manager is required"),
     startDate: z.date({ required_error: "Start Date is required" }),
     endDate: z.date({ required_error: "End Date is required" }),
+    assignmentId: z.string().optional(), // Add optional assignmentId
   })
   .refine((data) => data.endDate >= data.startDate, {
     message: "End Date cannot be before Start Date",
@@ -72,6 +80,31 @@ export default function NewEngagementPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [assignments, setAssignments] = React.useState<AssignmentOption[]>([])
+  const [isLoadingAssignments, setIsLoadingAssignments] = React.useState(true)
+
+  React.useEffect(() => {
+    async function fetchAssignments() {
+      try {
+        const response = await fetch("/api/assignments")
+        if (!response.ok) {
+          throw new Error("Failed to fetch assignments")
+        }
+        const data = await response.json()
+        setAssignments(data)
+      } catch (error) {
+        console.error(error)
+        toast({
+          title: "Error",
+          description: "Could not load assignments. You can proceed without linking one.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoadingAssignments(false)
+      }
+    }
+    fetchAssignments()
+  }, [toast])
 
   const {
     control,
@@ -88,6 +121,7 @@ export default function NewEngagementPage() {
       managerId: "",
       startDate: undefined,
       endDate: undefined,
+      assignmentId: "",
     },
   })
 
@@ -100,9 +134,8 @@ export default function NewEngagementPage() {
           title: "Success",
           description: result.message,
         })
-        reset() // Reset form
-        // Optionally navigate to the new engagement's detail page or back to the list
-        router.push(`/engagements/${result.id}/dashboard`) // Or router.push('/engagements')
+        reset()
+        router.push(`/engagements/${result.id}/dashboard`)
       } else {
         toast({
           title: "Error",
@@ -122,6 +155,11 @@ export default function NewEngagementPage() {
     }
   }
 
+  const assignmentOptions = assignments.map((a) => ({
+    value: a.id,
+    label: a.title,
+  }))
+
   return (
     <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8 max-w-3xl">
       <Button variant="outline" size="sm" onClick={() => router.back()} className="mb-6">
@@ -135,6 +173,7 @@ export default function NewEngagementPage() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
+            {/* ... other fields remain the same ... */}
             <div className="space-y-2">
               <Label htmlFor="title">Engagement Title</Label>
               <Controller
@@ -254,13 +293,41 @@ export default function NewEngagementPage() {
                 {errors.endDate && <p className="text-sm text-red-500">{errors.endDate.message}</p>}
               </div>
             </div>
+
+            {/* New Field for Linking Assignment */}
+            <div className="space-y-2">
+              <Label htmlFor="assignmentId">Link to Existing Assignment (Optional)</Label>
+              <Controller
+                name="assignmentId"
+                control={control}
+                render={({ field }) => (
+                  <Combobox
+                    options={assignmentOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select an assignment to link..."
+                    searchPlaceholder="Search assignments..."
+                    emptyMessage="No assignments found."
+                    disabled={isLoadingAssignments}
+                  />
+                )}
+              />
+              {errors.assignmentId && <p className="text-sm text-red-500">{errors.assignmentId.message}</p>}
+            </div>
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Initiating..." : "Initiate Engagement"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Initiating...
+                </>
+              ) : (
+                "Initiate Engagement"
+              )}
             </Button>
           </CardFooter>
         </form>
