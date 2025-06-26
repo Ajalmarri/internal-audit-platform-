@@ -14,28 +14,22 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Loader2 } from "lucide-react"
-import { Combobox } from "@/components/ui/combobox" // Import the new component
+import { MultiSelectCombobox, type MultiSelectOption } from "@/components/ui/multi-select-combobox" // Import the new component
 
 // Mock data - replace with actual data fetching or props
 const mockStakeholders = [
   { id: "stakeholder-1", name: "IT Department" },
   { id: "stakeholder-2", name: "Finance Department" },
   { id: "stakeholder-3", name: "Legal Department" },
-  { id: "stakeholder-4", name: "Procurement" },
-  { id: "stakeholder-5", name: "Compliance Office" },
-  { id: "stakeholder-6", name: "Operations" },
-  { id: "stakeholder-7", name: "Risk Management" },
 ]
 
 const mockManagers = [
   { id: "manager-1", name: "Yema al Olman" },
   { id: "manager-2", name: "Khaled M." },
-  { id: "manager-3", name: "John Doe" },
-  { id: "manager-4", name: "Jane Smith" },
 ]
 
-// Define a type for assignments
-type AssignmentOption = {
+// Define a type for assignments (ensure it matches API response)
+type Assignment = {
   id: string
   title: string
 }
@@ -49,7 +43,7 @@ const engagementSchema = z
     managerId: z.string().min(1, "Engagement Manager is required"),
     startDate: z.date({ required_error: "Start Date is required" }),
     endDate: z.date({ required_error: "End Date is required" }),
-    assignmentId: z.string().optional(), // Add optional assignmentId
+    assignmentIds: z.array(z.string()).optional(), // Changed to array for multiple assignments
   })
   .refine((data) => data.endDate >= data.startDate, {
     message: "End Date cannot be before Start Date",
@@ -58,14 +52,10 @@ const engagementSchema = z
 
 type EngagementFormData = z.infer<typeof engagementSchema>
 
-// Mock function to simulate saving data
 async function saveEngagement(data: EngagementFormData) {
   console.log("Saving engagement:", data)
-  // Simulate API call
   await new Promise((resolve) => setTimeout(resolve, 1500))
-  // Simulate success/failure
   if (Math.random() > 0.1) {
-    // 90% success rate
     return {
       success: true,
       message: "Engagement initiated successfully!",
@@ -80,25 +70,33 @@ export default function NewEngagementPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const [assignments, setAssignments] = React.useState<AssignmentOption[]>([])
+  const [assignments, setAssignments] = React.useState<Assignment[]>([])
   const [isLoadingAssignments, setIsLoadingAssignments] = React.useState(true)
 
   React.useEffect(() => {
     async function fetchAssignments() {
+      setIsLoadingAssignments(true)
       try {
-        const response = await fetch("/api/assignments")
+        const response = await fetch("/api/assignments") // Ensure this API returns { id: string, title: string }[]
         if (!response.ok) {
-          throw new Error("Failed to fetch assignments")
+          throw new Error(`Failed to fetch assignments: ${response.statusText}`)
         }
-        const data = await response.json()
-        setAssignments(data)
+        const data: Assignment[] = await response.json()
+        if (Array.isArray(data)) {
+          setAssignments(data)
+        } else {
+          console.error("Fetched assignments data is not an array:", data)
+          setAssignments([]) // Set to empty array on unexpected format
+          throw new Error("Fetched assignments data is not in the expected format.")
+        }
       } catch (error) {
         console.error(error)
         toast({
-          title: "Error",
-          description: "Could not load assignments. You can proceed without linking one.",
+          title: "Error Loading Assignments",
+          description: "Could not load assignments. You can proceed without linking any.",
           variant: "destructive",
         })
+        setAssignments([]) // Ensure assignments is an empty array on error
       } finally {
         setIsLoadingAssignments(false)
       }
@@ -121,7 +119,7 @@ export default function NewEngagementPage() {
       managerId: "",
       startDate: undefined,
       endDate: undefined,
-      assignmentId: "",
+      assignmentIds: [], // Default to an empty array
     },
   })
 
@@ -155,7 +153,7 @@ export default function NewEngagementPage() {
     }
   }
 
-  const assignmentOptions = assignments.map((a) => ({
+  const assignmentOptions: MultiSelectOption[] = assignments.map((a) => ({
     value: a.id,
     label: a.title,
   }))
@@ -173,7 +171,7 @@ export default function NewEngagementPage() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-            {/* ... other fields remain the same ... */}
+            {/* ... other fields (title, objective, scope, stakeholder, manager, dates) remain the same ... */}
             <div className="space-y-2">
               <Label htmlFor="title">Engagement Title</Label>
               <Controller
@@ -294,32 +292,32 @@ export default function NewEngagementPage() {
               </div>
             </div>
 
-            {/* New Field for Linking Assignment */}
+            {/* Updated Field for Linking Multiple Assignments */}
             <div className="space-y-2">
-              <Label htmlFor="assignmentId">Link to Existing Assignment (Optional)</Label>
+              <Label htmlFor="assignmentIds">Link to Existing Assignments (Optional)</Label>
               <Controller
-                name="assignmentId"
+                name="assignmentIds"
                 control={control}
                 render={({ field }) => (
-                  <Combobox
+                  <MultiSelectCombobox
                     options={assignmentOptions}
-                    value={field.value}
+                    selected={field.value || []}
                     onChange={field.onChange}
-                    placeholder="Select an assignment to link..."
+                    placeholder="Select assignments to link..."
                     searchPlaceholder="Search assignments..."
-                    emptyMessage="No assignments found."
+                    emptyMessage={isLoadingAssignments ? "Loading assignments..." : "No assignments found."}
                     disabled={isLoadingAssignments}
                   />
                 )}
               />
-              {errors.assignmentId && <p className="text-sm text-red-500">{errors.assignmentId.message}</p>}
+              {errors.assignmentIds && <p className="text-sm text-red-500">{errors.assignmentIds.message}</p>}
             </div>
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || isLoadingAssignments}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
