@@ -57,6 +57,6 @@ export interface AiAnalysisResult {
   analyzedFileNames: string[]
   dateRun: Date
   status: "Completed" | "In Progress" | "Failed"
-  summary: string
-  exceptions: AiAnalysisException[]
+  summary: string // Detailed summary from AI
+  exceptions: AiAnalysisException[] // List of exceptions/findings
 }
