@@ -1,4 +1,3 @@
-// app/(main)/engagements/[engagementId]/findings/[findingId]/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -42,11 +41,43 @@ interface FindingDetail {
   comments?: Array<{ user: string; avatar?: string; text: string; date: string }>
 }
 
+// Corrected mockFindingsData with matching ID prefixes
 const mockFindingsData: FindingDetail[] = [
   {
-    id: "FND-001",
-    engagementId: "ENG-001", // Corresponds to "2025 Annual IT Security Audit"
-    title: "Unpatched Production Server Vulnerability",
+    id: "FIND-001", // Corrected from FND-001 to FIND-001
+    engagementId: "ENG-001",
+    title: "Weak Password Policy Enforcement", // Title from dashboard's FIND-001
+    status: "Open",
+    severity: "High",
+    description:
+      "The password policy for administrator accounts does not enforce sufficient complexity or regular rotation, increasing the risk of brute-force attacks. This was identified during the review of access control configurations.",
+    recommendation:
+      "Update the password policy to require a minimum of 16 characters, including uppercase, lowercase, numbers, and special symbols. Enforce password rotation every 90 days for all privileged accounts. Implement MFA for all admin access.",
+    managementResponse:
+      "Policy update is in progress and will be rolled out by end of Q3. MFA implementation for critical systems is prioritized.",
+    assignedTo: "IT Policy Manager",
+    assignedToAvatar: "/placeholder.svg?width=40&height=40",
+    dueDate: "2025-09-30",
+    createdDate: "2025-03-05", // Date from dashboard's FIND-001
+    updatedDate: "2025-07-10",
+    evidenceLinks: [
+      { name: "Current Password Policy v1.2.pdf", url: "#" },
+      { name: "Access Control Review Notes.docx", url: "#" },
+    ],
+    relatedControls: ["AC-02", "IA-05"],
+    comments: [
+      {
+        user: "Ali T.",
+        avatar: "/placeholder.svg?width=32&height=32",
+        text: "Confirmed with IT. Policy draft expected next week.",
+        date: "2025-07-08",
+      },
+    ],
+  },
+  {
+    id: "FIND-002", // Corrected from FND-002 to FIND-002
+    engagementId: "ENG-001",
+    title: "Unpatched Server Vulnerability (CVE-2024-XXXX)", // Title from dashboard's FIND-002
     status: "Open",
     severity: "Critical",
     description:
@@ -58,7 +89,7 @@ const mockFindingsData: FindingDetail[] = [
     assignedTo: "Security Team Lead",
     assignedToAvatar: "/placeholder.svg?width=40&height=40",
     dueDate: "2025-07-20",
-    createdDate: "2025-07-01",
+    createdDate: "2025-03-08", // Date from dashboard's FIND-002
     updatedDate: "2025-07-05",
     evidenceLinks: [{ name: "Vulnerability Scan Report SRV-PROD-03.pdf", url: "#" }],
     relatedControls: ["CM-02", "RA-05"],
@@ -78,22 +109,24 @@ const mockFindingsData: FindingDetail[] = [
     ],
   },
   {
-    id: "FND-002",
+    id: "FIND-003",
     engagementId: "ENG-001",
-    title: "Weak Password Policy for Admin Accounts",
-    status: "Remediated",
-    severity: "High",
+    title: "Insufficient Access Logging",
+    status: "Open",
+    severity: "Medium",
     description:
-      "The password policy for administrator accounts does not enforce sufficient complexity or regular rotation, increasing the risk of brute-force attacks.",
+      "Access logs for several key financial systems do not capture sufficient detail (e.g., specific actions performed, source IP for all login attempts) to enable effective incident investigation or audit trails.",
     recommendation:
-      "Update the password policy to require a minimum of 16 characters, including uppercase, lowercase, numbers, and special symbols. Enforce password rotation every 90 days.",
-    assignedTo: "IT Policy Manager",
-    dueDate: "2025-06-15",
-    createdDate: "2025-05-10",
-    updatedDate: "2025-06-10",
-    relatedControls: ["IA-02", "AC-03"],
+      "Configure all key financial systems to log detailed user activity, including successful and failed login attempts with source IP, commands executed, and data accessed/modified. Ensure logs are centrally collected and retained for at least 12 months.",
+    assignedTo: "System Administrator",
+    assignedToAvatar: "/placeholder.svg?width=40&height=40",
+    dueDate: "2025-10-31",
+    createdDate: "2025-03-12", // Date from dashboard's FIND-003
+    updatedDate: "2025-07-11",
+    relatedControls: ["AU-02", "AU-03", "AU-11"],
   },
-  // Add more mock findings as needed
+  // Add mock data for findings from other engagements if needed for testing
+  // e.g., a FIND-004 for ENG-002
 ]
 // --- End Mock Data ---
 
@@ -118,13 +151,12 @@ export default function FindingDetailPage() {
   const engagementId = params.engagementId as string
   const findingId = params.findingId as string
 
-  const [finding, setFinding] = useState<FindingDetail | null | undefined>(undefined) // undefined: loading, null: not found
+  const [finding, setFinding] = useState<FindingDetail | null | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (engagementId && findingId) {
       setIsLoading(true)
-      // Simulate API call
       setTimeout(() => {
         const foundFinding = mockFindingsData.find((f) => f.id === findingId && f.engagementId === engagementId)
         setFinding(foundFinding || null)
@@ -134,8 +166,6 @@ export default function FindingDetailPage() {
   }, [engagementId, findingId])
 
   if (isLoading || finding === undefined) {
-    // This will be handled by loading.tsx for initial load,
-    // but good for subsequent client-side loading states if any.
     return (
       <div className="flex h-full items-center justify-center p-6">
         <p>Loading finding details...</p>
