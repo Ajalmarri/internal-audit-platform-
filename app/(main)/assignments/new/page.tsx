@@ -1,6 +1,8 @@
+// No changes needed in this file.
+// It correctly fetches from /api/audit-plans and will work once the API route can access the database.
 "use client"
 
-import { useState, type ChangeEvent, type FormEvent, useEffect } from "react" // Added useEffect
+import { useState, type ChangeEvent, type FormEvent, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -22,9 +24,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import ProcessTracker from "../[assignmentId]/_components/process-tracker"
 import type { RiskRating, UserStub, Risk } from "../[assignmentId]/_types/assignment-types"
 import { Save, XCircle, PlusCircle, Users, LinkIcon, Trash2 } from "lucide-react"
-import { Combobox } from "@/components/ui/combobox" // Added Combobox import
+import { Combobox } from "@/components/ui/combobox"
 
-// Mock data (can be fetched from API in a real app)
 const mockRequirementTypes: string[] = [
   "Regulatory Compliance",
   "Financial Audit",
@@ -78,7 +79,7 @@ interface AuditPlanOption {
 
 interface NewAssignmentFormState {
   title: string
-  parentAuditPlanId?: string // Added for Parent Audit Plan
+  parentAuditPlanId?: string
   requirementType: string
   riskLikelihood: RiskRating
   impact: RiskRating
@@ -89,7 +90,7 @@ interface NewAssignmentFormState {
 
 const initialFormState: NewAssignmentFormState = {
   title: "",
-  parentAuditPlanId: undefined, // Initialized
+  parentAuditPlanId: undefined,
   requirementType: mockRequirementTypes[0] || "",
   riskLikelihood: "Medium",
   impact: "Medium",
@@ -117,7 +118,17 @@ export default function CreateNewAssignmentPage() {
       try {
         const response = await fetch("/api/audit-plans")
         if (!response.ok) {
-          throw new Error(`Failed to fetch audit plans: ${response.statusText}`)
+          // Try to parse error from API if available
+          let apiErrorMsg = `Failed to fetch audit plans: ${response.statusText || "Unknown API Error"}`
+          try {
+            const errorData = await response.json()
+            if (errorData && errorData.message) {
+              apiErrorMsg = errorData.message
+            }
+          } catch (e) {
+            // Ignore if error response is not JSON
+          }
+          throw new Error(apiErrorMsg)
         }
         const data: AuditPlanOption[] = await response.json()
         setAvailableAuditPlans(data)
@@ -142,18 +153,14 @@ export default function CreateNewAssignmentPage() {
 
   const handleSaveAssignment = (e: FormEvent) => {
     e.preventDefault()
-    // In a real app, you'd send this data to an API
     console.log("Saving assignment:", formState)
     alert("Assignment data logged to console. Implement actual save logic.")
-    // Optionally, navigate to the new assignment's page or assignments list
-    // router.push('/assignments');
   }
 
   const handleCancel = () => {
     router.back()
   }
 
-  // Team Management Dialog
   const handleManageTeam = () => {
     setSelectedTeamMemberIds(new Set(formState.assignedTeamMembers.map((m) => m.id)))
     setIsTeamDialogOpen(true)
@@ -184,7 +191,6 @@ export default function CreateNewAssignmentPage() {
     }))
   }
 
-  // Risk Management Dialog
   const handleManageRisks = () => {
     setSelectedRiskIds(new Set(formState.linkedRisks.map((r) => r.id)))
     setIsRiskDialogOpen(true)
@@ -223,7 +229,6 @@ export default function CreateNewAssignmentPage() {
   return (
     <div className="flex-1 space-y-6 p-4 md:p-6 lg:p-8">
       <form onSubmit={handleSaveAssignment}>
-        {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <Input
             name="title"
@@ -243,16 +248,12 @@ export default function CreateNewAssignmentPage() {
           </div>
         </div>
 
-        {/* Process Tracker */}
         <div className="mb-6">
           <ProcessTracker stages={assignmentStages} currentStageIndex={0} />
         </div>
 
-        {/* Main Content Grid */}
         <div className="grid gap-6 md:grid-cols-3">
-          {/* Left Column */}
           <div className="md:col-span-2 space-y-6">
-            {/* Fulfilment / Tasks Card (Simplified) */}
             <Card>
               <CardHeader>
                 <CardTitle>Fulfilment / Tasks</CardTitle>
@@ -266,7 +267,6 @@ export default function CreateNewAssignmentPage() {
               </CardContent>
             </Card>
 
-            {/* Related Risks & Controls Card (Editable) */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -304,16 +304,13 @@ export default function CreateNewAssignmentPage() {
             </Card>
           </div>
 
-          {/* Right Column */}
           <div className="space-y-6">
-            {/* Your Requirement Card (Editable) */}
             <Card>
               <CardHeader>
                 <CardTitle>Requirement Details</CardTitle>
                 <CardDescription>Specify the core requirement for this assignment.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Parent Audit Plan Dropdown */}
                 <div>
                   <Label htmlFor="parentAuditPlanId">
                     Parent Audit Plan <span className="text-red-500">*</span>
@@ -411,7 +408,6 @@ export default function CreateNewAssignmentPage() {
               </CardContent>
             </Card>
 
-            {/* Assigned Team Card (Editable) */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -454,7 +450,6 @@ export default function CreateNewAssignmentPage() {
         </div>
       </form>
 
-      {/* Team Management Dialog */}
       <Dialog open={isTeamDialogOpen} onOpenChange={setIsTeamDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -492,7 +487,6 @@ export default function CreateNewAssignmentPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Risk Management Dialog */}
       <Dialog open={isRiskDialogOpen} onOpenChange={setIsRiskDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
