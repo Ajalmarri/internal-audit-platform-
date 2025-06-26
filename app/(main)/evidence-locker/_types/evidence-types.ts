@@ -42,13 +42,21 @@ export interface EvidenceFilters {
   evidenceType?: string
 }
 
+export interface AiAnalysisException {
+  id: string
+  fileName: string
+  pageNumber?: number
+  quote: string
+  reason: string
+}
+
 export interface AiAnalysisResult {
   id: string
-  analysisTitle: string // Could be user-defined or auto-generated
+  analysisTitle: string
   instruction: string
   analyzedFileNames: string[]
   dateRun: Date
   status: "Completed" | "In Progress" | "Failed"
-  // summary?: string; // For the actual results page
-  // exceptionsFound?: number; // For the actual results page
+  summary: string
+  exceptions: AiAnalysisException[]
 }
