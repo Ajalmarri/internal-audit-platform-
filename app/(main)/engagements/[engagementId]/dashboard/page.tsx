@@ -36,6 +36,7 @@ import {
   Archive,
   LayoutDashboard,
   AlertTriangle,
+  PlusCircle,
 } from "lucide-react"
 
 // --- Enhanced Mock Data and Types ---
@@ -395,7 +396,22 @@ export default function EngagementDetailPage() {
         <Card className="lg:col-span-2">
           <Tabs defaultValue="assignments" className="h-full flex flex-col">
             <CardHeader className="pb-0">
-              <CardTitle>Linked Items</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle>Linked Items</CardTitle>
+                {/* "Create New Finding" button added here, visible when Findings tab is active or always */}
+                {/* This example shows it always, adjust with activeTab state if needed */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="ml-auto" // Pushes button to the right
+                >
+                  <Link href={`/engagements/${engagementId}/findings/new`}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create New Finding
+                  </Link>
+                </Button>
+              </div>
               <TabsList className="grid w-full grid-cols-3 mt-2">
                 <TabsTrigger value="assignments">Assignments ({engagement.linkedItems.assignments.length})</TabsTrigger>
                 <TabsTrigger value="findings">Findings ({engagement.linkedItems.findings.length})</TabsTrigger>
