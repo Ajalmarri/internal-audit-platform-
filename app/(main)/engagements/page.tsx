@@ -281,7 +281,7 @@ export default function EngagementsPage() {
           <h1 className="text-2xl font-semibold">Engagements</h1>
           <p className="text-muted-foreground">Track and manage specific audit engagements.</p>
         </div>
-        <Button>
+        <Button onClick={() => router.push("/engagements/new")}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Initiate New Engagement
         </Button>
