@@ -41,3 +41,14 @@ export interface EvidenceFilters {
   uploadDateEnd?: Date
   evidenceType?: string
 }
+
+export interface AiAnalysisResult {
+  id: string
+  analysisTitle: string // Could be user-defined or auto-generated
+  instruction: string
+  analyzedFileNames: string[]
+  dateRun: Date
+  status: "Completed" | "In Progress" | "Failed"
+  // summary?: string; // For the actual results page
+  // exceptionsFound?: number; // For the actual results page
+}
