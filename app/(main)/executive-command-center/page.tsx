@@ -3,6 +3,7 @@ import { RiskTrendWidget } from "./_components/risk-trend-widget"
 import { AuditPlanPerformanceWidget } from "./_components/audit-plan-performance-widget"
 import { ResourceAllocationWidget } from "./_components/resource-allocation-widget"
 import { KriWidget } from "./_components/kri-widget"
+import { ExecutiveBriefingWidget } from "./_components/executive-briefing-widget" // Import the new widget
 import type {
   ComplianceStatusData,
   RiskTrendDataPoint,
@@ -98,6 +99,9 @@ export default function ExecutiveCommandCenterPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
+        {/* Add the new widget at the top */}
+        <ExecutiveBriefingWidget />
+
         <ComplianceStatusWidget data={mockComplianceStatus} />
         <RiskTrendWidget data={mockRiskTrendData} topRisks={mockTopRisks} />
         <KriWidget kris={mockKriData} />
