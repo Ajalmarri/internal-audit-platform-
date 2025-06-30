@@ -19,10 +19,10 @@ export class ExternalApiService {
   private apiKey: string
 
   constructor() {
-    this.apiKey = process.env.Key || ""
+    this.apiKey = process.env.K || ""
 
     if (!this.apiKey) {
-      throw new Error("API Key is required but not provided in environment variables")
+      throw new Error("API Key 'K' is required but not provided in environment variables")
     }
 
     this.client = axios.create({
