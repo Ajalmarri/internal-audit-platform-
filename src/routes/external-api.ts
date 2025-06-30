@@ -3,12 +3,53 @@ import { authenticateToken, requirePermission } from "../middleware/auth"
 import { complianceApiService } from "../services/complianceApiService"
 import { riskApiService } from "../services/riskApiService"
 import { externalApiService } from "../services/externalApiService"
+import { widgetApiService } from "../services/widgetApiService" // <-- Import new service
 import { AppError } from "../utils/errors"
 
 const router = Router()
 
-// Apply authentication to all routes
+// Apply authentication to all routes in this file
 router.use(authenticateToken)
+
+// --- Widget API Routes ---
+router.get("/widgets", requirePermission("read_widgets"), async (req, res, next) => {
+  try {
+    const limit = req.query.limit ? Number.parseInt(req.query.limit as string, 10) : 10
+    const offset = req.query.offset ? Number.parseInt(req.query.offset as string, 10) : 0
+
+    if (isNaN(limit) || isNaN(offset) || limit < 0 || offset < 0) {
+      throw new AppError("Invalid 'limit' or 'offset' query parameters.", 400)
+    }
+
+    const widgets = await widgetApiService.getWidgets(limit, offset)
+    res.json({
+      success: true,
+      data: widgets,
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.get("/widgets/:id", requirePermission("read_widgets"), async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const widget = await widgetApiService.getWidgetById(id)
+
+    if (!widget) {
+      throw new AppError(`Widget with ID ${id} not found.`, 404)
+    }
+
+    res.json({
+      success: true,
+      data: widget,
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// --- Existing Routes ---
 
 // Health check for external API
 router.get("/health", async (req, res, next) => {
