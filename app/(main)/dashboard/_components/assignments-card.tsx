@@ -77,24 +77,25 @@ export default function AssignmentsCard() {
 
         <div className="space-y-3">
           <h3 className="text-md font-medium text-muted-foreground mb-1">Recent Assignments:</h3>
-          {assignments.slice(0, 3).map(
-            (
-              assignment, // Show first 3
-            ) => (
-              <div
-                key={assignment.id}
-                className="flex items-center justify-between p-3 bg-muted/30 rounded-md hover:bg-muted/40 transition-colors"
-              >
+          {assignments.slice(0, 3).map((assignment) => (
+            <Link
+              key={assignment.id}
+              href={`/assignments/${assignment.id}`}
+              className="block p-3 bg-muted/30 rounded-md hover:bg-muted/40 hover:shadow-md hover:-translate-y-px transition-all duration-150 ease-in-out cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium truncate max-w-xs sm:max-w-sm md:max-w-md">{assignment.title}</p>
+                  <p className="font-medium truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
+                    {assignment.title}
+                  </p>
                   <p className="text-xs text-muted-foreground">Due: {assignment.dueDate}</p>
                 </div>
-                <Badge className={`${statusColors[assignment.status] || "bg-gray-500"} text-white text-xs`}>
+                <Badge className={`${statusColors[assignment.status] || "bg-gray-500"} text-white text-xs shrink-0`}>
                   {assignment.status}
                 </Badge>
               </div>
-            ),
-          )}
+            </Link>
+          ))}
         </div>
       </CardContent>
     </Card>

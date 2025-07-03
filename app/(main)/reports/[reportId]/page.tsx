@@ -75,12 +75,31 @@ export default function ReportDetailsPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (reportId) {
+    if (reportId && reportId !== "generate") {
+      // Add reportId !== "generate"
       fetchReportDetails()
+    } else if (reportId === "generate") {
+      // Handle the "generate" case explicitly if needed for initial state
+      setError("Invalid report ID. This page is for viewing specific generated reports.")
+      setLoading(false)
+      setReport(null)
     }
-  }, [reportId])
+  }, [reportId]) // Keep dependencies as is
 
   const fetchReportDetails = async () => {
+    // Add this check at the beginning of the function
+    if (reportId === "generate") {
+      setError("Invalid report ID. This page is for viewing specific generated reports.")
+      setLoading(false)
+      setReport(null) // Ensure report is null
+      toast({
+        title: "Invalid Page",
+        description: "You are trying to view details for a system path, not a specific report.",
+        variant: "warning",
+      })
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)

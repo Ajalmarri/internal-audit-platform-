@@ -1,10 +1,11 @@
-export type FindingSeverity = "Low" | "Medium" | "High" | "Critical"
+import type { FindingSeverity } from "./finding-creation-types" // Assuming this is a self-reference or a mistake, should be fine.
+
+export type { FindingSeverity }
 
 export interface FindingTemplate {
   id: string
   name: string
   description: string
-  // Fields that can be pre-filled by the template
   prefilledObservationTitle?: string
   prefilledDetailedObservation?: string
   prefilledCriteriaExpectation?: string
@@ -15,8 +16,34 @@ export interface FindingTemplate {
   prefilledRootCause?: string
 }
 
+export interface MockAssignment {
+  // This type will be used for the fetched data
+  id: string
+  name: string
+  auditPlanName?: string
+}
+
+// This data is now primarily for the API route, not direct import by the page
+export const mockAssignments: MockAssignment[] = [
+  { id: "ASGN001", name: "Q2 Financial Controls Audit", auditPlanName: "Annual Financial Audit Plan 2025" },
+  {
+    id: "ASGN002",
+    name: "IT Security Assessment - Network Infrastructure",
+    auditPlanName: "Cybersecurity Audit Program",
+  },
+  {
+    id: "ASGN003",
+    name: "Vendor Compliance Review - Tier 1 Suppliers",
+    auditPlanName: "Third-Party Risk Management Plan",
+  },
+  { id: "ASGN004", name: "HR Payroll Process Audit", auditPlanName: "Internal Controls Review 2025" },
+  { id: "ASGN005", name: "Data Privacy Compliance Check (GDPR)", auditPlanName: "Regulatory Compliance Audit Plan" },
+  { id: "ASGN_NONE", name: "N/A - Standalone Finding", auditPlanName: "General" },
+]
+
 export interface FindingCreationData {
   templateId?: string
+  parentAssignmentId?: string
   observationTitle: string
   detailedObservation: string
   criteriaExpectation: string
@@ -28,7 +55,6 @@ export interface FindingCreationData {
   attachments: File[]
 }
 
-// Mock Data
 export const mockFindingTemplates: FindingTemplate[] = [
   {
     id: "TPL000",
@@ -81,4 +107,5 @@ export const initialFindingCreationData: FindingCreationData = {
   affectedBusinessUnit: "",
   rootCause: "",
   attachments: [],
+  parentAssignmentId: "",
 }
