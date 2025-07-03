@@ -2,16 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  useSidebar,
-} from "@/components/ui/sidebar"
+import { useState } from "react"
+import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import ThemeToggle from "@/components/theme-toggle"
 import LanguageSwitcher from "@/components/language-switcher"
@@ -36,37 +28,79 @@ import {
   CheckSquare,
   BookHeart,
   BarChartHorizontalBig,
+  Search,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { Input } from "@/components/ui/input"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Button } from "@/components/ui/button"
 
-const menuItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/audit-plans", label: "Audit Plans", icon: FileText },
-  { href: "/risks", label: "Risks", icon: ShieldAlert },
-  { href: "/controls", label: "Controls", icon: ShieldCheck },
-  { href: "/assignments", label: "Assignments", icon: ClipboardList },
-  { href: "/findings", label: "Findings", icon: ClipboardCheck },
-  { href: "/action-plans", label: "Action Plans", icon: ListChecks },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/stakeholders", label: "Stakeholders", icon: Users },
-  { href: "/engagements", label: "Engagements", icon: Briefcase },
-  { href: "/executive-command-center", label: "Executive Command Center", icon: Gauge },
-  { href: "/data-analytics-hub", label: "Analytics Hub", icon: BarChartHorizontalBig }, // Added Analytics Hub
-  { href: "/audit-universe", label: "Audit Universe", icon: Sitemap },
-  { href: "/evidence-locker", label: "Evidence Locker", icon: Archive }, // Renamed from Evidence Hub
-  { href: "/global-activity-log", label: "Global Activity Log", icon: History },
-  { href: "/quality-assurance-reviews", label: "Quality Assurance", icon: CheckSquare },
-  { href: "/knowledge-center", label: "Knowledge Center", icon: BookHeart },
-  { href: "/settings", label: "Settings", icon: Settings },
+const menuGroups = [
+  {
+    title: "Main",
+    items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }],
+  },
+  {
+    title: "Audit Cycle",
+    items: [
+      { href: "/audit-plans", label: "Audit Plans", icon: FileText },
+      { href: "/engagements", label: "Engagements", icon: Briefcase },
+      { href: "/assignments", label: "Assignments", icon: ClipboardList },
+      { href: "/findings", label: "Findings", icon: ClipboardCheck },
+      { href: "/action-plans", label: "Action Plans", icon: ListChecks },
+    ],
+  },
+  {
+    title: "Governance",
+    items: [
+      { href: "/risks", label: "Risks", icon: ShieldAlert },
+      { href: "/controls", label: "Controls", icon: ShieldCheck },
+      { href: "/audit-universe", label: "Audit Universe", icon: Sitemap },
+    ],
+  },
+  {
+    title: "Analytics & Reporting",
+    items: [
+      { href: "/reports", label: "Reports", icon: BarChart3 },
+      { href: "/executive-command-center", label: "Executive Command Center", icon: Gauge },
+      { href: "/data-analytics-hub", label: "Analytics Hub", icon: BarChartHorizontalBig },
+    ],
+  },
+  {
+    title: "Resources",
+    items: [
+      { href: "/stakeholders", label: "Stakeholders", icon: Users },
+      { href: "/evidence-locker", label: "Evidence Locker", icon: Archive },
+      { href: "/knowledge-center", label: "Knowledge Center", icon: BookHeart },
+    ],
+  },
+  {
+    title: "System",
+    items: [
+      { href: "/global-activity-log", label: "Global Activity Log", icon: History },
+      { href: "/quality-assurance-reviews", label: "Quality Assurance", icon: CheckSquare },
+      { href: "/settings", label: "Settings", icon: Settings },
+    ],
+  },
 ]
 
 export default function AppSidebar() {
   const pathname = usePathname()
   const { state, isMobile } = useSidebar()
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const filteredMenuGroups = menuGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.label.toLowerCase().includes(searchTerm.toLowerCase())),
+    }))
+    .filter((group) => group.items.length > 0)
+
+  const defaultOpen = menuGroups.findIndex((group) => group.items.some((item) => pathname.startsWith(item.href)))
 
   return (
     <TooltipProvider>
-      <Sidebar collapsible="icon" side="left" variant="sidebar">
+      <Sidebar collapsible="icon" side="left" variant="sidebar" className="flex flex-col">
         <SidebarHeader className="p-4 flex items-center gap-2.5">
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <BuildingIcon className="w-7 h-7 text-primary flex-shrink-0" />
@@ -76,27 +110,80 @@ export default function AppSidebar() {
           </Link>
         </SidebarHeader>
 
-        <SidebarContent className="flex-1">
-          <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))}
-                  tooltip={{ children: item.label, side: "right", align: "center" }}
-                  className="[&>svg]:shrink-0"
-                >
-                  <Link href={item.href} className="flex items-center gap-3">
-                    <item.icon className="h-5 w-5" />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+        {state === "expanded" && (
+          <div className="px-4 mb-4">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 w-full"
+              />
+            </div>
+          </div>
+        )}
+
+        <SidebarContent className="flex-1 overflow-y-auto">
+          {state === "expanded" ? (
+            <Accordion
+              type="single"
+              collapsible
+              defaultValue={`item-${defaultOpen > -1 ? defaultOpen : 0}`}
+              className="w-full px-2"
+            >
+              {filteredMenuGroups.map((group, groupIndex) => (
+                <AccordionItem value={`item-${groupIndex}`} key={group.title} className="border-b-0">
+                  <AccordionTrigger className="py-2 px-2 text-sm font-semibold text-muted-foreground hover:no-underline hover:bg-muted/50 rounded-md [&[data-state=open]>svg]:rotate-180">
+                    {group.title}
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-1 pb-0">
+                    <div className="flex flex-col space-y-1">
+                      {group.items.map((item) => (
+                        <Button
+                          key={item.href}
+                          asChild
+                          variant={pathname.startsWith(item.href) ? "secondary" : "ghost"}
+                          className="justify-start h-9"
+                        >
+                          <Link href={item.href} className="flex items-center gap-3">
+                            <item.icon className="h-5 w-5" />
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        </Button>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          ) : (
+            <div className="flex flex-col items-center space-y-2 px-2">
+              {menuGroups
+                .flatMap((group) => group.items)
+                .map((item) => (
+                  <Tooltip key={item.href}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        asChild
+                        variant={pathname.startsWith(item.href) ? "secondary" : "ghost"}
+                        className="w-10 h-10 p-0"
+                      >
+                        <Link href={item.href}>
+                          <item.icon className="h-5 w-5" />
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" align="center">
+                      {item.label}
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+            </div>
+          )}
         </SidebarContent>
 
-        <SidebarFooter className="p-3 space-y-3">
+        <SidebarFooter className="p-3 space-y-3 mt-auto border-t">
           {state === "expanded" && (
             <div className="flex items-center gap-3 px-1">
               <Avatar className="h-9 w-9">
@@ -133,7 +220,7 @@ export default function AppSidebar() {
           <div
             className={cn(
               "flex items-center",
-              state === "expanded" ? "flex-col gap-1.5" : "justify-center flex-col gap-2",
+              state === "expanded" ? "justify-between" : "justify-center flex-col gap-2",
             )}
           >
             <ThemeToggle />
