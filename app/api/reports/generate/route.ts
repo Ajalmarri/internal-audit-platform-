@@ -7,7 +7,20 @@ import {
 } from "@/app/(main)/reports/_types/report-types"
 import { mockFindings } from "@/app/(main)/findings/_types/finding-types"
 
+// WARNING: Hardcoding tokens is a security risk and not recommended for production.
+// This should be replaced with a secure way of managing secrets, like environment variables.
+// You can get your Blob Read-Write token from your Vercel project settings.
+const BLOB_READ_WRITE_TOKEN = "YOUR_BLOB_READ_WRITE_TOKEN_HERE"
+
 export async function POST(request: NextRequest) {
+  if (!BLOB_READ_WRITE_TOKEN || BLOB_READ_WRITE_TOKEN === "YOUR_BLOB_READ_WRITE_TOKEN_HERE") {
+    console.error("Vercel Blob token is not configured in app/api/reports/generate/route.ts.")
+    return NextResponse.json(
+      { error: "Report generation service is not configured. Please update the token in the source code." },
+      { status: 500 },
+    )
+  }
+
   try {
     const body = await request.json()
     console.log("Report generation request:", body)
@@ -54,6 +67,7 @@ export async function POST(request: NextRequest) {
     const blob = await put(filename, reportContent, {
       access: "public",
       addRandomSuffix: true,
+      token: BLOB_READ_WRITE_TOKEN,
     })
 
     // Create report record
@@ -102,7 +116,9 @@ Generated: ${currentDate}
 `
 
   if (data.dateRange) {
-    content += `Report Period: ${new Date(data.dateRange.from).toLocaleDateString()} - ${new Date(data.dateRange.to).toLocaleDateString()}
+    content += `Report Period: ${new Date(data.dateRange.from).toLocaleDateString()} - ${new Date(
+      data.dateRange.to,
+    ).toLocaleDateString()}
 
 `
   }
@@ -136,9 +152,9 @@ Total Findings Included: ${data.includedFindingIds.length}
       const finding = mockFindings.find((f) => f.id === findingId)
       if (finding) {
         content += `${index + 1}. ${finding.title}
-   Severity: ${finding.severity}
-   Status: ${finding.status}
-   Responsible: ${finding.responsibleBusinessOwner}
+ Severity: ${finding.severity}
+ Status: ${finding.status}
+ Responsible: ${finding.responsibleBusinessOwner}
 
 `
       }

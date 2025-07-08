@@ -1,6 +1,11 @@
 import { del } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
 
+// WARNING: Hardcoding tokens is a security risk and not recommended for production.
+// This should be replaced with a secure way of managing secrets, like environment variables.
+// You can get your Blob Read-Write token from your Vercel project settings.
+const BLOB_READ_WRITE_TOKEN = "YOUR_BLOB_READ_WRITE_TOKEN_HERE"
+
 // Mock file database - in production, use a real database
 const mockFiles = new Map()
 
@@ -23,6 +28,14 @@ export async function GET(request: NextRequest, { params }: { params: { fileId: 
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { fileId: string } }) {
+  if (!BLOB_READ_WRITE_TOKEN || BLOB_READ_WRITE_TOKEN === "YOUR_BLOB_READ_WRITE_TOKEN_HERE") {
+    console.error("Vercel Blob token is not configured in app/api/files/[fileId]/route.ts.")
+    return NextResponse.json(
+      { error: "File deletion service is not configured. Please update the token in the source code." },
+      { status: 500 },
+    )
+  }
+
   try {
     const fileId = params.fileId
 
@@ -34,7 +47,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { fileI
     }
 
     // Delete from Vercel Blob
-    await del(file.url)
+    await del(file.url, {
+      token: BLOB_READ_WRITE_TOKEN,
+    })
 
     // Remove from mock database
     mockFiles.delete(fileId)
