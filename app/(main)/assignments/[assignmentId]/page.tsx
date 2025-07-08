@@ -1,6 +1,7 @@
-// This is a dynamic route, e.g., /assignments/AS001
-// For this example, we'll mock data as if assignmentId is passed
-// In a real app, you'd fetch data based on params.assignmentId
+"use client"
+
+import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
 
 import AssignmentHeader from "./_components/assignment-header"
 import ProcessTracker from "./_components/process-tracker"
@@ -10,16 +11,102 @@ import RelatedRisksCard from "./_components/related-risks-card"
 import DocumentManagementCard from "./_components/document-management-card"
 import CommentsSection from "./_components/comments-section"
 import AssignedTeamCard from "./_components/assigned-team-card"
-import type { Assignment, AuditTask, Comment, DocumentFile, RelatedRiskEntry } from "./_types/assignment-types"
+import DataAnalysisCard from "./_components/data-analysis-card"
 
-// Mock Data
-const mockAssignment: Assignment = {
-  id: "AS001",
+import type {
+  Assignment,
+  AuditTask,
+  Comment,
+  DocumentFile,
+  RelatedRiskEntry,
+  UserStub,
+} from "./_types/assignment-types"
+
+// Mock Data (Adjusted for enhanced tasks)
+const mockUser1: UserStub = { id: "USR001", name: "Aisha Al-Farsi", avatar: "/placeholder.svg?width=40&height=40" }
+const mockUser2: UserStub = { id: "USR002", name: "Omar Hassan", avatar: "/placeholder.svg?width=40&height=40" }
+const mockUser3: UserStub = { id: "USR003", name: "Layla Ibrahim", avatar: "/placeholder.svg?width=40&height=40" }
+
+const initialMockTasks: AuditTask[] = [
+  {
+    id: "T01",
+    description: "Review financial data sources and system access logs",
+    status: "In Progress",
+    assigneeId: mockUser1.id,
+    dueDate: new Date("2025-08-15T00:00:00.000Z"),
+    isExpanded: true,
+    subTasks: [
+      {
+        id: "T01-S01",
+        description: "Identify all relevant financial systems",
+        status: "Completed",
+        assigneeId: mockUser1.id,
+        dueDate: new Date("2025-08-01T00:00:00.000Z"),
+        isExpanded: true,
+      },
+      {
+        id: "T01-S02",
+        description: "Obtain read-only access to identified systems",
+        status: "In Progress",
+        assigneeId: mockUser2.id,
+        dueDate: new Date("2025-08-05T00:00:00.000Z"),
+        dependsOn: ["T01-S01"],
+        isExpanded: true,
+      },
+      {
+        id: "T01-S03",
+        description: "Extract GL data for Q3 period",
+        status: "Pending",
+        assigneeId: mockUser1.id,
+        dueDate: new Date("2025-08-10T00:00:00.000Z"),
+        dependsOn: ["T01-S02"],
+        isExpanded: true,
+      },
+    ],
+  },
+  {
+    id: "T02",
+    description: "Conduct interviews with department heads",
+    status: "Pending",
+    assigneeId: mockUser2.id,
+    dueDate: new Date("2025-08-20T00:00:00.000Z"),
+    isExpanded: true,
+  },
+  {
+    id: "T03",
+    description: "Test internal controls for financial reporting accuracy",
+    status: "Pending",
+    assigneeId: mockUser1.id,
+    dueDate: new Date("2025-09-01T00:00:00.000Z"),
+    dependsOn: ["T01"], // Depends on the parent task T01 being conceptually "done"
+    isExpanded: true,
+    subTasks: [
+      {
+        id: "T03-S01",
+        description: "Select sample of transactions for testing",
+        status: "Pending",
+        assigneeId: mockUser3.id,
+        dueDate: new Date("2025-08-25T00:00:00.000Z"),
+        isExpanded: true,
+      },
+    ],
+  },
+  {
+    id: "T04",
+    description: "Draft preliminary findings report",
+    status: "Pending",
+    dueDate: new Date("2025-09-15T00:00:00.000Z"),
+    isExpanded: true,
+  },
+]
+
+const initialMockAssignment: Assignment = {
+  id: "ASGN002",
   title: "Q3 Compliance Check for Financial Reporting",
   description:
     "Review and validate compliance of Q3 financial reports against internal policies and external regulations.",
   status: "Fieldwork",
-  currentStageIndex: 2, // 'Fieldwork'
+  currentStageIndex: 2,
   stages: ["Planning", "Preparation", "Fieldwork", "Reporting", "Follow-up"],
   requirements: {
     type: "Regulatory Compliance",
@@ -27,27 +114,12 @@ const mockAssignment: Assignment = {
     impact: "High",
     inherentRisk: "High",
   },
-  teamMembers: [
-    { id: "USR001", name: "Aisha Al-Farsi", avatar: "/placeholder.svg?width=40&height=40" },
-    { id: "USR002", name: "Omar Hassan", avatar: "/placeholder.svg?width=40&height=40" },
-  ],
-  startDate: new Date("2024-07-15"),
-  endDate: new Date("2024-09-30"),
+  teamMembers: [mockUser1, mockUser2, mockUser3],
+  startDate: new Date("2025-07-15T00:00:00.000Z"),
+  endDate: new Date("2025-09-30T00:00:00.000Z"),
 }
 
-const mockTasks: AuditTask[] = [
-  { id: "T01", description: "Review financial data sources", status: "Completed", assignee: "Aisha Al-Farsi" },
-  {
-    id: "T02",
-    description: "Conduct interviews with department heads",
-    status: "In Progress",
-    assignee: "Omar Hassan",
-  },
-  { id: "T03", description: "Test internal controls for reporting", status: "Pending", assignee: "Aisha Al-Farsi" },
-  { id: "T04", description: "Draft preliminary findings report", status: "Pending" },
-]
-
-const mockRelatedRisks: RelatedRiskEntry[] = [
+const initialMockRelatedRisks: RelatedRiskEntry[] = [
   {
     risk: {
       id: "RISK002",
@@ -56,91 +128,89 @@ const mockRelatedRisks: RelatedRiskEntry[] = [
       description: "Risk of errors in financial reporting due to reliance on manual data entry.",
     },
     controls: [
-      { id: "CTRL001", name: "Automated Reconciliation System", assessment: "Effective", lastAssessed: "2024-06-01" },
+      { id: "CTRL001", name: "Automated Reconciliation System", assessment: "Effective", lastAssessed: "2025-06-01" },
       {
         id: "CTRL002",
         name: "Segregation of Duties Policy",
         assessment: "Needs Improvement",
-        lastAssessed: "2024-06-05",
+        lastAssessed: "2025-06-05",
       },
     ],
     residualRisk: "Medium",
   },
-  {
-    risk: {
-      id: "RISK007",
-      title: "Unauthorized Access to Financial Systems",
-      inherentRisk: "Medium",
-      description: "Potential for unauthorized users to access and modify financial data.",
-    },
-    controls: [
-      { id: "CTRL003", name: "MFA for Financial Systems", assessment: "Effective", lastAssessed: "2024-05-20" },
-    ],
-    residualRisk: "Low",
-  },
 ]
 
-const mockDocuments: DocumentFile[] = [
+const initialMockDocuments: DocumentFile[] = [
   {
     id: "DOC001",
     name: "Q3_Financial_Statement_Draft.pdf",
     type: "pdf",
     size: "2.5 MB",
-    uploadDate: "2024-07-20",
+    uploadDate: "2025-07-20",
     uploader: "System",
   },
-  {
-    id: "DOC002",
-    name: "Interview_Notes_DeptHeads.docx",
-    type: "docx",
-    size: "120 KB",
-    uploadDate: "2024-07-25",
-    uploader: "Omar Hassan",
-  },
 ]
 
-const mockComments: Comment[] = [
+const initialMockComments: Comment[] = [
   {
     id: "CMT001",
-    user: { id: "USR001", name: "Aisha Al-Farsi", avatar: "/placeholder.svg?width=40&height=40" },
+    user: mockUser1,
     text: "Initial review of data sources complete. Found some discrepancies in system X.",
-    timestamp: new Date("2024-07-22T10:30:00Z"),
-  },
-  {
-    id: "CMT002",
-    user: { id: "USR003", name: "Ali (Business Owner)", avatar: "/placeholder.svg?width=40&height=40" },
-    text: "Thanks for the update, Aisha. Can you provide more details on the discrepancies found in System X?",
-    timestamp: new Date("2024-07-22T14:00:00Z"),
+    timestamp: new Date("2025-07-22T10:30:00Z"),
   },
 ]
 
-export default function AssignmentDetailPage({ params }: { params: { assignmentId: string } }) {
+export default function AssignmentDetailPage() {
+  const params = useParams<{ assignmentId: string }>()
   // In a real app, fetch assignmentData based on params.assignmentId
-  const assignmentData = mockAssignment
-  const tasks = mockTasks
-  const relatedRisksData = mockRelatedRisks
-  const documents = mockDocuments
-  const comments = mockComments
+  // For now, we use mock data. We'll use state to allow components to modify their parts of the data.
+  const [assignmentData, setAssignmentData] = useState<Assignment>(initialMockAssignment)
+  const [tasks, setTasks] = useState<AuditTask[]>(initialMockTasks) // FulfilmentTasksCard will manage its own state based on this initial prop
+  const [relatedRisksData, setRelatedRisksData] = useState<RelatedRiskEntry[]>(initialMockRelatedRisks)
+  const [documents, setDocuments] = useState<DocumentFile[]>(initialMockDocuments)
+  const [comments, setComments] = useState<Comment[]>(initialMockComments)
+
+  // Simulate fetching data if params.assignmentId changes (though for mock, it won't change much)
+  useEffect(() => {
+    // Here you would fetch data based on params.assignmentId
+    // For mock purposes, we just re-initialize if needed or could load different mock sets
+    console.log("Fetching data for assignment:", params.assignmentId)
+    setAssignmentData(initialMockAssignment) // Or load specific mock based on ID
+    setTasks(initialMockTasks)
+    setRelatedRisksData(initialMockRelatedRisks)
+    setDocuments(initialMockDocuments)
+    setComments(initialMockComments)
+  }, [params.assignmentId])
+
+  if (!assignmentData) {
+    // You might want a more sophisticated loading state here
+    return <div>Loading assignment details...</div>
+  }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 p-4 md:p-6">
       <AssignmentHeader title={assignmentData.title} status={assignmentData.status} />
       <ProcessTracker stages={assignmentData.stages} currentStageIndex={assignmentData.currentStageIndex} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Main Content Column (2/3 width on lg) */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <FulfilmentTasksCard tasks={tasks} />
+          <FulfilmentTasksCard
+            initialTasks={tasks} // Pass the initial tasks
+            teamMembers={assignmentData.teamMembers}
+            assignmentId={assignmentData.id}
+          />
+          <DataAnalysisCard /> {/* Assuming this component exists and is self-contained or uses context/props */}
           <RelatedRisksCard initialRisks={relatedRisksData} />
           <DocumentManagementCard initialDocuments={documents} />
-          <CommentsSection initialComments={comments} />
+          <CommentsSection initialComments={comments} currentUser={mockUser1} />{" "}
+          {/* Pass current user for new comments */}
         </div>
 
         {/* Sidebar Column (1/3 width on lg) */}
         <div className="lg:col-span-1 flex flex-col gap-6">
           <RequirementDetailsCard requirements={assignmentData.requirements} />
           <AssignedTeamCard teamMembers={assignmentData.teamMembers} />
-          {/* Potentially other summary cards or actions here */}
         </div>
       </div>
     </div>

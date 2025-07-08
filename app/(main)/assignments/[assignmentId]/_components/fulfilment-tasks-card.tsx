@@ -1,57 +1,116 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
+"use client"
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { PlusCircle } from "lucide-react"
-import type { AuditTask } from "../_types/assignment-types"
+import { CheckCheck, Circle, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
+
+interface FulfilmentTask {
+  id: string
+  title: string
+  status: "complete" | "incomplete" | "in_progress"
+}
+
+const mockTasks: FulfilmentTask[] = [
+  {
+    id: "assignment-1",
+    title: "Initial Setup and Configuration",
+    status: "complete",
+  },
+  {
+    id: "assignment-2",
+    title: "Data Migration and Integration",
+    status: "in_progress",
+  },
+  {
+    id: "assignment-3",
+    title: "User Training and Onboarding",
+    status: "incomplete",
+  },
+]
 
 interface FulfilmentTasksCardProps {
-  tasks: AuditTask[]
+  assignmentId: string
 }
 
-const taskStatusColors: Record<AuditTask["status"], string> = {
-  Pending: "bg-gray-200 text-gray-700",
-  "In Progress": "bg-blue-100 text-blue-700",
-  Completed: "bg-green-100 text-green-700",
-  Blocked: "bg-red-100 text-red-700",
-}
+const FulfilmentTasksCard = ({ assignmentId }: FulfilmentTasksCardProps) => {
+  const [tasks, setTasks] = useState<FulfilmentTask[]>([])
+  const [loading, setLoading] = useState(true)
 
-export default function FulfilmentTasksCard({ tasks }: FulfilmentTasksCardProps) {
+  useEffect(() => {
+    // Simulate fetching tasks based on assignmentId
+    // In a real application, you would fetch this data from an API
+    setTimeout(() => {
+      // Filter tasks based on assignmentId (mock implementation)
+      const filteredTasks = mockTasks.filter((task) => task.id.includes("assignment"))
+      setTasks(filteredTasks)
+      setLoading(false)
+    }, 500)
+  }, [assignmentId])
+
+  const getStatusBadge = (status: FulfilmentTask["status"]) => {
+    switch (status) {
+      case "complete":
+        return (
+          <Badge variant="outline">
+            <CheckCheck className="mr-2 h-4 w-4" />
+            Complete
+          </Badge>
+        )
+      case "incomplete":
+        return (
+          <Badge variant="destructive">
+            <Circle className="mr-2 h-4 w-4" />
+            Incomplete
+          </Badge>
+        )
+      case "in_progress":
+        return (
+          <Badge variant="secondary">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            In Progress
+          </Badge>
+        )
+      default:
+        return <Badge>Unknown</Badge>
+    }
+  }
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Fulfilment Tasks</CardTitle>
+          <CardDescription>Loading tasks...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle className="text-lg">Fulfilment / Tasks</CardTitle>
-          <CardDescription>Track and manage assignment tasks.</CardDescription>
-        </div>
-        <Button variant="outline" size="sm">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Task
-        </Button>
+      <CardHeader>
+        <CardTitle>Fulfilment Tasks</CardTitle>
+        <CardDescription>Tasks required to fulfil this assignment.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {tasks.length > 0 ? (
-          tasks.map((task) => (
-            <div
-              key={task.id}
-              className="flex items-center justify-between p-3 bg-muted/50 rounded-md hover:bg-muted/70 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Checkbox id={`task-${task.id}`} checked={task.status === "Completed"} />
-                <Label htmlFor={`task-${task.id}`} className="flex-grow cursor-pointer">
-                  {task.description}
-                  {task.assignee && <span className="text-xs text-muted-foreground ml-2">({task.assignee})</span>}
-                </Label>
-              </div>
-              <Badge variant="outline" className={`text-xs ${taskStatusColors[task.status]}`}>
-                {task.status}
-              </Badge>
-            </div>
-          ))
+      <CardContent>
+        {tasks.length === 0 ? (
+          <div>No tasks found for this assignment.</div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">No tasks added yet.</p>
+          <ul>
+            {tasks.map((task) => (
+              <li key={task.id} className="py-2">
+                {task.title} - {getStatusBadge(task.status)}
+              </li>
+            ))}
+          </ul>
         )}
       </CardContent>
     </Card>
   )
 }
+
+export default FulfilmentTasksCard

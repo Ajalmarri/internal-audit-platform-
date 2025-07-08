@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -9,8 +9,23 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Badge } from "@/components/ui/badge"
 import { toast } from "@/components/ui/use-toast"
-import { ArrowLeft, Save, Send, PlusCircle, Trash2, FileText, Target, Users } from "lucide-react"
+import {
+  ArrowLeft,
+  Save,
+  Send,
+  PlusCircle,
+  Trash2,
+  FileText,
+  Target,
+  Users,
+  ChevronsUpDown,
+  Check,
+  X,
+} from "lucide-react"
 
 // Types
 interface ActionPlanItem {
@@ -33,6 +48,8 @@ interface ActionPlanFormData {
   estimatedEffort: string
   successCriteria: string
   riskMitigation: string
+  relatedCompanyGoal: string
+  mappedControlIds: string[]
 }
 
 // Mock data for dropdowns
@@ -67,6 +84,24 @@ const mockPersonnel = [
   "Disaster Recovery Team",
 ]
 
+const mockCompanyGoals = [
+  { value: "enhance_data_security", label: "Enhance Data Security Posture" },
+  { value: "improve_financial_reporting", label: "Improve Financial Reporting Accuracy" },
+  { value: "optimize_operational_efficiency", label: "Optimize Operational Efficiency" },
+  { value: "ensure_regulatory_compliance", label: "Ensure Regulatory Compliance" },
+  { value: "strengthen_it_governance", label: "Strengthen IT Governance" },
+]
+
+const mockControls = [
+  { id: "CTRL001", name: "C001 - Access Control Policy Review", category: "Access Management" },
+  { id: "CTRL002", name: "C002 - Data Encryption Standards", category: "Data Security" },
+  { id: "CTRL003", name: "C003 - Change Management Procedures", category: "IT Operations" },
+  { id: "CTRL004", name: "C004 - Segregation of Duties Matrix", category: "Financial Controls" },
+  { id: "CTRL005", name: "C005 - Vulnerability Scanning & Patching", category: "IT Security" },
+  { id: "CTRL006", name: "C006 - Incident Response Plan", category: "IT Security" },
+  { id: "CTRL007", name: "C007 - Backup and Recovery Procedures", category: "Business Continuity" },
+]
+
 const initialFormData: ActionPlanFormData = {
   findingId: "",
   findingTitle: "",
@@ -87,6 +122,8 @@ const initialFormData: ActionPlanFormData = {
   estimatedEffort: "",
   successCriteria: "",
   riskMitigation: "",
+  relatedCompanyGoal: "",
+  mappedControlIds: [],
 }
 
 export default function CreateActionPlanPage() {
@@ -107,6 +144,7 @@ export default function CreateActionPlanPage() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [controlsPopoverOpen, setControlsPopoverOpen] = useState(false)
 
   const handleInputChange = (field: keyof ActionPlanFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -150,6 +188,19 @@ export default function CreateActionPlanPage() {
       }))
     }
   }
+
+  const handleMappedControlsChange = (controlId: string) => {
+    setFormData((prev) => {
+      const newMappedControlIds = prev.mappedControlIds.includes(controlId)
+        ? prev.mappedControlIds.filter((id) => id !== controlId)
+        : [...prev.mappedControlIds, controlId]
+      return { ...prev, mappedControlIds: newMappedControlIds }
+    })
+  }
+
+  const selectedControls = useMemo(() => {
+    return mockControls.filter((control) => formData.mappedControlIds.includes(control.id))
+  }, [formData.mappedControlIds])
 
   const validateForm = (): boolean => {
     if (!formData.findingId) {
@@ -371,6 +422,98 @@ export default function CreateActionPlanPage() {
                   rows={3}
                 />
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Strategic Alignment & Control Mapping */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center">
+              <Target className="mr-2 h-5 w-5 text-primary" /> {/* Re-using Target icon, could be Link or other */}
+              Strategic Alignment & Control Mapping
+            </CardTitle>
+            <CardDescription>Align this action plan with company goals and map to relevant controls.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <Label htmlFor="relatedCompanyGoal">Related Company Goal</Label>
+              <Select
+                value={formData.relatedCompanyGoal}
+                onValueChange={(value) => handleInputChange("relatedCompanyGoal", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a company goal..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockCompanyGoals.map((goal) => (
+                    <SelectItem key={goal.value} value={goal.value}>
+                      {goal.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="mappedControls">Mapped Controls</Label>
+              <Popover open={controlsPopoverOpen} onOpenChange={setControlsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={controlsPopoverOpen}
+                    className="w-full justify-between"
+                  >
+                    {selectedControls.length > 0
+                      ? `${selectedControls.length} control${selectedControls.length > 1 ? "s" : ""} selected`
+                      : "Select controls..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search controls..." />
+                    <CommandList>
+                      <CommandEmpty>No controls found.</CommandEmpty>
+                      <CommandGroup>
+                        {mockControls.map((control) => (
+                          <CommandItem
+                            key={control.id}
+                            value={control.name} // Search by name
+                            onSelect={() => {
+                              handleMappedControlsChange(control.id)
+                              setControlsPopoverOpen(false) // Close popover after selection
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                formData.mappedControlIds.includes(control.id) ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            {control.name} ({control.category})
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {selectedControls.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {selectedControls.map((control) => (
+                    <Badge key={control.id} variant="secondary">
+                      {control.name}
+                      <button
+                        type="button"
+                        className="ml-1.5 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        onClick={() => handleMappedControlsChange(control.id)}
+                      >
+                        <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
