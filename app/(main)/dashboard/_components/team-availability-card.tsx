@@ -36,23 +36,26 @@ const teamMembers = [
 ]
 
 const statusIndicatorColors: { [key: string]: string } = {
-  Available: "bg-green-500",
-  Busy: "bg-yellow-500",
-  "On Leave": "bg-gray-400",
+  Available: "bg-vibrant-green",
+  Busy: "bg-vibrant-yellow",
+  "On Leave": "bg-vibrant-gray",
 }
 
 export default function TeamAvailabilityCard() {
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-soft border-gray-200/80 dark:border-gray-800/50 transition-shadow duration-300 hover:shadow-soft-lg">
       <CardHeader className="pb-2">
         <CardTitle className="text-xl font-semibold">Team & Availability</CardTitle>
         <CardDescription>Current status of your team members.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {teamMembers.map((member) => (
-          <div key={member.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-md">
+          <div
+            key={member.id}
+            className="flex items-center justify-between p-2 bg-muted/30 rounded-md transition-all duration-200 hover:bg-muted/60 hover:shadow-sm"
+          >
             <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-800">
                 <AvatarImage src={member.avatarUrl || "/placeholder.svg"} alt={member.name} />
                 <AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>

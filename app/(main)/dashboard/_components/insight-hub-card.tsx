@@ -141,7 +141,7 @@ export default function InsightHubCard() {
   }
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-soft border-gray-200/80 dark:border-gray-800/50 transition-shadow duration-300 hover:shadow-soft-lg">
       <CardHeader className="pb-2">
         <CardTitle className="text-xl font-semibold">Insight Hub</CardTitle>
         <CardDescription>Key metrics and trends at a glance.</CardDescription>
@@ -153,7 +153,7 @@ export default function InsightHubCard() {
             <Link
               href={{ pathname: stat.link, query: stat.query }}
               key={stat.title}
-              className="block p-4 bg-background hover:bg-muted/50 rounded-lg border shadow-sm hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="block p-4 bg-background hover:bg-muted/50 rounded-lg border shadow-sm hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <div className="flex items-center justify-between mb-1">
                 <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>

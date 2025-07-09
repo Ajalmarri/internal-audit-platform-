@@ -152,13 +152,17 @@ export default function DashboardPage() {
 
     return activeView.config
       .filter((widget) => widget.isVisible)
-      .map((widgetConfig) => {
+      .map((widgetConfig, index) => {
         const WidgetComponent = ALL_AVAILABLE_WIDGETS_MASTER_LIST.find((w) => w.id === widgetConfig.id)?.component
         if (!WidgetComponent) return null
 
         const gridColumnClass = widgetConfig.columnSpan === 2 ? "lg:col-span-2" : "lg:col-span-1"
         return (
-          <div key={widgetConfig.id} className={gridColumnClass}>
+          <div
+            key={widgetConfig.id}
+            className={`${gridColumnClass} opacity-0 animate-fade-in-up`}
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
             <WidgetComponent />
           </div>
         )
@@ -166,8 +170,9 @@ export default function DashboardPage() {
   }, [isClient, activeView])
 
   if (!isClient || !dashboardState || !activeView) {
+    // Keep a simple loading state to avoid layout shifts
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 p-4 sm:p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black min-h-screen">
         <div className="flex justify-between items-center">
           <div className="space-y-2">
             <div className="h-8 w-64 bg-muted rounded animate-pulse"></div>
@@ -176,17 +181,17 @@ export default function DashboardPage() {
           <div className="h-10 w-36 bg-muted rounded animate-pulse"></div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          <div className="lg:col-span-2 h-64 bg-muted rounded-lg animate-pulse"></div>
-          <div className="lg:col-span-1 h-64 bg-muted rounded-lg animate-pulse"></div>
-          <div className="lg:col-span-2 h-64 bg-muted rounded-lg animate-pulse"></div>
-          <div className="lg:col-span-1 h-64 bg-muted rounded-lg animate-pulse"></div>
+          <div className="lg:col-span-2 h-96 bg-muted rounded-lg animate-pulse"></div>
+          <div className="lg:col-span-1 h-96 bg-muted rounded-lg animate-pulse"></div>
+          <div className="lg:col-span-2 h-96 bg-muted rounded-lg animate-pulse"></div>
+          <div className="lg:col-span-1 h-96 bg-muted rounded-lg animate-pulse"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-black">
       <DashboardHeader
         userName={userName}
         activeView={activeView}

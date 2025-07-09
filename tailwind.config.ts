@@ -63,6 +63,25 @@ module.exports = {
           600: "#0284c7", // text-sky-600
           700: "#0369a1", // text-sky-700
         },
+        // Adding more vibrant colors for statuses
+        vibrant: {
+          blue: {
+            DEFAULT: "#3b82f6", // blue-500
+            hover: "#2563eb", // blue-600
+          },
+          yellow: {
+            DEFAULT: "#f59e0b", // amber-500
+            hover: "#d97706", // amber-600
+          },
+          green: {
+            DEFAULT: "#22c55e", // green-500
+            hover: "#16a34a", // green-600
+          },
+          gray: {
+            DEFAULT: "#6b7280", // gray-500
+            hover: "#4b5563", // gray-600
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -78,10 +97,25 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in-up": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(20px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in-up": "fade-in-up 0.5s ease-out forwards",
+      },
+      boxShadow: {
+        soft: "0 4px 14px 0 rgba(0, 0, 0, 0.05)",
+        "soft-lg": "0 8px 28px 0 rgba(0, 0, 0, 0.07)",
       },
     },
   },

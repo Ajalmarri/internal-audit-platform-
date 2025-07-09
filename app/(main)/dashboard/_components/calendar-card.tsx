@@ -8,7 +8,7 @@ export default function CalendarCard() {
   const [date, setDate] = useState<Date | undefined>(new Date())
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-soft border-gray-200/80 dark:border-gray-800/50 transition-shadow duration-300 hover:shadow-soft-lg">
       <CardHeader className="pb-2">
         <CardTitle className="text-xl font-semibold">Calendar</CardTitle>
         <CardDescription>Your upcoming deadlines and events.</CardDescription>

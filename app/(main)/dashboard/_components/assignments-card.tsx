@@ -34,10 +34,10 @@ const assignments = [
 ]
 
 const statusColors: { [key: string]: string } = {
-  "In Progress": "bg-blue-500 hover:bg-blue-600",
-  "Due Soon": "bg-yellow-500 hover:bg-yellow-600 text-black",
-  Completed: "bg-green-500 hover:bg-green-600",
-  Pending: "bg-gray-500 hover:bg-gray-600",
+  "In Progress": "bg-vibrant-blue text-white",
+  "Due Soon": "bg-vibrant-yellow text-black",
+  Completed: "bg-vibrant-green text-white",
+  Pending: "bg-vibrant-gray text-white",
 }
 
 export default function AssignmentsCard() {
@@ -45,13 +45,18 @@ export default function AssignmentsCard() {
   const dueSoonAssignments = 50
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-soft border-gray-200/80 dark:border-gray-800/50 transition-shadow duration-300 hover:shadow-soft-lg">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle className="text-xl font-semibold">Assignments</CardTitle>
           <CardDescription>Overview of your current tasks.</CardDescription>
         </div>
-        <Button variant="outline" size="sm" asChild>
+        <Button
+          variant="default"
+          size="sm"
+          asChild
+          className="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md transition-all duration-300 hover:shadow-lg hover:from-blue-600 hover:to-blue-700 hover:-translate-y-px"
+        >
           <Link href="/assignments">
             View All <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
@@ -81,7 +86,7 @@ export default function AssignmentsCard() {
             <Link
               key={assignment.id}
               href={`/assignments/${assignment.id}`}
-              className="block p-3 bg-muted/30 rounded-md hover:bg-muted/40 hover:shadow-md hover:-translate-y-px transition-all duration-150 ease-in-out cursor-pointer"
+              className="block p-3 bg-muted/30 rounded-md hover:bg-card hover:shadow-md hover:-translate-y-1 transition-all duration-200 ease-in-out cursor-pointer"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -90,7 +95,7 @@ export default function AssignmentsCard() {
                   </p>
                   <p className="text-xs text-muted-foreground">Due: {assignment.dueDate}</p>
                 </div>
-                <Badge className={`${statusColors[assignment.status] || "bg-gray-500"} text-white text-xs shrink-0`}>
+                <Badge className={`${statusColors[assignment.status] || "bg-gray-500"} text-xs shrink-0`}>
                   {assignment.status}
                 </Badge>
               </div>
