@@ -1,7 +1,20 @@
 import { put } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
 
+// WARNING: Hardcoding tokens is a security risk and not recommended for production.
+// This should be replaced with a secure way of managing secrets, like environment variables.
+// You can get your Blob Read-Write token from your Vercel project settings.
+const BLOB_READ_WRITE_TOKEN = "YOUR_BLOB_READ_WRITE_TOKEN_HERE"
+
 export async function POST(request: NextRequest) {
+  if (!BLOB_READ_WRITE_TOKEN || BLOB_READ_WRITE_TOKEN === "YOUR_BLOB_READ_WRITE_TOKEN_HERE") {
+    console.error("Vercel Blob token is not configured in app/api/files/upload/route.ts.")
+    return NextResponse.json(
+      { error: "File upload service is not configured. Please update the token in the source code." },
+      { status: 500 },
+    )
+  }
+
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File
@@ -45,6 +58,7 @@ export async function POST(request: NextRequest) {
     const blob = await put(filename, file, {
       access: "public",
       addRandomSuffix: false,
+      token: BLOB_READ_WRITE_TOKEN,
     })
 
     return NextResponse.json({

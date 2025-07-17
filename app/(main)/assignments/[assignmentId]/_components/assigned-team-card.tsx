@@ -1,33 +1,59 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import type { UserStub } from "../_types/assignment-types"
+import type React from "react"
+import { Avatar, Card, CardContent, Typography, Box, Chip } from "@mui/material"
 
-interface AssignedTeamCardProps {
-  teamMembers: UserStub[]
+interface TeamMember {
+  id: string
+  name: string
+  role: string
+  avatarUrl: string
 }
 
-export default function AssignedTeamCard({ teamMembers }: AssignedTeamCardProps) {
+interface AssignedTeamCardProps {
+  teamMembers: TeamMember[]
+}
+
+const mockTeamMembers: TeamMember[] = [
+  {
+    id: "assignment-1", // Updated ID to match audit plan assignment ID
+    name: "Alice Smith",
+    role: "Lead Auditor",
+    avatarUrl: "/images/avatars/avatar-alice.jpg",
+  },
+  {
+    id: "assignment-2", // Updated ID to match audit plan assignment ID
+    name: "Bob Johnson",
+    role: "Auditor",
+    avatarUrl: "/images/avatars/avatar-bob.jpg",
+  },
+  {
+    id: "assignment-3", // Updated ID to match audit plan assignment ID
+    name: "Charlie Brown",
+    role: "Auditor",
+    avatarUrl: "/images/avatars/avatar-charlie.jpg",
+  },
+]
+
+const AssignedTeamCard: React.FC<AssignedTeamCardProps> = ({ teamMembers = mockTeamMembers }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Assigned Team</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {teamMembers.length > 0 ? (
-          teamMembers.map((member) => (
-            <div key={member.id} className="flex items-center gap-3 p-2 bg-muted/30 rounded-md">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
-                <AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <p className="text-sm font-medium">{member.name}</p>
-              {/* Could add role here if available */}
-            </div>
-          ))
-        ) : (
-          <p className="text-sm text-muted-foreground">No team members assigned.</p>
-        )}
+    <Card variant="outlined">
+      <CardContent>
+        <Typography variant="h6" component="div" gutterBottom>
+          Assigned Team
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {teamMembers.map((member) => (
+            <Box key={member.id} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Avatar alt={member.name} src={member.avatarUrl} />
+              <Box>
+                <Typography variant="subtitle1">{member.name}</Typography>
+                <Chip label={member.role} size="small" />
+              </Box>
+            </Box>
+          ))}
+        </Box>
       </CardContent>
     </Card>
   )
 }
+
+export default AssignedTeamCard

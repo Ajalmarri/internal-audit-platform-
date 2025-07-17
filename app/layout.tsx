@@ -9,6 +9,7 @@ import Header from "@/components/layout/header"
 import { Toaster } from "@/components/ui/toaster"
 import { cookies } from "next/headers"
 import { cn } from "@/lib/utils"
+import MainPanel from "@/components/layout/main-panel"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -30,18 +31,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.className, "overflow-hidden")}>
-        {" "}
-        {/* Prevent body scroll when sidebar is fixed */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SidebarProvider defaultOpen={defaultSidebarOpen}>
             <div className="flex h-screen w-full bg-background">
               <AppSidebar />
-              <div className="flex flex-col flex-1 h-screen overflow-y-auto">
-                {" "}
-                {/* Make content area scrollable */}
+              <MainPanel>
                 <Header />
                 <main className="flex-1 p-4 md:p-6 lg:p-8 bg-muted/30">{children}</main>
-              </div>
+              </MainPanel>
             </div>
           </SidebarProvider>
           <Toaster />
