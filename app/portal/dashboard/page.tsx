@@ -1,10 +1,10 @@
 "use client"
 
 import { useMockBusinessOwner } from "@/hooks/use-mock-user"
-import { MyActionItemsCard } from "@/app/(portal)/dashboard/_components/my-action-items-card"
-import { DepartmentRiskProfileCard } from "@/app/(portal)/dashboard/_components/department-risk-profile-card"
-import { KpiSummaryCard } from "@/app/(portal)/dashboard/_components/kpi-summary-card"
-import { QuickLinksCard } from "@/app/(portal)/dashboard/_components/quick-links-card"
+import { MyActionItemsCard } from "@/app/portal/dashboard/_components/my-action-items-card"
+import { DepartmentRiskProfileCard } from "@/app/portal/dashboard/_components/department-risk-profile-card"
+import { KpiSummaryCard } from "@/app/portal/dashboard/_components/kpi-summary-card"
+import { QuickLinksCard } from "@/app/portal/dashboard/_components/quick-links-card"
 
 export default function BusinessOwnerDashboardPage() {
   const user = useMockBusinessOwner()
