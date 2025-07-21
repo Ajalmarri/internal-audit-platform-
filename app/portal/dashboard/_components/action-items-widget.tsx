@@ -1,12 +1,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { List, ListItem } from "@/components/ui/list"
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 
 const actionItems = [
-  { id: 1, title: "Review Q2 Financial Report", due: "3 days", href: "#" },
-  { id: 2, title: "Approve new vendor contract", due: "5 days", href: "#" },
-  { id: 3, title: "Submit compliance documentation", due: "1 week", href: "#" },
-  { id: 4, title: "Complete mandatory security training", due: "2 weeks", href: "#" },
+  {
+    title: "Review Q2 Financial Report",
+    due: "Due in 3 days",
+    href: "#",
+  },
+  {
+    title: "Approve new vendor contract",
+    due: "Due in 5 days",
+    href: "#",
+  },
+  {
+    title: "Submit evidence for compliance check",
+    due: "Due in 1 week",
+    href: "#",
+  },
+  {
+    title: "Complete mandatory security training",
+    due: "Due in 2 weeks",
+    href: "#",
+  },
 ]
 
 export function ActionItemsWidget() {
@@ -16,22 +33,19 @@ export function ActionItemsWidget() {
         <CardTitle>My Action Items</CardTitle>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-2">
+        <List>
           {actionItems.map((item) => (
-            <li key={item.id}>
-              <Link
-                href={item.href}
-                className="flex items-center justify-between rounded-md p-3 transition-colors hover:bg-muted"
-              >
+            <ListItem key={item.title}>
+              <Link href={item.href} className="flex w-full items-center justify-between">
                 <div>
                   <p className="font-medium">{item.title}</p>
-                  <p className="text-sm text-muted-foreground">Due in {item.due}</p>
+                  <p className="text-sm text-muted-foreground">{item.due}</p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </Link>
-            </li>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       </CardContent>
     </Card>
   )

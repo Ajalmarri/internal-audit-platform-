@@ -1,6 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { cn } from "@/lib/utils"
 
 const riskProfiles = [
   {
@@ -21,6 +20,12 @@ const riskProfiles = [
     level: "Low",
     color: "bg-green-500",
   },
+  {
+    category: "Strategic Risk",
+    value: 60,
+    level: "Medium",
+    color: "bg-yellow-500",
+  },
 ]
 
 export function DepartmentRiskProfileWidget() {
@@ -30,28 +35,20 @@ export function DepartmentRiskProfileWidget() {
         <CardTitle>Department Risk Profile</CardTitle>
         <CardDescription>Finance Department</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6 pt-2">
-        {riskProfiles.map((risk) => (
-          <div key={risk.category}>
-            <div className="mb-2 flex items-baseline justify-between">
-              <p className="font-medium">{risk.category}</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-semibold">{risk.value}%</span>
-                <span
-                  className={cn(
-                    "text-sm font-medium",
-                    risk.level === "High" && "text-red-500",
-                    risk.level === "Medium" && "text-yellow-600",
-                    risk.level === "Low" && "text-green-600",
-                  )}
-                >
-                  {risk.level}
+      <CardContent>
+        <div className="space-y-4">
+          {riskProfiles.map((risk) => (
+            <div key={risk.category}>
+              <div className="mb-1 flex justify-between">
+                <span className="text-sm font-medium">{risk.category}</span>
+                <span className="text-sm text-muted-foreground">
+                  {risk.value}% ({risk.level})
                 </span>
               </div>
+              <Progress value={risk.value} indicatorClassName={risk.color} />
             </div>
-            <Progress value={risk.value} className={cn("[&>div]:", risk.color)} />
-          </div>
-        ))}
+          ))}
+        </div>
       </CardContent>
     </Card>
   )

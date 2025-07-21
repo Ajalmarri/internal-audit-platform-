@@ -1,18 +1,13 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { ActionItemsWidget } from "./_components/action-items-widget"
+import { DepartmentRiskProfileWidget } from "./_components/department-risk-profile-widget"
+import { QuickLinksWidget } from "./_components/quick-links-widget"
 
-export default function BusinessOwnerDashboardPage() {
+export default function BusinessOwnerDashboard() {
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold">Dashboard</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Welcome to the Business Owner Portal</CardTitle>
-          <CardDescription>This is your central hub for managing audit-related tasks and information.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>Your dashboard content will be displayed here.</p>
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 gap-6">
+      <ActionItemsWidget />
+      <DepartmentRiskProfileWidget />
+      <QuickLinksWidget />
     </div>
   )
 }
