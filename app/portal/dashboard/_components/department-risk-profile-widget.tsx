@@ -1,5 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils"
 
 const riskProfiles = [
   {
@@ -32,8 +33,7 @@ export function DepartmentRiskProfileWidget() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Department Risk Profile</CardTitle>
-        <CardDescription>Finance Department</CardDescription>
+        <CardTitle>Department Risk Profile (Finance)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -45,7 +45,7 @@ export function DepartmentRiskProfileWidget() {
                   {risk.value}% ({risk.level})
                 </span>
               </div>
-              <Progress value={risk.value} indicatorClassName={risk.color} />
+              <Progress value={risk.value} indicatorClassName={cn(risk.color)} />
             </div>
           ))}
         </div>

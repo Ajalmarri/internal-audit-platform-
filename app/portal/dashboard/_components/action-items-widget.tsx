@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { List, ListItem } from "@/components/ui/list"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 
@@ -33,19 +32,22 @@ export function ActionItemsWidget() {
         <CardTitle>My Action Items</CardTitle>
       </CardHeader>
       <CardContent>
-        <List>
+        <ul className="space-y-1">
           {actionItems.map((item) => (
-            <ListItem key={item.title}>
-              <Link href={item.href} className="flex w-full items-center justify-between">
+            <li key={item.title}>
+              <Link
+                href={item.href}
+                className="flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-muted"
+              >
                 <div>
                   <p className="font-medium">{item.title}</p>
                   <p className="text-sm text-muted-foreground">{item.due}</p>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </Link>
-            </ListItem>
+            </li>
           ))}
-        </List>
+        </ul>
       </CardContent>
     </Card>
   )
