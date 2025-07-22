@@ -11,6 +11,7 @@ export default function LoginLayout({
 }: {
   children: React.ReactNode
 }) {
-  // This layout ensures the login page doesn't inherit the main app's sidebars or headers
+  // This layout ensures the login page is full-screen and doesn't
+  // inherit the main application's sidebars or headers.
   return <>{children}</>
 }
