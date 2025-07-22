@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TrendingUp, TrendingDown, DollarSign, Users, Target, Clock } from "lucide-react"
 
@@ -8,6 +10,7 @@ const kpis = [
     change: "+5%",
     trend: "up" as const,
     icon: DollarSign,
+    description: "vs last quarter",
   },
   {
     title: "Team Productivity",
@@ -15,20 +18,23 @@ const kpis = [
     change: "+2%",
     trend: "up" as const,
     icon: Users,
+    description: "efficiency score",
   },
   {
-    title: "Compliance Score",
-    value: "92%",
+    title: "Goal Achievement",
+    value: "78%",
     change: "-3%",
     trend: "down" as const,
     icon: Target,
+    description: "quarterly targets",
   },
   {
-    title: "Avg Response Time",
-    value: "2.3 days",
-    change: "-0.5 days",
+    title: "Process Efficiency",
+    value: "91%",
+    change: "+7%",
     trend: "up" as const,
     icon: Clock,
+    description: "time optimization",
   },
 ]
 
@@ -44,20 +50,21 @@ export function KpiSummaryCard() {
             <div key={kpi.title} className="space-y-2">
               <div className="flex items-center gap-2">
                 <kpi.icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground">{kpi.title}</span>
+                <span className="text-sm font-medium">{kpi.title}</span>
               </div>
               <div className="space-y-1">
-                <p className="text-2xl font-bold">{kpi.value}</p>
-                <div className="flex items-center gap-1">
-                  {kpi.trend === "up" ? (
-                    <TrendingUp className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3 text-red-500" />
-                  )}
-                  <span className={`text-xs ${kpi.trend === "up" ? "text-green-600" : "text-red-600"}`}>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold">{kpi.value}</span>
+                  <div
+                    className={`flex items-center gap-1 text-sm ${
+                      kpi.trend === "up" ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {kpi.trend === "up" ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {kpi.change}
-                  </span>
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground">{kpi.description}</p>
               </div>
             </div>
           ))}

@@ -1,64 +1,63 @@
-import type React from "react"
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Shield, TrendingUp, AlertCircle } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus } from "lucide-react"
 
 const riskCategories = [
   {
     name: "Financial Risk",
     level: 75,
-    status: "High" as const,
-    trend: "increasing" as const,
+    status: "high" as const,
+    trend: "up" as const,
+    description: "Budget variance and cash flow concerns",
   },
   {
     name: "Operational Risk",
     level: 45,
-    status: "Medium" as const,
-    trend: "stable" as const,
+    status: "medium" as const,
+    trend: "down" as const,
+    description: "Process efficiency and resource allocation",
   },
   {
     name: "Compliance Risk",
     level: 20,
-    status: "Low" as const,
-    trend: "decreasing" as const,
+    status: "low" as const,
+    trend: "stable" as const,
+    description: "Regulatory adherence and policy compliance",
   },
   {
-    name: "Cybersecurity Risk",
+    name: "Technology Risk",
     level: 60,
-    status: "Medium" as const,
-    trend: "increasing" as const,
+    status: "medium" as const,
+    trend: "up" as const,
+    description: "System security and data protection",
   },
 ]
 
-const getRiskColor = (level: number) => {
-  if (level >= 70) return "bg-red-500"
-  if (level >= 40) return "bg-yellow-500"
-  return "bg-green-500"
-}
-
-const getStatusColor = (status: string) => {
+const getRiskColor = (status: string) => {
   switch (status) {
-    case "High":
-      return "text-red-600"
-    case "Medium":
-      return "text-yellow-600"
-    case "Low":
-      return "text-green-600"
+    case "high":
+      return "bg-red-500"
+    case "medium":
+      return "bg-yellow-500"
+    case "low":
+      return "bg-green-500"
     default:
-      return "text-gray-600"
+      return "bg-gray-500"
   }
 }
 
 const getTrendIcon = (trend: string) => {
   switch (trend) {
-    case "increasing":
+    case "up":
       return <TrendingUp className="h-4 w-4 text-red-500" />
-    case "decreasing":
-      return <TrendingUp className="h-4 w-4 text-green-500 rotate-180" />
+    case "down":
+      return <TrendingDown className="h-4 w-4 text-green-500" />
     case "stable":
-      return <AlertCircle className="h-4 w-4 text-yellow-500" />
+      return <Minus className="h-4 w-4 text-gray-500" />
     default:
-      return null
+      return <Minus className="h-4 w-4 text-gray-500" />
   }
 }
 
@@ -66,35 +65,48 @@ export function DepartmentRiskProfileCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-          Department Risk Profile (Finance)
-        </CardTitle>
+        <CardTitle>Department Risk Profile (Finance)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {riskCategories.map((risk) => (
-            <div key={risk.name} className="space-y-2">
+          {riskCategories.map((category) => (
+            <div key={category.name} className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-medium">{risk.name}</span>
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-medium ${getStatusColor(risk.status)}`}>
-                    {risk.level}% - {risk.status}
+                  <h4 className="font-medium">{category.name}</h4>
+                  {getTrendIcon(category.trend)}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{category.level}%</span>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full text-white ${
+                      category.status === "high"
+                        ? "bg-red-500"
+                        : category.status === "medium"
+                          ? "bg-yellow-500"
+                          : "bg-green-500"
+                    }`}
+                  >
+                    {category.status.toUpperCase()}
                   </span>
-                  {getTrendIcon(risk.trend)}
                 </div>
               </div>
               <Progress
-                value={risk.level}
+                value={category.level}
                 className="h-2"
-                style={
-                  {
-                    "--progress-background": getRiskColor(risk.level),
-                  } as React.CSSProperties
-                }
+                style={{
+                  background: `linear-gradient(to right, ${getRiskColor(category.status)} 0%, ${getRiskColor(category.status)} ${category.level}%, #e5e7eb ${category.level}%, #e5e7eb 100%)`,
+                }}
               />
+              <p className="text-xs text-muted-foreground">{category.description}</p>
             </div>
           ))}
+        </div>
+        <div className="mt-6 pt-4 border-t">
+          <div className="flex justify-between text-sm">
+            <span>Overall Risk Score:</span>
+            <span className="font-medium">50% (Medium)</span>
+          </div>
         </div>
       </CardContent>
     </Card>
