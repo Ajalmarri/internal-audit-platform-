@@ -1,5 +1,6 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import type { Config } from "tailwindcss"
+
+const config = {
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -52,17 +53,6 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Custom colors for badges/statuses if needed
-        sky: {
-          // For 'In Progress' or informational items
-          100: "#e0f2fe", // bg-sky-100
-          200: "#bae6fd", // hover:bg-sky-200
-          300: "#7dd3fc", // border-sky-300
-          400: "#38bdf8", // bg-sky-400
-          500: "#0ea5e9", // border-sky-500
-          600: "#0284c7", // text-sky-600
-          700: "#0369a1", // text-sky-700
-        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -92,4 +82,6 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+} satisfies Config
+
+export default config
