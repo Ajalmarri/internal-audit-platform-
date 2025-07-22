@@ -1,40 +1,34 @@
-"use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TrendingUp, TrendingDown, DollarSign, Users, Target, Clock } from "lucide-react"
+import { TrendingUp, TrendingDown, Target, CheckCircle } from "lucide-react"
 
 const kpis = [
   {
-    title: "Budget Utilization",
-    value: "87%",
-    change: "+5%",
-    trend: "up" as const,
-    icon: DollarSign,
-    description: "vs last quarter",
+    title: "Control Effectiveness",
+    value: "92%",
+    change: "+2% vs last quarter",
+    icon: CheckCircle,
+    status: "success" as const,
   },
   {
-    title: "Team Productivity",
-    value: "94%",
-    change: "+2%",
-    trend: "up" as const,
-    icon: Users,
-    description: "efficiency score",
-  },
-  {
-    title: "Goal Achievement",
-    value: "78%",
-    change: "-3%",
-    trend: "down" as const,
+    title: "Open Findings",
+    value: "8",
+    change: "-3 vs last quarter",
     icon: Target,
-    description: "quarterly targets",
+    status: "success" as const,
   },
   {
-    title: "Process Efficiency",
-    value: "91%",
-    change: "+7%",
-    trend: "up" as const,
-    icon: Clock,
-    description: "time optimization",
+    title: "Overdue Action Plans",
+    value: "2",
+    change: "+1 vs last quarter",
+    icon: TrendingDown,
+    status: "danger" as const,
+  },
+  {
+    title: "Policy Compliance",
+    value: "98%",
+    change: "Stable",
+    icon: TrendingUp,
+    status: "success" as const,
   },
 ]
 
@@ -44,31 +38,19 @@ export function KpiSummaryCard() {
       <CardHeader>
         <CardTitle>Key Performance Indicators</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {kpis.map((kpi) => (
-            <div key={kpi.title} className="space-y-2">
-              <div className="flex items-center gap-2">
-                <kpi.icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{kpi.title}</span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">{kpi.value}</span>
-                  <div
-                    className={`flex items-center gap-1 text-sm ${
-                      kpi.trend === "up" ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {kpi.trend === "up" ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {kpi.change}
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">{kpi.description}</p>
-              </div>
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {kpis.map((kpi) => (
+          <Card key={kpi.title} className="p-4 flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <h3 className="text-sm font-medium text-muted-foreground">{kpi.title}</h3>
+              <kpi.icon className={`h-5 w-5 ${kpi.status === "success" ? "text-green-500" : "text-red-500"}`} />
             </div>
-          ))}
-        </div>
+            <div>
+              <p className="text-2xl font-bold">{kpi.value}</p>
+              <p className="text-xs text-muted-foreground">{kpi.change}</p>
+            </div>
+          </Card>
+        ))}
       </CardContent>
     </Card>
   )

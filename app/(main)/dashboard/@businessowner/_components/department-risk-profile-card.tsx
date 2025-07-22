@@ -1,106 +1,39 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 
-const riskCategories = [
-  {
-    name: "Financial Risk",
-    level: 75,
-    status: "high" as const,
-    trend: "up" as const,
-    description: "Budget variance and cash flow concerns",
-  },
-  {
-    name: "Operational Risk",
-    level: 45,
-    status: "medium" as const,
-    trend: "down" as const,
-    description: "Process efficiency and resource allocation",
-  },
-  {
-    name: "Compliance Risk",
-    level: 20,
-    status: "low" as const,
-    trend: "stable" as const,
-    description: "Regulatory adherence and policy compliance",
-  },
-  {
-    name: "Technology Risk",
-    level: 60,
-    status: "medium" as const,
-    trend: "up" as const,
-    description: "System security and data protection",
-  },
+const riskData = [
+  { name: "Operational", level: 7, fill: "hsl(var(--chart-1))" },
+  { name: "Financial", level: 5, fill: "hsl(var(--chart-2))" },
+  { name: "Compliance", level: 8, fill: "hsl(var(--chart-3))" },
+  { name: "Strategic", level: 4, fill: "hsl(var(--chart-4))" },
+  { name: "IT Security", level: 9, fill: "hsl(var(--chart-5))" },
 ]
-
-const getRiskColor = (status: string) => {
-  switch (status) {
-    case "high":
-      return "bg-red-500"
-    case "medium":
-      return "bg-yellow-500"
-    case "low":
-      return "bg-green-500"
-    default:
-      return "bg-gray-500"
-  }
-}
-
-const getTrendIcon = (trend: string) => {
-  switch (trend) {
-    case "up":
-      return <TrendingUp className="h-4 w-4 text-red-500" />
-    case "down":
-      return <TrendingDown className="h-4 w-4 text-green-500" />
-    case "stable":
-      return <Minus className="h-4 w-4 text-gray-500" />
-    default:
-      return <Minus className="h-4 w-4 text-gray-500" />
-  }
-}
 
 export function DepartmentRiskProfileCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Department Risk Profile (Finance)</CardTitle>
+        <CardTitle>Department Risk Profile</CardTitle>
+        <CardDescription>Current risk levels across key categories.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          {riskCategories.map((category) => (
-            <div key={category.name} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-medium">{category.name}</h4>
-                  {getTrendIcon(category.trend)}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{category.level}%</span>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full text-white ${
-                      category.status === "high"
-                        ? "bg-red-500"
-                        : category.status === "medium"
-                          ? "bg-yellow-500"
-                          : "bg-green-500"
-                    }`}
-                  >
-                    {category.status.toUpperCase()}
-                  </span>
-                </div>
-              </div>
-              <Progress value={category.level} className="h-2" />
-              <p className="text-xs text-muted-foreground">{category.description}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 pt-4 border-t">
-          <div className="flex justify-between text-sm">
-            <span>Overall Risk Score:</span>
-            <span className="font-medium">50% (Medium)</span>
-          </div>
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={riskData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis allowDecimals={false} domain={[0, 10]} />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--background))",
+                  borderColor: "hsl(var(--border))",
+                }}
+              />
+              <Bar dataKey="level" name="Risk Level" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
