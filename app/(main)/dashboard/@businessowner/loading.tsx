@@ -5,8 +5,8 @@ export default function BusinessOwnerDashboardLoading() {
   return (
     <div className="flex flex-col gap-6">
       <div className="space-y-2">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-5 w-80" />
+        <div className="h-8 w-64 bg-muted rounded animate-pulse"></div>
+        <div className="h-7 w-48 bg-muted rounded animate-pulse"></div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
         <Card className="lg:col-span-2 xl:col-span-2">

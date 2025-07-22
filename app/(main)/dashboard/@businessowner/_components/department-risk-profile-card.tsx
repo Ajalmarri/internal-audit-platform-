@@ -1,39 +1,100 @@
-"use client"
+import type React from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { Shield, TrendingUp, AlertCircle } from "lucide-react"
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
-
-const riskData = [
-  { name: "Operational", level: 7, fill: "hsl(var(--chart-1))" },
-  { name: "Financial", level: 5, fill: "hsl(var(--chart-2))" },
-  { name: "Compliance", level: 8, fill: "hsl(var(--chart-3))" },
-  { name: "Strategic", level: 4, fill: "hsl(var(--chart-4))" },
-  { name: "IT Security", level: 9, fill: "hsl(var(--chart-5))" },
+const riskCategories = [
+  {
+    name: "Financial Risk",
+    level: 75,
+    status: "High" as const,
+    trend: "increasing" as const,
+  },
+  {
+    name: "Operational Risk",
+    level: 45,
+    status: "Medium" as const,
+    trend: "stable" as const,
+  },
+  {
+    name: "Compliance Risk",
+    level: 20,
+    status: "Low" as const,
+    trend: "decreasing" as const,
+  },
+  {
+    name: "Cybersecurity Risk",
+    level: 60,
+    status: "Medium" as const,
+    trend: "increasing" as const,
+  },
 ]
+
+const getRiskColor = (level: number) => {
+  if (level >= 70) return "bg-red-500"
+  if (level >= 40) return "bg-yellow-500"
+  return "bg-green-500"
+}
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "High":
+      return "text-red-600"
+    case "Medium":
+      return "text-yellow-600"
+    case "Low":
+      return "text-green-600"
+    default:
+      return "text-gray-600"
+  }
+}
+
+const getTrendIcon = (trend: string) => {
+  switch (trend) {
+    case "increasing":
+      return <TrendingUp className="h-4 w-4 text-red-500" />
+    case "decreasing":
+      return <TrendingUp className="h-4 w-4 text-green-500 rotate-180" />
+    case "stable":
+      return <AlertCircle className="h-4 w-4 text-yellow-500" />
+    default:
+      return null
+  }
+}
 
 export function DepartmentRiskProfileCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Department Risk Profile</CardTitle>
-        <CardDescription>Current risk levels across key categories.</CardDescription>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5" />
+          Department Risk Profile (Finance)
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={riskData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis allowDecimals={false} domain={[0, 10]} />
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--background))",
-                  borderColor: "hsl(var(--border))",
-                }}
+        <div className="space-y-6">
+          {riskCategories.map((risk) => (
+            <div key={risk.name} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{risk.name}</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-medium ${getStatusColor(risk.status)}`}>
+                    {risk.level}% - {risk.status}
+                  </span>
+                  {getTrendIcon(risk.trend)}
+                </div>
+              </div>
+              <Progress
+                value={risk.level}
+                className="h-2"
+                style={
+                  {
+                    "--progress-background": getRiskColor(risk.level),
+                  } as React.CSSProperties
+                }
               />
-              <Bar dataKey="level" name="Risk Level" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

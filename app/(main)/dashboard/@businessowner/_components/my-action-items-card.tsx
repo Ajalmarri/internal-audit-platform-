@@ -1,78 +1,90 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
-import Link from "next/link"
+import { Clock, AlertTriangle, CheckCircle } from "lucide-react"
 
 const actionItems = [
   {
-    id: "AR-001",
-    title: "Review Q2 Financial Controls",
-    type: "Action Plan",
-    dueDate: "2025-07-30",
-    status: "Pending",
-    link: "/action-plans/1",
+    id: 1,
+    title: "Review Q2 Financial Report",
+    dueDate: "2024-01-25",
+    priority: "high" as const,
+    status: "pending" as const,
   },
   {
-    id: "ER-015",
-    title: "Provide Sales Process Documentation",
-    type: "Evidence Request",
-    dueDate: "2025-08-05",
-    status: "Pending",
-    link: "/evidence-requests/15",
+    id: 2,
+    title: "Approve new vendor contract",
+    dueDate: "2024-01-27",
+    priority: "medium" as const,
+    status: "pending" as const,
   },
   {
-    id: "AR-003",
-    title: "Approve Vendor Security Policy",
-    type: "Action Plan",
-    dueDate: "2025-08-15",
-    status: "Overdue",
-    link: "/action-plans/3",
+    id: 3,
+    title: "Sign off on compliance training",
+    dueDate: "2024-01-30",
+    priority: "low" as const,
+    status: "pending" as const,
+  },
+  {
+    id: 4,
+    title: "Review audit findings response",
+    dueDate: "2024-01-22",
+    priority: "high" as const,
+    status: "overdue" as const,
   },
 ]
+
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case "high":
+      return "bg-red-100 text-red-800"
+    case "medium":
+      return "bg-yellow-100 text-yellow-800"
+    case "low":
+      return "bg-green-100 text-green-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "overdue":
+      return <AlertTriangle className="h-4 w-4 text-red-500" />
+    case "pending":
+      return <Clock className="h-4 w-4 text-yellow-500" />
+    case "completed":
+      return <CheckCircle className="h-4 w-4 text-green-500" />
+    default:
+      return <Clock className="h-4 w-4 text-gray-500" />
+  }
+}
 
 export function MyActionItemsCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>My Action Items</CardTitle>
-        <CardDescription>Tasks and requests requiring your attention.</CardDescription>
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          My Action Items
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {actionItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.id}</TableCell>
-                <TableCell>
-                  <Link href={item.link} className="hover:underline">
-                    {item.title}
-                  </Link>
-                  <span className="block text-xs text-muted-foreground">{item.type}</span>
-                </TableCell>
-                <TableCell>{item.dueDate}</TableCell>
-                <TableCell>
-                  <Badge variant={item.status === "Overdue" ? "destructive" : "default"}>{item.status}</Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <div className="mt-4 flex justify-end">
-          <Button variant="ghost" asChild>
-            <Link href="/action-plans">
-              View All <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+        <div className="space-y-4">
+          {actionItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                {getStatusIcon(item.status)}
+                <div>
+                  <p className="font-medium">{item.title}</p>
+                  <p className="text-sm text-muted-foreground">Due: {item.dueDate}</p>
+                </div>
+              </div>
+              <Badge className={getPriorityColor(item.priority)}>{item.priority}</Badge>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
