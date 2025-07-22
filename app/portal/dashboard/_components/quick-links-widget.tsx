@@ -1,29 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { FileText, ShieldAlert, FileUp, BookOpen } from "lucide-react"
+import { ArrowRight, FileCheck, FileSearch, FileUp, BookHeart } from "lucide-react"
 
-const quickLinks = [
-  {
-    title: "Manage Action Plans",
-    href: "#",
-    icon: FileText,
-  },
-  {
-    title: "View Department Findings",
-    href: "#",
-    icon: ShieldAlert,
-  },
-  {
-    title: "Submit Evidence",
-    href: "#",
-    icon: FileUp,
-  },
-  {
-    title: "Access Knowledge Center",
-    href: "#",
-    icon: BookOpen,
-  },
+const links = [
+  { title: "Manage Action Plans", href: "#", icon: FileCheck },
+  { title: "View Department Findings", href: "#", icon: FileSearch },
+  { title: "Submit Evidence", href: "#", icon: FileUp },
+  { title: "Access Knowledge Center", href: "#", icon: BookHeart },
 ]
 
 export function QuickLinksWidget() {
@@ -34,19 +17,18 @@ export function QuickLinksWidget() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {quickLinks.map((link) => (
-            <Button
+          {links.map((link) => (
+            <Link
+              href={link.href}
               key={link.title}
-              asChild
-              variant="outline"
-              size="lg"
-              className="justify-start text-left h-auto py-4 bg-transparent"
+              className="group flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-accent hover:text-accent-foreground"
             >
-              <Link href={link.href}>
-                <link.icon className="mr-4 h-6 w-6 flex-shrink-0" />
-                <span className="flex-grow">{link.title}</span>
-              </Link>
-            </Button>
+              <div className="flex items-center gap-3">
+                <link.icon className="h-6 w-6 text-muted-foreground group-hover:text-accent-foreground" />
+                <span className="font-medium">{link.title}</span>
+              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+            </Link>
           ))}
         </div>
       </CardContent>
