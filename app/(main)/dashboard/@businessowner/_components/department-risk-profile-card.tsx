@@ -91,13 +91,7 @@ export function DepartmentRiskProfileCard() {
                   </span>
                 </div>
               </div>
-              <Progress
-                value={category.level}
-                className="h-2"
-                style={{
-                  background: `linear-gradient(to right, ${getRiskColor(category.status)} 0%, ${getRiskColor(category.status)} ${category.level}%, #e5e7eb ${category.level}%, #e5e7eb 100%)`,
-                }}
-              />
+              <Progress value={category.level} className="h-2" />
               <p className="text-xs text-muted-foreground">{category.description}</p>
             </div>
           ))}
