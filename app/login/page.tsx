@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ShieldCheck, Loader2 } from "lucide-react"
+import { ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { Loader2 } from "lucide-react"
 
 // A simple component to represent the four-color Microsoft logo
 const MicrosoftLogo = () => (
@@ -16,14 +17,16 @@ const MicrosoftLogo = () => (
 )
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const [isSigningIn, setIsSigningIn] = useState(false)
 
   const handleSignIn = () => {
-    setIsLoading(true)
-    // Simulate an SSO authentication process
+    setIsSigningIn(true)
+    // In a real application, this would initiate the Microsoft SSO flow.
+    // The redirection would happen in the callback handler after a successful
+    // authentication from the SSO provider.
+    // For this demonstration, we'll simulate a delay then redirect.
     setTimeout(() => {
-      // On successful authentication, redirect to the main application dashboard
       router.push("/dashboard")
     }, 1500)
   }
@@ -40,15 +43,15 @@ export default function LoginPage() {
           </div>
 
           <Button
-            className="w-full bg-white text-black transition-all hover:bg-gray-200 hover:shadow-md"
+            className="w-full bg-white text-black transition-all hover:bg-gray-200 hover:shadow-md disabled:opacity-80"
             size="lg"
             onClick={handleSignIn}
-            disabled={isLoading}
+            disabled={isSigningIn}
           >
-            {isLoading ? (
+            {isSigningIn ? (
               <div className="flex items-center justify-center gap-3">
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="font-semibold">Signing in...</span>
+                <span>Authenticating...</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-3">
