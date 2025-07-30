@@ -109,7 +109,7 @@ const initialFormData: ActionPlanFormData = {
   overallObjective: "",
   items: [
     {
-      id: `item-${Date.now()}`,
+      id: `item-1`,
       action: "",
       responsiblePerson: "",
       dueDate: undefined,
@@ -167,7 +167,7 @@ export default function CreateActionPlanPage() {
 
   const addActionItem = () => {
     const newItem: ActionPlanItem = {
-      id: `item-${Date.now()}`,
+      id: `item-${formData.items.length + 1}`,
       action: "",
       responsiblePerson: "",
       dueDate: undefined,
@@ -543,7 +543,7 @@ export default function CreateActionPlanPage() {
                     <Button
                       type="button"
                       variant="ghost"
-                      size="icon-sm"
+                      size="icon"
                       onClick={() => removeActionItem(index)}
                       className="text-destructive hover:text-destructive-foreground hover:bg-destructive"
                     >

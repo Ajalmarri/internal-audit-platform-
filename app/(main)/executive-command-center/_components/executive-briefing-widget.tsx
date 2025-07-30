@@ -90,8 +90,10 @@ export function ExecutiveBriefingWidget() {
 
     const initialBriefingText = await generateMockInitialBriefing()
     const newTimestamp = new Date()
+    const timestamp = Date.now()
+    
     const initialAiMessage: Message = {
-      id: `ai-init-${Date.now()}`,
+      id: `ai-init-${timestamp}`,
       sender: "ai",
       content: renderFormattedText(initialBriefingText),
       timestamp: newTimestamp,
@@ -103,7 +105,7 @@ export function ExecutiveBriefingWidget() {
     // and if the conversation is empty (or just has the initial briefing)
     if (!isRefresh) {
       const exampleUserMessage: Message = {
-        id: `user-example-${Date.now()}`,
+        id: `user-example-${timestamp + 1}`,
         sender: "user",
         content: "Tell me more about the 7 new high-risk findings.",
         timestamp: new Date(newTimestamp.getTime() + 1000), // slightly after
@@ -111,7 +113,7 @@ export function ExecutiveBriefingWidget() {
       const exampleAiResponseText =
         "Of the 7 new high-risk findings, 4 are related to **'IT Security'** and 3 are related to **'Financial Controls'**. The most critical is **'Unsecured S3 Bucket'**, which has an assigned owner but no approved action plan yet. Would you like to see the full list?"
       const exampleAiMessage: Message = {
-        id: `ai-example-${Date.now()}`,
+        id: `ai-example-${timestamp + 2}`,
         sender: "ai",
         content: renderFormattedText(exampleAiResponseText),
         timestamp: new Date(newTimestamp.getTime() + 2000), // slightly after user
@@ -142,8 +144,9 @@ export function ExecutiveBriefingWidget() {
     e.preventDefault()
     if (!userInput.trim() || isAiResponding) return
 
+    const timestamp = Date.now()
     const userMessage: Message = {
-      id: `user-${Date.now()}`,
+      id: `user-${timestamp}`,
       sender: "user",
       content: userInput,
       timestamp: new Date(),
@@ -154,7 +157,7 @@ export function ExecutiveBriefingWidget() {
 
     const aiResponseText = await generateMockAiFollowUp(userInput)
     const aiMessage: Message = {
-      id: `ai-${Date.now()}`,
+      id: `ai-${timestamp + 1}`,
       sender: "ai",
       content: renderFormattedText(aiResponseText),
       timestamp: new Date(),

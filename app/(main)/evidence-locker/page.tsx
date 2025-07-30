@@ -129,7 +129,12 @@ export default function EvidenceLockerPage() {
 
   const handleStartAnalysisTask = (selectedFileIds: string[], instruction: string) => {
     const selectedFiles = mockEvidenceFiles.filter((file) => selectedFileIds.includes(file.id))
-    const newResultId = `AI-TASK-${Date.now()}`
+    
+    // Use a more stable approach for client-side only operations
+    const timestamp = Date.now()
+    const newResultId = `AI-TASK-${timestamp}`
+    const pageNumber = Math.floor(Math.random() * 10) + 1
+    
     const newResult: AiAnalysisResult = {
       id: newResultId,
       analysisTitle: `Analysis: ${instruction.substring(0, 50)}${instruction.length > 50 ? "..." : ""}`,
@@ -144,7 +149,7 @@ export default function EvidenceLockerPage() {
               {
                 id: "ex1-" + newResultId,
                 fileName: selectedFiles[0].fileName,
-                pageNumber: Math.floor(Math.random() * 10) + 1,
+                pageNumber: pageNumber,
                 quote: "Example critical phrase found in document.",
                 reason: "This phrase indicates a potential compliance issue that needs review.",
               },

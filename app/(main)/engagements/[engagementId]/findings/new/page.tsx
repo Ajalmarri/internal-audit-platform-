@@ -44,7 +44,9 @@ async function saveFinding(engagementId: string, data: FindingFormValues) {
   //   throw new Error("Failed to save finding due to a simulated server error.");
   // }
 
-  const newFindingId = `FIND-${Date.now().toString().slice(-4)}`
+  // Use a more stable ID generation approach
+  const timestamp = Date.now()
+  const newFindingId = `FIND-${timestamp.toString().slice(-4)}`
   return { ...data, id: newFindingId, engagementId }
 }
 

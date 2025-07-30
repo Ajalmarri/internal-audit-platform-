@@ -31,7 +31,8 @@ const mockTopRisks: TopEnterpriseRisk[] = [
 
 // Helper to generate detailed mock risk data
 const generateRiskDetail = (baseScore: number, riskName: string, month: string): RiskDetail => {
-  const score = Math.max(1, Math.min(10, baseScore + (Math.random() - 0.5) * 2))
+  // Use deterministic scoring to avoid hydration issues
+  const score = Math.max(1, Math.min(10, baseScore + (Math.sin(month.length + riskName.length) * 0.5)))
   const descriptions: { [key: string]: string[] } = {
     cybersecurity: [
       `Minor phishing attempts detected and blocked on ${month}.`,
@@ -45,10 +46,12 @@ const generateRiskDetail = (baseScore: number, riskName: string, month: string):
     ],
   }
   const riskId = riskName.split(" ")[0].toLowerCase()
+  // Use deterministic selection based on month and risk name
+  const descriptionIndex = (month.length + riskName.length) % 3
   return {
     score: Number.parseFloat(score.toFixed(1)),
     description:
-      descriptions[riskId]?.[Math.floor(Math.random() * 3)] ||
+      descriptions[riskId]?.[descriptionIndex] ||
       `Standard monitoring activities for ${riskName} on ${month}.`,
     relatedLinks: [
       { title: `Q2 ${riskName} Report`, url: "#" },

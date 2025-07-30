@@ -55,11 +55,16 @@ type EngagementFormData = z.infer<typeof engagementSchema>
 async function saveEngagement(data: EngagementFormData) {
   console.log("Saving engagement:", data)
   await new Promise((resolve) => setTimeout(resolve, 1500))
-  if (Math.random() > 0.1) {
+  
+  // Use a more stable approach for client-side only operations
+  const success = Math.random() > 0.1
+  const id = success ? `ENG-${Math.floor(Math.random() * 900) + 100}` : null
+  
+  if (success) {
     return {
       success: true,
       message: "Engagement initiated successfully!",
-      id: `ENG-${Math.floor(Math.random() * 900) + 100}`,
+      id: id,
     }
   } else {
     return { success: false, message: "Failed to initiate engagement. Please try again." }
