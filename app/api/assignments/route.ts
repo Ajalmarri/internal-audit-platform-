@@ -1,30 +1,116 @@
 import { NextResponse } from "next/server"
+import { query } from "@/lib/database"
+import type { Assignment } from "@/lib/database"
 
-// Using the mockAssignments from finding-creation-types as per previous context
-// Ensure this path is correct and the mockAssignments array is well-defined.
-// For this example, I'll redefine a simple mock here to ensure it's available.
-// In your actual project, ensure you import from the correct location.
-
-const mockApiAssignments = [
-  { id: "ASGN-001", title: "User Access Review Q1 (API)" },
-  { id: "ASGN-002", title: "Data Backup Verification (API)" },
-  { id: "ASGN-003", title: "Firewall Configuration Audit (API)" },
-  { id: "ASGN-004", title: "Vendor Security Assessment - CloudProviderX (API)" },
-  { id: "ASGN-005", title: "Incident Response Plan Test (API)" },
-  { id: "ASGN-006", title: "Physical Security Audit - HQ (API)" },
-  { id: "ASGN-007", title: "Software Patch Management Review (API)" },
+// Fallback mock data when database is not available
+const mockAssignments = [
+  {
+    id: "ASGN-001",
+    title: "User Access Review Q1",
+    description: "Review user access controls and permissions",
+    status: "in_progress",
+    priority: "high",
+    assigned_to: "John Smith",
+    due_date: "2024-03-15",
+    audit_plan_id: "AP001",
+    created_at: new Date("2024-01-15"),
+    updated_at: new Date("2024-01-15")
+  },
+  {
+    id: "ASGN-002",
+    title: "Data Backup Verification",
+    description: "Verify data backup procedures and recovery testing",
+    status: "pending",
+    priority: "medium",
+    assigned_to: "Sarah Johnson",
+    due_date: "2024-03-30",
+    audit_plan_id: "AP001",
+    created_at: new Date("2024-01-20"),
+    updated_at: new Date("2024-01-20")
+  },
+  {
+    id: "ASGN-003",
+    title: "Firewall Configuration Audit",
+    description: "Review firewall rules and network security",
+    status: "completed",
+    priority: "critical",
+    assigned_to: "Mike Wilson",
+    due_date: "2024-02-28",
+    audit_plan_id: "AP002",
+    created_at: new Date("2024-01-10"),
+    updated_at: new Date("2024-02-28")
+  },
+  {
+    id: "ASGN-004",
+    title: "Vendor Security Assessment",
+    description: "Security assessment of cloud service providers",
+    status: "in_progress",
+    priority: "high",
+    assigned_to: "Lisa Brown",
+    due_date: "2024-04-15",
+    audit_plan_id: "AP003",
+    created_at: new Date("2024-02-01"),
+    updated_at: new Date("2024-02-01")
+  },
+  {
+    id: "ASGN-005",
+    title: "Incident Response Plan Test",
+    description: "Test incident response procedures",
+    status: "pending",
+    priority: "medium",
+    assigned_to: "David Lee",
+    due_date: "2024-03-20",
+    audit_plan_id: "AP002",
+    created_at: new Date("2024-01-25"),
+    updated_at: new Date("2024-01-25")
+  },
 ]
 
 export async function GET() {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 700))
+  try {
+    // Try to use database first
+    const assignments = await query<Assignment>(`
+      SELECT id, title, description, status, priority, assigned_to, due_date, audit_plan_id, created_at, updated_at
+      FROM assignments 
+      ORDER BY created_at DESC
+    `)
 
-  // In a real application, you would fetch this data from your database
-  // For now, we're returning the mockApiAssignments
+    return NextResponse.json(assignments)
+  } catch (error) {
+    console.log("Database not available, using mock data:", error)
+    // Fallback to mock data if database is not available
+    return NextResponse.json(mockAssignments)
+  }
+}
 
-  if (mockApiAssignments) {
-    return NextResponse.json(mockApiAssignments)
-  } else {
-    return NextResponse.json({ error: "Failed to load assignments" }, { status: 500 })
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { title, description, status, priority, assigned_to, due_date, audit_plan_id } = body
+
+    if (!title) {
+      return NextResponse.json({ error: "Title is required" }, { status: 400 })
+    }
+
+    const id = `ASGN-${String(Date.now()).slice(-6)}`
+    const now = new Date()
+
+    await query(`
+      INSERT INTO assignments (id, title, description, status, priority, assigned_to, due_date, audit_plan_id, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `, [id, title, description, status || 'pending', priority || 'medium', assigned_to, due_date, audit_plan_id, now, now])
+
+    const newAssignment = await query<Assignment>(`
+      SELECT id, title, description, status, priority, assigned_to, due_date, audit_plan_id, created_at, updated_at
+      FROM assignments WHERE id = $1
+    `, [id])
+
+    return NextResponse.json(newAssignment[0], { status: 201 })
+  } catch (error) {
+    console.error("Failed to create assignment:", error)
+    return NextResponse.json(
+      { message: "Failed to create assignment. Database not available." },
+      { status: 500 },
+    )
   }
 }

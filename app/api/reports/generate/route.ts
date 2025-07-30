@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { put } from "@vercel/blob"
+import { writeFile, mkdir } from "fs/promises"
+import { join } from "path"
+import { query } from "@/lib/database"
+import type { Report } from "@/lib/database"
 import {
   mockReportTemplates,
   mockBusinessOwnersForReport,
@@ -7,20 +10,10 @@ import {
 } from "@/app/(main)/reports/_types/report-types"
 import { mockFindings } from "@/app/(main)/findings/_types/finding-types"
 
-// WARNING: Hardcoding tokens is a security risk and not recommended for production.
-// This should be replaced with a secure way of managing secrets, like environment variables.
-// You can get your Blob Read-Write token from your Vercel project settings.
-const BLOB_READ_WRITE_TOKEN = "YOUR_BLOB_READ_WRITE_TOKEN_HERE"
+// Local file storage configuration
+const UPLOAD_DIR = process.env.UPLOAD_DIR || "./uploads"
 
 export async function POST(request: NextRequest) {
-  if (!BLOB_READ_WRITE_TOKEN || BLOB_READ_WRITE_TOKEN === "YOUR_BLOB_READ_WRITE_TOKEN_HERE") {
-    console.error("Vercel Blob token is not configured in app/api/reports/generate/route.ts.")
-    return NextResponse.json(
-      { error: "Report generation service is not configured. Please update the token in the source code." },
-      { status: 500 },
-    )
-  }
-
   try {
     const body = await request.json()
     console.log("Report generation request:", body)
@@ -59,35 +52,55 @@ export async function POST(request: NextRequest) {
     // Generate report content
     const reportContent = generateReportContent(body, template)
 
-    // Create filename
+    // Create filename and directory
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
     const filename = `${body.title.replace(/[^a-zA-Z0-9]/g, "_")}_${timestamp}.txt`
+    const reportDir = join(UPLOAD_DIR, "reports")
+    
+    // Create directory if it doesn't exist
+    await mkdir(reportDir, { recursive: true })
+    
+    // Save report to local file system
+    const filePath = join(reportDir, filename)
+    await writeFile(filePath, reportContent, 'utf8')
 
-    // Upload to Vercel Blob
-    const blob = await put(filename, reportContent, {
-      access: "public",
-      addRandomSuffix: true,
-      token: BLOB_READ_WRITE_TOKEN,
-    })
+    // Generate file URL for local access
+    const fileUrl = `/api/files/reports/${filename}`
 
-    // Create report record
+    // Store report metadata in database
+    const reportId = `REP${String(Date.now()).slice(-6)}`
+    const now = new Date()
+
+    await query(`
+      INSERT INTO reports (id, title, template_id, status, file_path, file_size, generated_by, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `, [reportId, body.title, body.templateId, 'finalized', filePath, Buffer.byteLength(reportContent, 'utf8'), body.generatedBy || 'system', now, now])
+
+    // Get the created report record
+    const report = await query<Report>(`
+      SELECT id, title, template_id, status, file_path, file_size, generated_by, created_at, updated_at
+      FROM reports WHERE id = $1
+    `, [reportId])
+
+    // Create report record for backward compatibility
     const newReport = {
-      id: `REP${String(mockGeneratedReports.length + 1).padStart(3, "0")}`,
+      id: reportId,
       title: body.title,
       templateId: body.templateId,
-      status: "Finalized",
-      generatedDate: new Date().toISOString(),
-      filePath: blob.pathname,
-      fileUrl: blob.url,
-      downloadUrl: blob.downloadUrl,
+      status: "Finalized" as const,
+      generatedDate: now.toISOString(),
+      filePath: filePath,
+      fileUrl: fileUrl,
+      downloadUrl: fileUrl,
       targetBusinessOwnerId: body.targetBusinessOwnerId || null,
       dateRange: body.dateRange || null,
       includedFindingIds: body.includedFindingIds || [],
       recipients: body.recipients || [],
-      size: blob.size,
+      size: Buffer.byteLength(reportContent, 'utf8'),
+      version: "v1.0",
     }
 
-    // Add to mock data (in production, save to database)
+    // Add to mock data for backward compatibility
     mockGeneratedReports.push(newReport)
 
     console.log("Report generated successfully:", newReport)
@@ -95,6 +108,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       report: newReport,
+      databaseRecord: report[0],
       message: "Report generated successfully",
     })
   } catch (error) {

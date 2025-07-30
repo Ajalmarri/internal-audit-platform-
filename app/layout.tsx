@@ -15,16 +15,15 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Internal Audit Platform",
-  description: "A platform for managing internal audits.",
-    generator: 'v0.dev'
+  description: "A platform for managing internal audits."
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   // Ensure defaultOpen is boolean. If cookie is not set, default to true (expanded).
   const defaultSidebarOpen = cookieStore.get("sidebar:state")?.value !== "false"
 

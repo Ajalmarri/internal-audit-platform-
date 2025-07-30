@@ -1,33 +1,31 @@
-import { put } from "@vercel/blob"
+import { writeFile, mkdir } from "fs/promises"
+import { join } from "path"
 import { type NextRequest, NextResponse } from "next/server"
+import { query } from "@/lib/database"
+import type { Evidence } from "@/lib/database"
 
-// WARNING: Hardcoding tokens is a security risk and not recommended for production.
-// This should be replaced with a secure way of managing secrets, like environment variables.
-// You can get your Blob Read-Write token from your Vercel project settings.
-const BLOB_READ_WRITE_TOKEN = "YOUR_BLOB_READ_WRITE_TOKEN_HERE"
+// Local file storage configuration
+const UPLOAD_DIR = process.env.UPLOAD_DIR || "./uploads"
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
 export async function POST(request: NextRequest) {
-  if (!BLOB_READ_WRITE_TOKEN || BLOB_READ_WRITE_TOKEN === "YOUR_BLOB_READ_WRITE_TOKEN_HERE") {
-    console.error("Vercel Blob token is not configured in app/api/files/upload/route.ts.")
-    return NextResponse.json(
-      { error: "File upload service is not configured. Please update the token in the source code." },
-      { status: 500 },
-    )
-  }
-
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File
     const category = (formData.get("category") as string) || "general"
     const entityId = (formData.get("entityId") as string) || "unknown"
+    const title = (formData.get("title") as string) || file.name
+    const description = (formData.get("description") as string) || ""
+    const assignmentId = (formData.get("assignmentId") as string) || null
+    const findingId = (formData.get("findingId") as string) || null
+    const uploadedBy = (formData.get("uploadedBy") as string) || "system"
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
     }
 
-    // Validate file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024 // 10MB
-    if (file.size > maxSize) {
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json({ error: "File size exceeds 10MB limit" }, { status: 400 })
     }
 
@@ -52,26 +50,48 @@ export async function POST(request: NextRequest) {
     // Generate a unique filename
     const timestamp = Date.now()
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_")
-    const filename = `${category}/${entityId}/${timestamp}_${sanitizedName}`
+    const filename = `${timestamp}_${sanitizedName}`
+    
+    // Create directory structure
+    const uploadPath = join(UPLOAD_DIR, category, entityId)
+    await mkdir(uploadPath, { recursive: true })
+    
+    // Save file locally
+    const filePath = join(uploadPath, filename)
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    await writeFile(filePath, buffer)
 
-    // Upload to Vercel Blob
-    const blob = await put(filename, file, {
-      access: "public",
-      addRandomSuffix: false,
-      token: BLOB_READ_WRITE_TOKEN,
-    })
+    // Generate file URL for local access
+    const fileUrl = `/api/files/${category}/${entityId}/${filename}`
+
+    // Store file metadata in database
+    const evidenceId = `EV${String(timestamp).slice(-6)}`
+    const now = new Date()
+
+    await query(`
+      INSERT INTO evidence (id, title, description, file_path, file_size, file_type, assignment_id, finding_id, uploaded_by, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `, [evidenceId, title, description, filePath, file.size, file.type, assignmentId, findingId, uploadedBy, now])
+
+    // Get the created evidence record
+    const evidence = await query<Evidence>(`
+      SELECT id, title, description, file_path, file_size, file_type, assignment_id, finding_id, uploaded_by, created_at
+      FROM evidence WHERE id = $1
+    `, [evidenceId])
 
     return NextResponse.json({
       success: true,
+      evidence: evidence[0],
       file: {
-        id: `file_${timestamp}`,
+        id: evidenceId,
         name: file.name,
         size: file.size,
         type: file.type,
-        url: blob.url,
-        downloadUrl: blob.downloadUrl,
-        pathname: blob.pathname,
-        uploadedAt: new Date().toISOString(),
+        url: fileUrl,
+        downloadUrl: fileUrl,
+        pathname: filePath,
+        uploadedAt: now.toISOString(),
         category,
         entityId,
       },
