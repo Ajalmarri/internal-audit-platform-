@@ -3,9 +3,9 @@ import { type NextRequest, NextResponse } from "next/server"
 // Mock database - in production, use a real database
 const mockGeneratedReports = new Map()
 
-export async function GET(request: NextRequest, { params }: { params: { reportId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
   try {
-    const reportId = params.reportId
+    const { reportId } = await params
 
     if (!reportId) {
       return NextResponse.json({ error: "Report ID is required" }, { status: 400 })

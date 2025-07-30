@@ -222,7 +222,7 @@ export default function EvidenceLockerPage() {
                 <CardContent className="space-y-3">
                   <div className="flex items-center text-sm text-muted-foreground">
                     <CalendarDays className="mr-2 h-4 w-4" />
-                    <span>Run on: {new Date(result.dateRun).toLocaleDateString()}</span>
+                    <span>Run on: {new Date(result.dateRun).toISOString().split('T')[0]}</span>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
                     <FileText className="mr-2 h-4 w-4" />

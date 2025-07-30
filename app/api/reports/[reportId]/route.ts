@@ -6,9 +6,9 @@ import {
 } from "@/app/(main)/reports/_types/report-types"
 import { mockFindings } from "@/app/(main)/findings/_types/finding-types"
 
-export async function GET(request: NextRequest, { params }: { params: { reportId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
   try {
-    const reportId = params.reportId
+    const { reportId } = await params
 
     if (!reportId) {
       return NextResponse.json({ error: "Report ID is required" }, { status: 400 })

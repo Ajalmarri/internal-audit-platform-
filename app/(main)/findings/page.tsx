@@ -527,7 +527,7 @@ export default function FindingsPage() {
                           {finding.responsibleBusinessOwner}
                         </TableCell>
                         <TableCell>{getActionPlanProgressDisplay(finding)}</TableCell>
-                        <TableCell>{new Date(finding.lastUpdated).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(finding.lastUpdated).toISOString().split('T')[0]}</TableCell>
                         <TableCell className="text-right sticky right-0 bg-card z-10">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

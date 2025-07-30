@@ -6,10 +6,10 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || "./uploads"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ fileId: string }> }
 ) {
   try {
-    const fileId = params.fileId
+    const { fileId } = await params
     
     // Extract category, entityId, and filename from the URL path
     const url = new URL(request.url)

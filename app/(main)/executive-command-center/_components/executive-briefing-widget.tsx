@@ -123,14 +123,8 @@ export function ExecutiveBriefingWidget() {
 
     setConversation(updatedConversation)
     setLastBriefingTimestamp(
-      newTimestamp.toLocaleString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
+      newTimestamp.toISOString().split('T')[0] + ' ' + 
+      newTimestamp.toTimeString().split(' ')[0]
     )
     setIsLoadingInitialBriefing(false)
   }

@@ -395,7 +395,7 @@ export default function ActionPlansPage() {
                             <span className="text-xs text-muted-foreground">{plan.progress}%</span>
                           </div>
                         </TableCell>
-                        <TableCell>{new Date(plan.lastUpdated).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(plan.lastUpdated).toISOString().split('T')[0]}</TableCell>
                         <TableCell className="text-right sticky right-0 bg-card z-10">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
