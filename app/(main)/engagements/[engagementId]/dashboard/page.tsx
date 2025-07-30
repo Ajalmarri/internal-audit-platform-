@@ -335,14 +335,13 @@ export default function EngagementDetailPage() {
               <div className="px-4 pb-2">
                 <Progress
                   value={engagement.healthMetrics.budgetConsumed}
-                  className="h-2"
-                  indicatorClassName={
+                  className={`h-2 ${
                     engagement.healthMetrics.budgetConsumed > 85
                       ? "bg-red-500"
                       : engagement.healthMetrics.budgetConsumed > 60
                         ? "bg-yellow-500"
                         : "bg-green-500"
-                  }
+                  }`}
                 />
               </div>
             </Card>

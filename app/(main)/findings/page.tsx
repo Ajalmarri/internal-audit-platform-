@@ -475,7 +475,7 @@ export default function FindingsPage() {
                             {isOverdue && !showOnlyOverdue && (
                               <AlertTriangle
                                 className="h-4 w-4 text-red-500 mr-2 shrink-0"
-                                titleAccess="This finding has overdue items"
+                                title="This finding has overdue items"
                               />
                             )}
                             <div

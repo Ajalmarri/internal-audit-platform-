@@ -356,8 +356,7 @@ export default function AuditPlansPage() {
                           <div className="flex items-center gap-2">
                             <Progress
                               value={plan.progress}
-                              className="h-2 flex-grow"
-                              indicatorClassName={progressColor}
+                              className={`h-2 flex-grow ${progressColor}`}
                             />
                             <span className="text-xs text-muted-foreground">{plan.progress}%</span>
                           </div>
