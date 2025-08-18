@@ -14,6 +14,8 @@ export type FindingStatus =
   | "Resolved"
   | "Closed"
   | "Rejected" // Auditor rejected finding or action plan
+  | "Open"
+  | "In Progress"
 
 export type ActionPlanItemStatus = "To Do" | "In Progress" | "Completed" | "Blocked"
 

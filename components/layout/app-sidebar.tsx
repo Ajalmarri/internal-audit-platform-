@@ -1,13 +1,26 @@
 "use client"
 
-import Link from "next/link"
+import type React from "react"
+
+import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
-import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarTrigger } from "@/components/ui/sidebar"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { cn } from "@/lib/utils"
 import ThemeToggle from "@/components/theme-toggle"
 import LanguageSwitcher from "@/components/language-switcher"
-import { cn } from "@/lib/utils"
+import { useAuth } from "@/contexts/auth-context"
 import {
   LayoutDashboard,
   FileText,
@@ -30,10 +43,6 @@ import {
   BarChartHorizontalBig,
   Search,
 } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
-import { Input } from "@/components/ui/input"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Button } from "@/components/ui/button"
 
 const menuGroups = [
   {
@@ -86,7 +95,9 @@ const menuGroups = [
 
 export default function AppSidebar() {
   const pathname = usePathname()
-  const { state, isMobile } = useSidebar()
+  const [state, setState] = useState<"expanded" | "collapsed">("expanded")
+  const [isMobile, setIsMobile] = useState(false)
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
 
   const filteredMenuGroups = menuGroups
@@ -188,11 +199,17 @@ export default function AppSidebar() {
             <div className="flex items-center gap-3 px-1">
               <Avatar className="h-9 w-9">
                 <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Name" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarFallback>
+                  {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
+                </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm font-medium">John Doe</p>
-                <p className="text-xs text-muted-foreground">Audit Manager</p>
+                <p className="text-sm font-medium">
+                  {user ? `${user.firstName} ${user.lastName}` : "User"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {user ? user.roleName : "Unknown Role"}
+                </p>
               </div>
             </div>
           )}
@@ -201,19 +218,25 @@ export default function AppSidebar() {
               <TooltipTrigger asChild>
                 <Avatar className="h-9 w-9 mx-auto cursor-pointer">
                   <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Name" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback>
+                    {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
+                  </AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
               <TooltipContent side="right" align="center">
-                <p>John Doe</p>
-                <p className="text-xs text-muted-foreground">Audit Manager</p>
+                <p>{user ? `${user.firstName} ${user.lastName}` : "User"}</p>
+                <p className="text-xs text-muted-foreground">
+                  {user ? user.roleName : "Unknown Role"}
+                </p>
               </TooltipContent>
             </Tooltip>
           )}
           {state === "collapsed" && isMobile && (
             <Avatar className="h-9 w-9 mx-auto">
               <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Name" />
-              <AvatarFallback>JD</AvatarFallback>
+              <AvatarFallback>
+                {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
+              </AvatarFallback>
             </Avatar>
           )}
 

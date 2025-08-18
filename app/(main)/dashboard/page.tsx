@@ -8,6 +8,8 @@ import TeamAvailabilityCard from "./_components/team-availability-card"
 import DashboardHeader from "./_components/dashboard-header"
 import CustomizeDashboardModal from "./_components/customize-dashboard-modal"
 import type { DashboardWidget, DashboardWidgetConfig, DashboardState, DashboardView } from "./_types/dashboard-types"
+import ProtectedRoute from "@/components/auth/protected-route"
+import { useAuth } from "@/contexts/auth-context"
 
 const ALL_AVAILABLE_WIDGETS_MASTER_LIST: DashboardWidget[] = [
   {
@@ -80,35 +82,41 @@ const getInitialState = (): DashboardState => {
 }
 
 export default function DashboardPage() {
-  const [userName, setUserName] = useState("Muhammad")
+  const { user } = useAuth()
   const [dashboardState, setDashboardState] = useState<DashboardState | null>(null)
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false)
   const [isClient, setIsClient] = useState(false)
 
+  // Get the real user's first name for the greeting
+  const userName = user?.firstName || "User"
+
   useEffect(() => {
+    console.log("Dashboard: useEffect running")
     setIsClient(true)
     try {
       const savedStateRaw = localStorage.getItem(LOCAL_STORAGE_KEY)
       if (savedStateRaw) {
         const savedState = JSON.parse(savedStateRaw) as DashboardState
+        console.log("Dashboard: Loading saved state", savedState)
         setDashboardState(savedState)
       } else {
         const initialState = getInitialState()
+        console.log("Dashboard: Setting initial state", initialState)
         setDashboardState(initialState)
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(initialState))
       }
     } catch (error) {
-      console.error("Failed to load dashboard state:", error)
+      console.error("Dashboard: Error loading state", error)
       const initialState = getInitialState()
       setDashboardState(initialState)
     }
   }, [])
 
+  console.log("Dashboard: Render state", { isClient, dashboardState: !!dashboardState })
+
   const updateStateAndLocalStorage = (newState: DashboardState) => {
     setDashboardState(newState)
-    if (isClient) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState))
-    }
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState))
   }
 
   const handleSwitchView = (viewId: string) => {
@@ -166,6 +174,7 @@ export default function DashboardPage() {
   }, [isClient, activeView])
 
   if (!isClient || !dashboardState || !activeView) {
+    console.log("Dashboard: Showing loading state", { isClient, dashboardState: !!dashboardState, activeView: !!activeView })
     return (
       <div className="flex flex-col gap-6">
         <div className="flex justify-between items-center">
@@ -185,31 +194,35 @@ export default function DashboardPage() {
     )
   }
 
+  console.log("Dashboard: Rendering full dashboard", { activeView, renderedWidgets: renderedWidgets.length })
+
   return (
-    <div className="flex flex-col gap-6">
-      <DashboardHeader
-        userName={userName}
-        activeView={activeView}
-        allViews={dashboardState.views}
-        onSwitchView={handleSwitchView}
-        onCustomize={() => setIsCustomizeModalOpen(true)}
-        onCreateNewView={handleCreateNewView}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">{renderedWidgets}</div>
-
-      {isClient && (
-        <CustomizeDashboardModal
-          isOpen={isCustomizeModalOpen}
-          onClose={() => setIsCustomizeModalOpen(false)}
+    <ProtectedRoute>
+      <div className="flex flex-col gap-6">
+        <DashboardHeader
+          userName={userName}
           activeView={activeView}
-          onSave={handleSave}
-          onSaveAsNew={handleSaveAsNew}
-          allAvailableWidgetsMasterList={ALL_AVAILABLE_WIDGETS_MASTER_LIST.map(
-            ({ component, defaultOrder, isVisible, ...rest }) => rest,
-          )}
+          allViews={dashboardState.views}
+          onSwitchView={handleSwitchView}
+          onCustomize={() => setIsCustomizeModalOpen(true)}
+          onCreateNewView={handleCreateNewView}
         />
-      )}
-    </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">{renderedWidgets}</div>
+
+        {isClient && (
+          <CustomizeDashboardModal
+            isOpen={isCustomizeModalOpen}
+            onClose={() => setIsCustomizeModalOpen(false)}
+            activeView={activeView}
+            onSave={handleSave}
+            onSaveAsNew={handleSaveAsNew}
+            allAvailableWidgetsMasterList={ALL_AVAILABLE_WIDGETS_MASTER_LIST.map(
+              ({ component, defaultOrder, isVisible, ...rest }) => rest,
+            )}
+          />
+        )}
+      </div>
+    </ProtectedRoute>
   )
 }

@@ -1,27 +1,18 @@
 "use client"
 
 import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useTheme } from "next-themes"
-import { useMockUser } from "@/hooks/use-mock-user" // Assuming this hook provides the user data
+import { useAuth } from "@/contexts/auth-context"
 
 export default function ProfileSettings() {
-  // Use the mock user hook, overriding defaults to match the request
-  const user = useMockUser({
-    name: "John Doe",
-    title: "Audit Manager", // Assuming 'title' in MockUser corresponds to 'Role'
-    role: "Audit Manager", // Or add a specific 'role' field if 'title' is different
-    email: "john.doe@audit-platform.com",
-    avatarUrl: "/placeholder.svg?width=200&height=200", // Using placeholder.svg
-    fallback: "JD",
-  })
-
+  const { user } = useAuth()
   const { theme, setTheme } = useTheme()
   const [currentLanguage, setCurrentLanguage] = useState("en") // Default language
 
@@ -46,8 +37,10 @@ export default function ProfileSettings() {
       <CardContent className="space-y-8">
         <div className="flex items-center gap-6">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={user.avatarUrl || "/placeholder.svg"} alt={user.name} />
-            <AvatarFallback>{user.fallback}</AvatarFallback>
+            <AvatarImage src="/placeholder.svg?width=200&height=200" alt={user?.firstName || "User"} />
+            <AvatarFallback>
+              {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
+            </AvatarFallback>
           </Avatar>
           <div className="flex flex-col gap-2">
             <Button variant="outline">Upload New Photo</Button>
@@ -58,15 +51,15 @@ export default function ProfileSettings() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name</Label>
-            <Input id="fullName" value={user.name} readOnly />
+            <Input id="fullName" value={user ? `${user.firstName} ${user.lastName}` : "User"} readOnly />
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
-            <Input id="role" value={user.title} readOnly /> {/* Using user.title for Role */}
+            <Input id="role" value={user?.roleName || "Unknown Role"} readOnly />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
-            <Input id="email" type="email" value={user.email} readOnly />
+            <Input id="email" type="email" value={user?.email || "user@example.com"} readOnly />
           </div>
           <div className="space-y-2">
             <Label htmlFor="language">Language</Label>
@@ -112,9 +105,6 @@ export default function ProfileSettings() {
           </RadioGroup>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button>Save Changes</Button>
-      </CardFooter>
     </Card>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +27,7 @@ import {
   Rocket,
   CheckCircle2,
   XCircleIcon,
+  Loader2,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
@@ -42,15 +43,20 @@ import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
 
-type AuditPlanStatus = "Draft" | "In Progress" | "Completed" | "Cancelled"
+type AuditPlanStatus = "Draft" | "Active" | "In Progress" | "Completed" | "Cancelled"
 
-// Simplified AuditPlan interface
+// Updated AuditPlan interface to match database schema
 interface AuditPlan {
   id: string
-  name: string
-  year: number
-  status: AuditPlanStatus
-  progress: number
+  title: string
+  year: string
+  status?: AuditPlanStatus
+  progress?: number
+  start_date?: string
+  end_date?: string
+  created_at?: string
+  updated_at?: string
+  is_deleted: number
 }
 
 // Assignment interface to link to plans
@@ -63,54 +69,16 @@ export interface LinkedAssignment {
 
 const currentYear = new Date().getFullYear()
 
-// Mock Data Refactored
-const initialMockAuditPlans: AuditPlan[] = [
-  {
-    id: "AP2025",
-    name: `Internal Audit Plan ${currentYear}`,
-    year: currentYear,
-    status: "In Progress",
-    progress: 65,
-  },
-  {
-    id: "AP2024",
-    name: `Internal Audit Plan ${currentYear - 1}`,
-    year: currentYear - 1,
-    status: "Completed",
-    progress: 100,
-  },
-  {
-    id: "AP2023",
-    name: `Internal Audit Plan ${currentYear - 2}`,
-    year: currentYear - 2,
-    status: "Completed",
-    progress: 100,
-  },
-  {
-    id: "AP2026_DRAFT",
-    name: `Internal Audit Plan ${currentYear + 1}`,
-    year: currentYear + 1,
-    status: "Draft",
-    progress: 10,
-  },
-]
-
-export const mockAssignments: LinkedAssignment[] = [
-  { id: "ASGN001", name: "Q1 Financial Controls", auditPlanId: "AP2025", status: "Completed" },
-  { id: "ASGN002", name: "IT General Controls Review", auditPlanId: "AP2025", status: "In Progress" },
-  { id: "ASGN003", name: "Vendor Risk Assessment", auditPlanId: "AP2025", status: "In Progress" },
-  { id: "ASGN004", name: "Q3 Compliance Check", auditPlanId: "AP2025", status: "Not Started" },
-  { id: "ASGN005", name: "Annual Financial Statement Audit", auditPlanId: "AP2024", status: "Completed" },
-  { id: "ASGN006", name: "Cybersecurity Audit", auditPlanId: "AP2024", status: "Completed" },
-  { id: "ASGN007", name: "Operational Efficiency Audit", auditPlanId: "AP2023", status: "Completed" },
-]
+// Will fetch real assignments for each plan
+export const mockAssignments: LinkedAssignment[] = []
 
 const statusConfig: Record<
   AuditPlanStatus,
-  { icon: React.ElementType; color: string; badgeVariant: "default" | "secondary" | "destructive" | "outline" | "info" }
+  { icon: React.ElementType; color: string; badgeVariant: "default" | "secondary" | "destructive" | "outline" }
 > = {
   Draft: { icon: FileText, color: "text-gray-500", badgeVariant: "outline" },
-  "In Progress": { icon: Rocket, color: "text-sky-600", badgeVariant: "info" },
+  Active: { icon: Rocket, color: "text-sky-600", badgeVariant: "default" },
+  "In Progress": { icon: Rocket, color: "text-sky-600", badgeVariant: "default" },
   Completed: { icon: CheckCircle2, color: "text-green-600", badgeVariant: "default" },
   Cancelled: { icon: XCircleIcon, color: "text-red-600", badgeVariant: "destructive" },
 }
@@ -118,25 +86,69 @@ const statusConfig: Record<
 export default function AuditPlansPage() {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
-  const [auditPlans, setAuditPlans] = useState<AuditPlan[]>(initialMockAuditPlans)
+  const [auditPlans, setAuditPlans] = useState<AuditPlan[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [assignmentsByPlan, setAssignmentsByPlan] = useState<Record<string, LinkedAssignment[]>>({})
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState<AuditPlan | null>(null)
   const [selectedYear, setSelectedYear] = useState<string>(String(currentYear))
 
   // Form state
-  const [currentName, setCurrentName] = useState("")
-  const [currentYearValue, setCurrentYearValue] = useState<number>(currentYear)
+  const [currentTitle, setCurrentTitle] = useState("")
+  const [currentDescription, setCurrentDescription] = useState("")
   const [currentStatus, setCurrentStatus] = useState<AuditPlanStatus>("Draft")
 
+  // Fetch audit plans and assignments from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        const [plansRes, assignmentsRes] = await Promise.all([
+          fetch('/api/audit-plans'),
+          fetch('/api/assignments'),
+        ])
+        if (!plansRes.ok) throw new Error('Failed to fetch audit plans')
+        if (!assignmentsRes.ok) throw new Error('Failed to fetch assignments')
+
+        const [plans, assignments] = await Promise.all([plansRes.json(), assignmentsRes.json()])
+        setAuditPlans(plans)
+        const grouped: Record<string, LinkedAssignment[]> = {}
+        ;(assignments as any[]).forEach((a) => {
+          const planId = a.audit_plan_id
+          if (!planId) return
+          if (!grouped[planId]) grouped[planId] = []
+          grouped[planId].push({
+            id: a.id,
+            name: a.title,
+            auditPlanId: planId,
+            status: (a.status as LinkedAssignment['status']) || 'Not Started',
+          })
+        })
+        setAssignmentsByPlan(grouped)
+      } catch (error) {
+        console.error('Error loading data:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to load data from database.',
+          variant: 'destructive',
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [toast])
+
   const filteredAuditPlans = useMemo(() => {
-    return auditPlans
-      .filter((plan) => plan.year === Number.parseInt(selectedYear, 10))
-      .filter((plan) => plan.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  }, [searchTerm, auditPlans, selectedYear])
+    return auditPlans.filter((plan) => 
+      plan.title.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [searchTerm, auditPlans])
 
   const resetFormStates = () => {
-    setCurrentName("")
-    setCurrentYearValue(currentYear)
+    setCurrentTitle("")
+    setCurrentDescription("")
     setCurrentStatus("Draft")
   }
 
@@ -148,9 +160,9 @@ export default function AuditPlansPage() {
 
   const openEditPlanForm = (plan: AuditPlan) => {
     setEditingPlan(plan)
-    setCurrentName(plan.name)
-    setCurrentYearValue(plan.year)
-    setCurrentStatus(plan.status)
+    setCurrentTitle(plan.title)
+    setCurrentDescription(plan.year || "")
+    setCurrentStatus(plan.status || "Draft")
     setIsFormOpen(true)
   }
 
@@ -161,9 +173,9 @@ export default function AuditPlansPage() {
 
   const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const planData: Omit<AuditPlan, "id" | "progress"> = {
-      name: currentName,
-      year: currentYearValue,
+    const planData: Partial<AuditPlan> = {
+      title: currentTitle,
+      year: currentDescription,
       status: currentStatus,
     }
 
@@ -176,7 +188,9 @@ export default function AuditPlansPage() {
       const newPlan: AuditPlan = {
         ...planData,
         id: `AP${String(auditPlans.length + 1).padStart(3, "0")}`,
-        progress: 0,
+        title: currentTitle,
+        year: currentDescription || "2024",
+        is_deleted: 0,
       }
       setAuditPlans((prevPlans) => [...prevPlans, newPlan])
       toast({ title: "Success", description: "New audit plan created." })
@@ -185,13 +199,39 @@ export default function AuditPlansPage() {
   }
 
   const availableYears = useMemo(() => {
-    const years = new Set(auditPlans.map((p) => p.year))
+    const years = new Set<number>()
+    
+    // Safely parse years from audit plans, filtering out invalid values
+    auditPlans.forEach((p) => {
+      const parsedYear = parseInt(p.year)
+      if (!isNaN(parsedYear)) {
+        years.add(parsedYear)
+      }
+    })
+    
     // Add a few future years for creating new plans
     for (let i = 0; i <= 2; i++) {
       years.add(currentYear + i)
     }
-    return Array.from(years).sort((a, b) => b - a)
+    
+    return Array.from(years).sort((a: number, b: number) => b - a)
   }, [auditPlans])
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <h1 className="text-3xl font-semibold text-foreground">Manage Audit Plans</h1>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading audit plans...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -220,11 +260,23 @@ export default function AuditPlansPage() {
                   </Label>
                   <Input
                     id="name"
-                    value={currentName}
-                    onChange={(e) => setCurrentName(e.target.value)}
+                    value={currentTitle}
+                    onChange={(e) => setCurrentTitle(e.target.value)}
                     className="col-span-3"
-                    placeholder={`e.g., Internal Audit Plan ${currentYearValue}`}
+                    placeholder={`e.g., Internal Audit Plan ${currentYear}`}
                     required
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="description" className="text-right">
+                    Description
+                  </Label>
+                  <Input
+                    id="description"
+                    value={currentDescription}
+                    onChange={(e) => setCurrentDescription(e.target.value)}
+                    className="col-span-3"
+                    placeholder="Brief description of the audit plan..."
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -232,8 +284,8 @@ export default function AuditPlansPage() {
                     Year
                   </Label>
                   <Select
-                    value={String(currentYearValue)}
-                    onValueChange={(value) => setCurrentYearValue(Number.parseInt(value, 10))}
+                    value={String(currentYear)}
+                    onValueChange={(value) => setSelectedYear(value)}
                   >
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Select year" />
@@ -319,7 +371,7 @@ export default function AuditPlansPage() {
               <TableBody>
                 {filteredAuditPlans.length > 0 ? (
                   filteredAuditPlans.map((plan) => {
-                    const config = statusConfig[plan.status]
+                    const config = statusConfig[plan.status || "Draft"]
                     const StatusIcon = config.icon
                     const statusColor = config.color
                     const badgeVariant = config.badgeVariant
@@ -328,14 +380,16 @@ export default function AuditPlansPage() {
                     if (plan.status === "Completed") progressColor = "bg-green-500"
                     else if (plan.status === "Draft") progressColor = "bg-gray-400"
                     else if (plan.status === "Cancelled") progressColor = "bg-red-500"
+                    else if (plan.status === "In Progress") progressColor = "bg-sky-500"
 
-                    const linkedAssignments = mockAssignments.filter((a) => a.auditPlanId === plan.id)
+                    const linkedAssignments = assignmentsByPlan[plan.id] || []
 
                     return (
-                      <TableRow key={plan.id}>
+                      <TableRow key={plan.id} className={plan.is_deleted ? "opacity-50 bg-gray-50" : ""}>
                         <TableCell>
-                          <div className="font-medium">{plan.name}</div>
+                          <div className="font-medium">{plan.title}</div>
                           <div className="text-xs text-muted-foreground">{plan.year}</div>
+                          {plan.is_deleted && <div className="text-xs text-red-500">(Deleted)</div>}
                         </TableCell>
                         <TableCell>
                           <Badge
@@ -343,7 +397,7 @@ export default function AuditPlansPage() {
                             className={
                               plan.status === "Completed"
                                 ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
-                                : plan.status === "In Progress"
+                                : plan.status === "Active" || plan.status === "In Progress"
                                   ? "bg-sky-100 text-sky-800 border-sky-200 hover:bg-sky-200"
                                   : ""
                             }
@@ -355,11 +409,11 @@ export default function AuditPlansPage() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Progress
-                              value={plan.progress}
+                              value={plan.progress || 0}
                               className="h-2 flex-grow"
                               indicatorClassName={progressColor}
                             />
-                            <span className="text-xs text-muted-foreground">{plan.progress}%</span>
+                            <span className="text-xs text-muted-foreground">{plan.progress || 0}%</span>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -390,7 +444,7 @@ export default function AuditPlansPage() {
                                 onClick={() => {
                                   toast({
                                     title: "View Details",
-                                    description: `Viewing details for ${plan.name}`,
+                                    description: `Viewing details for ${plan.title}`,
                                   })
                                 }}
                               >

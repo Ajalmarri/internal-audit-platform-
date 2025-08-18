@@ -1,30 +1,49 @@
 "use client"
 
-import { useState, type ChangeEvent, type FormEvent, useEffect } from "react"
+import { useState, useEffect, ChangeEvent, FormEvent } from "react"
 import { useRouter } from "next/navigation"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import ProcessTracker from "../[assignmentId]/_components/process-tracker"
-import type { RiskRating, UserStub, Risk } from "../[assignmentId]/_types/assignment-types"
-import { Save, XCircle, PlusCircle, Users, LinkIcon, Trash2 } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { X, Plus, Link as LinkIcon, Users, AlertTriangle } from "lucide-react"
 import { Combobox } from "@/components/ui/combobox" // Ensure this path is correct
 
-// Mock data (can be fetched from API in a real app for other fields)
+interface UserStub {
+  id: string
+  name: string
+  avatar?: string
+  email?: string
+  role?: string
+}
+
+interface Risk {
+  id: string
+  title: string
+  description: string
+  inherentRisk: string
+}
+
+type RiskRating = "Low" | "Medium" | "High" | "Critical"
+
 const mockRequirementTypes: string[] = [
   "Regulatory Compliance",
   "Financial Audit",
@@ -33,10 +52,8 @@ const mockRequirementTypes: string[] = [
   "Process Improvement",
 ]
 const riskRatingOptions: RiskRating[] = ["Low", "Medium", "High", "Critical"]
-const mockAvailableTeamMembers: UserStub[] = [
-  { id: "user1", name: "Aisha Al-Farsi", avatar: "/placeholder.svg?width=40&height=40" },
-  { id: "user2", name: "Omar Hassan", avatar: "/placeholder.svg?width=40&height=40" },
-]
+
+// Remove mock team members - we'll fetch real users
 const mockRiskLibrary: Risk[] = [
   { id: "RISK001", title: "Data Breach", description: "Unauthorized access to sensitive data.", inherentRisk: "Critical" },
 ]
@@ -78,8 +95,11 @@ export default function CreateNewAssignmentPage() {
   const [selectedRiskIds, setSelectedRiskIds] = useState<Set<string>>(new Set())
 
   const [availableAuditPlans, setAvailableAuditPlans] = useState<AuditPlanOption[]>([])
+  const [availableTeamMembers, setAvailableTeamMembers] = useState<UserStub[]>([])
   const [isLoadingAuditPlans, setIsLoadingAuditPlans] = useState(false)
+  const [isLoadingTeamMembers, setIsLoadingTeamMembers] = useState(false)
   const [auditPlansError, setAuditPlansError] = useState<string | null>(null)
+  const [teamMembersError, setTeamMembersError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchAuditPlans = async () => {
@@ -109,7 +129,32 @@ export default function CreateNewAssignmentPage() {
         setIsLoadingAuditPlans(false)
       }
     }
+
+    const fetchTeamMembers = async () => {
+      setIsLoadingTeamMembers(true)
+      setTeamMembersError(null)
+      try {
+        const response = await fetch("/api/users")
+        if (!response.ok) {
+          throw new Error(`Failed to fetch team members: ${response.status}`)
+        }
+        const data: UserStub[] = await response.json()
+        // Add avatar placeholder for each user
+        const usersWithAvatars = data.map(user => ({
+          ...user,
+          avatar: "/placeholder.svg?width=40&height=40"
+        }))
+        setAvailableTeamMembers(usersWithAvatars)
+      } catch (error) {
+        console.error("Error fetching team members:", error)
+        setTeamMembersError((error as Error).message || "Failed to fetch team members")
+      } finally {
+        setIsLoadingTeamMembers(false)
+      }
+    }
+
     fetchAuditPlans()
+    fetchTeamMembers()
   }, [])
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -140,7 +185,7 @@ export default function CreateNewAssignmentPage() {
   // Team Management Dialog functions (handleManageTeam, etc.) remain the same
   const handleManageTeam = () => { setSelectedTeamMemberIds(new Set(formState.assignedTeamMembers.map((m) => m.id))); setIsTeamDialogOpen(true); }
   const handleTeamMemberToggle = (memberId: string) => { setSelectedTeamMemberIds((prev) => { const newSet = new Set(prev); if (newSet.has(memberId)) newSet.delete(memberId); else newSet.add(memberId); return newSet; }); }
-  const handleConfirmTeamSelection = () => { const selectedMembers = mockAvailableTeamMembers.filter((m) => selectedTeamMemberIds.has(m.id)); setFormState((prev) => ({ ...prev, assignedTeamMembers: selectedMembers })); setIsTeamDialogOpen(false); }
+  const handleConfirmTeamSelection = () => { const selectedMembers = availableTeamMembers.filter((m) => selectedTeamMemberIds.has(m.id)); setFormState((prev) => ({ ...prev, assignedTeamMembers: selectedMembers })); setIsTeamDialogOpen(false); }
   const removeTeamMember = (memberId: string) => { setFormState((prev) => ({ ...prev, assignedTeamMembers: prev.assignedTeamMembers.filter((m) => m.id !== memberId), }));}
 
   // Risk Management Dialog functions (handleManageRisks, etc.) remain the same
@@ -170,17 +215,19 @@ export default function CreateNewAssignmentPage() {
           />
           <div className="flex items-center gap-2 flex-shrink-0">
             <Button type="submit" size="lg">
-              <Save className="mr-2 h-4 w-4" /> Save Assignment
+              <Plus className="mr-2 h-4 w-4" /> Save Assignment
             </Button>
             <Button type="button" variant="outline" size="lg" onClick={handleCancel}>
-              <XCircle className="mr-2 h-4 w-4" /> Cancel
+              <X className="mr-2 h-4 w-4" /> Cancel
             </Button>
           </div>
         </div>
 
         {/* Process Tracker */}
         <div className="mb-6">
-          <ProcessTracker stages={assignmentStages} currentStageIndex={0} />
+          {/* ProcessTracker component was removed from imports, so this will cause an error */}
+          {/* <ProcessTracker stages={assignmentStages} currentStageIndex={0} /> */}
+          <p className="text-muted-foreground">Process Tracker component is not available in this version.</p>
         </div>
 
         {/* Main Content Grid */}
@@ -190,12 +237,12 @@ export default function CreateNewAssignmentPage() {
             {/* Fulfilment / Tasks Card */}
             <Card>
               <CardHeader><CardTitle>Fulfilment / Tasks</CardTitle><CardDescription>Manage tasks related to this assignment.</CardDescription></CardHeader>
-              <CardContent><Button type="button" variant="outline" disabled><PlusCircle className="mr-2 h-4 w-4" /> Add Task (Available after save)</Button><p className="text-sm text-muted-foreground mt-2">Tasks can be added once the assignment is created.</p></CardContent>
+              <CardContent><Button type="button" variant="outline" disabled><Plus className="mr-2 h-4 w-4" /> Add Task (Available after save)</Button><p className="text-sm text-muted-foreground mt-2">Tasks can be added once the assignment is created.</p></CardContent>
             </Card>
             {/* Related Risks & Controls Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between"><div><CardTitle>Related Risks & Controls</CardTitle><CardDescription>Link existing risks from the library.</CardDescription></div><Button type="button" variant="outline" size="sm" onClick={handleManageRisks}><LinkIcon className="mr-2 h-4 w-4" /> Manage Linked Risks</Button></CardHeader>
-              <CardContent>{formState.linkedRisks.length > 0 ? (<div className="space-y-2">{formState.linkedRisks.map((risk) => (<div key={risk.id} className="flex items-center justify-between p-2 border rounded-md"><div><p className="font-medium">{risk.title}</p><Badge variant="outline">{risk.inherentRisk}</Badge></div><Button variant="ghost" size="icon-sm" onClick={() => removeLinkedRisk(risk.id)} title="Unlink Risk"><Trash2 className="h-4 w-4 text-red-500" /></Button></div>))}</div>) : (<p className="text-sm text-muted-foreground">No risks linked yet.</p>)}</CardContent>
+              <CardContent>{formState.linkedRisks.length > 0 ? (<div className="space-y-2">{formState.linkedRisks.map((risk) => (<div key={risk.id} className="flex items-center justify-between p-2 border rounded-md"><div><p className="font-medium">{risk.title}</p><Badge variant="outline">{risk.inherentRisk}</Badge></div><Button variant="ghost" size="icon" onClick={() => removeLinkedRisk(risk.id)} title="Unlink Risk"><AlertTriangle className="h-4 w-4 text-red-500" /></Button></div>))}</div>) : (<p className="text-sm text-muted-foreground">No risks linked yet.</p>)}</CardContent>
             </Card>
           </div>
 
@@ -241,16 +288,16 @@ export default function CreateNewAssignmentPage() {
             {/* Assigned Team Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between"><div><CardTitle>Assigned Team</CardTitle><CardDescription>Select team members for this assignment.</CardDescription></div><Button type="button" variant="outline" size="sm" onClick={handleManageTeam}><Users className="mr-2 h-4 w-4" /> Manage Team</Button></CardHeader>
-              <CardContent>{formState.assignedTeamMembers.length > 0 ? (<div className="space-y-2">{formState.assignedTeamMembers.map((member) => (<div key={member.id} className="flex items-center justify-between p-2 border rounded-md"><div className="flex items-center gap-2"><Avatar className="h-8 w-8"><AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} /><AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar><span className="text-sm font-medium">{member.name}</span></div><Button variant="ghost" size="icon-sm" onClick={() => removeTeamMember(member.id)} title="Remove Member"><Trash2 className="h-4 w-4 text-red-500" /></Button></div>))}</div>) : (<p className="text-sm text-muted-foreground">No team members assigned yet.</p>)}</CardContent>
+              <CardContent>{formState.assignedTeamMembers.length > 0 ? (<div className="space-y-2">{formState.assignedTeamMembers.map((member) => (<div key={member.id} className="flex items-center justify-between p-2 border rounded-md"><div className="flex items-center gap-2"><Avatar className="h-8 w-8"><AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} /><AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar><span className="text-sm font-medium">{member.name}</span></div><Button variant="ghost" size="icon" onClick={() => removeTeamMember(member.id)} title="Remove Member"><AlertTriangle className="h-4 w-4 text-red-500" /></Button></div>))}</div>) : (<p className="text-sm text-muted-foreground">No team members assigned yet.</p>)}</CardContent>
             </Card>
           </div>
         </div>
       </form>
 
       {/* Team Management Dialog */}
-      <Dialog open={isTeamDialogOpen} onOpenChange={setIsTeamDialogOpen}><DialogContent className="sm:max-w-[425px]"><DialogHeader><DialogTitle>Manage Team Members</DialogTitle><DialogDescription>Select team members to assign to this assignment.</DialogDescription></DialogHeader><ScrollArea className="h-[300px] pr-4"><div className="space-y-2 py-4">{mockAvailableTeamMembers.map((member) => (<div key={member.id} className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md"><Checkbox id={`team-${member.id}`} checked={selectedTeamMemberIds.has(member.id)} onCheckedChange={() => handleTeamMemberToggle(member.id)} /><Label htmlFor={`team-${member.id}`} className="flex items-center gap-2 cursor-pointer flex-grow"><Avatar className="h-8 w-8"><AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} /><AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>{member.name}</Label></div>))}</div></ScrollArea><DialogFooter><Button type="button" variant="outline" onClick={() => setIsTeamDialogOpen(false)}>Cancel</Button><Button type="button" onClick={handleConfirmTeamSelection}>Confirm Selection</Button></DialogFooter></DialogContent></Dialog>
+      <Dialog open={isTeamDialogOpen} onOpenChange={setIsTeamDialogOpen}><DialogContent className="sm:max-w-[425px]"><DialogHeader><DialogTitle>Manage Team Members</DialogTitle><DialogDescription>Select team members to assign to this assignment.</DialogDescription></DialogHeader><div className="space-y-2 py-4">{availableTeamMembers.map((member) => (<div key={member.id} className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md"><Checkbox id={`team-${member.id}`} checked={selectedTeamMemberIds.has(member.id)} onCheckedChange={() => handleTeamMemberToggle(member.id)} /><Label htmlFor={`team-${member.id}`} className="flex items-center gap-2 cursor-pointer flex-grow"><Avatar className="h-8 w-8"><AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} /><AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>{member.name}</Label></div>))}</div></DialogContent></Dialog>
       {/* Risk Management Dialog */}
-      <Dialog open={isRiskDialogOpen} onOpenChange={setIsRiskDialogOpen}><DialogContent className="sm:max-w-[425px]"><DialogHeader><DialogTitle>Manage Linked Risks</DialogTitle><DialogDescription>Select risks from the library to link to this assignment.</DialogDescription></DialogHeader><ScrollArea className="h-[300px] pr-4"><div className="space-y-2 py-4">{mockRiskLibrary.map((risk) => (<div key={risk.id} className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md"><Checkbox id={`risk-${risk.id}`} checked={selectedRiskIds.has(risk.id)} onCheckedChange={() => handleRiskToggle(risk.id)} /><Label htmlFor={`risk-${risk.id}`} className="cursor-pointer flex-grow">{risk.title}{" "}<Badge variant="outline" className="ml-2">{risk.inherentRisk}</Badge></Label></div>))}</div></ScrollArea><DialogFooter><Button type="button" variant="outline" onClick={() => setIsRiskDialogOpen(false)}>Cancel</Button><Button type="button" onClick={handleConfirmRiskSelection}>Confirm Selection</Button></DialogFooter></DialogContent></Dialog>
+      <Dialog open={isRiskDialogOpen} onOpenChange={setIsRiskDialogOpen}><DialogContent className="sm:max-w-[425px]"><DialogHeader><DialogTitle>Manage Linked Risks</DialogTitle><DialogDescription>Select risks from the library to link to this assignment.</DialogDescription></DialogHeader><div className="space-y-2 py-4">{mockRiskLibrary.map((risk) => (<div key={risk.id} className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md"><Checkbox id={`risk-${risk.id}`} checked={selectedRiskIds.has(risk.id)} onCheckedChange={() => handleRiskToggle(risk.id)} /><Label htmlFor={`risk-${risk.id}`} className="cursor-pointer flex-grow">{risk.title}{" "}<Badge variant="outline" className="ml-2">{risk.inherentRisk}</Badge></Label></div>))}</div></DialogContent></Dialog>
     </div>
   )
 }

@@ -5,33 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, ListChecks, Clock } from "lucide-react"
-
-const assignments = [
-  {
-    id: "1",
-    title: "Assignment driven project initiation phase review",
-    status: "In Progress",
-    dueDate: "2025-06-15",
-  },
-  {
-    id: "2",
-    title: "Q2 Financial Controls Audit",
-    status: "Due Soon",
-    dueDate: "2025-06-08",
-  },
-  {
-    id: "3",
-    title: "IT Security Compliance Check",
-    status: "Completed",
-    dueDate: "2025-05-20",
-  },
-  {
-    id: "4",
-    title: "Vendor Risk Assessment",
-    status: "Pending",
-    dueDate: "2025-07-01",
-  },
-]
+import { useEffect, useMemo, useState } from "react"
 
 const statusColors: { [key: string]: string } = {
   "In Progress": "bg-blue-500 hover:bg-blue-600",
@@ -41,8 +15,46 @@ const statusColors: { [key: string]: string } = {
 }
 
 export default function AssignmentsCard() {
-  const totalAssignments = 123
-  const dueSoonAssignments = 50
+  const [assignments, setAssignments] = useState<Array<{ id: string; title: string; status?: string; end_date?: string }>>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch('/api/assignments')
+        if (!res.ok) throw new Error('Failed to load assignments')
+        const data = await res.json()
+        setAssignments(data)
+      } catch (e) {
+        console.error(e)
+        setAssignments([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const { totalAssignments, dueSoonAssignments, recent } = useMemo(() => {
+    const now = new Date()
+    const soonThreshold = new Date(now)
+    soonThreshold.setDate(now.getDate() + 7)
+    const dueSoon = assignments.filter((a) => {
+      const d = a.end_date ? new Date(a.end_date) : undefined
+      return d ? d >= now && d <= soonThreshold : false
+    }).length
+    const recentSorted = [...assignments].sort((a, b) => {
+      const ad = a.end_date ? new Date(a.end_date).getTime() : 0
+      const bd = b.end_date ? new Date(b.end_date).getTime() : 0
+      return bd - ad
+    })
+    return {
+      totalAssignments: assignments.length,
+      dueSoonAssignments: dueSoon,
+      recent: recentSorted.slice(0, 3),
+    }
+  }, [assignments])
 
   return (
     <Card className="shadow-sm">
@@ -77,7 +89,8 @@ export default function AssignmentsCard() {
 
         <div className="space-y-3">
           <h3 className="text-md font-medium text-muted-foreground mb-1">Recent Assignments:</h3>
-          {assignments.slice(0, 3).map((assignment) => (
+          {loading && <div className="text-sm text-muted-foreground">Loading...</div>}
+          {!loading && recent.map((assignment) => (
             <Link
               key={assignment.id}
               href={`/assignments/${assignment.id}`}
@@ -88,10 +101,10 @@ export default function AssignmentsCard() {
                   <p className="font-medium truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
                     {assignment.title}
                   </p>
-                  <p className="text-xs text-muted-foreground">Due: {assignment.dueDate}</p>
+                  <p className="text-xs text-muted-foreground">Due: {assignment.end_date ? new Date(assignment.end_date).toLocaleDateString() : '—'}</p>
                 </div>
-                <Badge className={`${statusColors[assignment.status] || "bg-gray-500"} text-white text-xs shrink-0`}>
-                  {assignment.status}
+                <Badge className={`${statusColors[assignment.status || 'Pending'] || "bg-gray-500"} text-white text-xs shrink-0`}>
+                  {assignment.status || 'Pending'}
                 </Badge>
               </div>
             </Link>

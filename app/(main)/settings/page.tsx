@@ -6,11 +6,11 @@ import ProfileSettings from "./_components/profile-settings"
 import NotificationSettings from "./_components/notification-settings"
 import SystemSettings from "./_components/system-settings"
 import StrategicGoalsSettings from "./_components/strategic-goals-settings"
-import { useMockUser } from "@/hooks/use-mock-user"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function SettingsPage() {
-  const user = useMockUser()
-  const isAdmin = user.role === "Audit Manager" || user.role === "System Administrator"
+  const { user } = useAuth()
+  const isAdmin = user?.roleName === "Admin" || user?.roleName === "Audit Manager"
   const tabCount = isAdmin ? 4 : 2
 
   return (

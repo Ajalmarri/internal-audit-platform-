@@ -29,177 +29,103 @@ import {
   Trash2,
   CheckCircle,
   Clock,
+  Rocket,
   AlertTriangle,
-  XCircle,
-  ThumbsUp,
-  MessageSquareWarning,
-  Send,
 } from "lucide-react"
 
-import type { ActionPlan, ActionPlanStatus } from "./_types/action-plan-types"
-import RequestChangesModal from "./_components/request-changes-modal"
+import { useEffect } from "react"
 
-// Mock data for Action Plans - Updated with new fields and statuses
-const mockActionPlans: ActionPlan[] = [
-  {
-    id: "AP001",
-    findingId: "FND001",
-    findingTitle: "Unsecured S3 Bucket Exposing Sensitive Data",
-    businessOwner: "IT Security Manager",
-    auditorInCharge: "Alice Wonderland",
-    overallObjective: "Secure all S3 buckets and implement proper access controls",
-    items: [
-      {
-        id: "AP001-1",
-        action: "Restrict public access",
-        responsiblePerson: "Cloud Team",
-        dueDate: "2025-06-15",
-        status: "Completed",
-      },
-      {
-        id: "AP001-2",
-        action: "Review policies",
-        responsiblePerson: "Cloud Team",
-        dueDate: "2025-06-20",
-        status: "In Progress",
-      },
-    ],
-    submittedDate: "2025-06-05",
-    lastUpdated: "2025-06-10",
-    progress: 50,
-    status: "In Progress",
-  },
-  {
-    id: "AP002",
-    findingId: "FND002",
-    findingTitle: "Lack of Segregation of Duties",
-    businessOwner: "Finance Head",
-    auditorInCharge: "Bob The Builder",
-    overallObjective: "Implement proper SoD for financial reporting",
-    items: [
-      {
-        id: "AP002-1",
-        action: "Review roles",
-        responsiblePerson: "Finance Admin",
-        dueDate: "2025-07-15",
-        status: "To Do",
-      },
-    ],
-    submittedDate: "2025-06-10",
-    lastUpdated: "2025-06-10",
-    progress: 0,
-    status: "Submitted for Review",
-    reviewFeedback:
-      "The initial plan looks good, but please add specific sub-tasks for training staff on the new SoD policies.",
-  },
-  {
-    id: "AP003",
-    findingId: "FND003",
-    findingTitle: "Outdated Anti-Virus",
-    businessOwner: "IT Operations Lead",
-    auditorInCharge: "Alice Wonderland",
-    overallObjective: "Ensure all servers have up-to-date AV",
-    items: [
-      {
-        id: "AP003-1",
-        action: "Update AV",
-        responsiblePerson: "SysAdmin Team",
-        dueDate: "2025-06-10",
-        status: "Completed",
-      },
-    ],
-    submittedDate: "2025-06-02",
-    lastUpdated: "2025-06-18",
-    progress: 100,
-    status: "Completed",
-  },
-  {
-    id: "AP004",
-    findingId: "FND004",
-    findingTitle: "Inadequate Password Policy",
-    businessOwner: "IT Security Manager",
-    auditorInCharge: "Charlie Brown",
-    overallObjective: "Strengthen password policies",
-    items: [
-      {
-        id: "AP004-1",
-        action: "Update policy",
-        responsiblePerson: "IDM Team",
-        dueDate: "2025-05-20",
-        status: "Blocked",
-      },
-    ],
-    submittedDate: "2025-06-12",
-    lastUpdated: "2025-06-12",
-    progress: 0,
-    status: "Submitted for Review",
-  },
-  {
-    id: "AP005",
-    findingId: "FND005",
-    findingTitle: "Missing Backup Verification",
-    businessOwner: "Data Management Lead",
-    auditorInCharge: "Bob The Builder",
-    overallObjective: "Establish backup verification",
-    items: [
-      {
-        id: "AP005-1",
-        action: "Document procedures",
-        responsiblePerson: "Backup Lead",
-        dueDate: "2025-04-15",
-        status: "Completed",
-      },
-    ],
-    submittedDate: "2025-05-01",
-    lastUpdated: "2025-06-15",
-    progress: 30,
-    status: "Changes Requested",
-    reviewFeedback:
-      "The documented procedures are not detailed enough. Please include step-by-step instructions for verification and expected outcomes.",
-  },
-]
+// Real data interface matching the database schema
+interface ActionPlanFromDB {
+  id: string
+  description: string
+  responsible_id: string
+  due_date: string
+  status_id: number
+  finding_id: string
+  finding_title: string
+  finding_description: string
+  objective: string
+  priority_id: number
+  effort: string
+  created_date: string
+  is_approved: boolean
+}
+
+// Simple ActionPlan interface for the UI
+interface ActionPlan {
+  id: string
+  description: string
+  responsible_id: string
+  due_date: string
+  status_id: number
+  finding_id: string
+  finding_title: string
+  finding_description: string
+  objective: string
+  priority_id: number
+  effort: string
+  created_date: string
+  is_approved: boolean
+  status: "Not Started" | "In Progress" | "Completed"
+}
 
 // Configuration for Action Plan Status display - Updated
 const actionPlanStatusConfig: Record<
-  ActionPlanStatus,
+  string,
   { icon: React.ElementType; color: string; badgeVariant?: "default" | "secondary" | "destructive" | "outline" }
 > = {
   "Not Started": { icon: Clock, color: "text-gray-500", badgeVariant: "secondary" },
-  "In Progress": { icon: Clock, color: "text-blue-500", badgeVariant: "secondary" },
-  Completed: { icon: CheckCircle, color: "text-green-500", badgeVariant: "default" }, // 'default' often green in shadcn
-  Overdue: { icon: AlertTriangle, color: "text-red-500", badgeVariant: "destructive" },
-  "At Risk": { icon: XCircle, color: "text-orange-500", badgeVariant: "secondary" }, // Or a custom orange
-  "Submitted for Review": { icon: Send, color: "text-purple-500", badgeVariant: "secondary" },
-  "Changes Requested": { icon: MessageSquareWarning, color: "text-yellow-600", badgeVariant: "secondary" }, // Or a custom yellow
+  "In Progress": { icon: Rocket, color: "text-blue-500", badgeVariant: "default" },
+  "Completed": { icon: CheckCircle, color: "text-green-500", badgeVariant: "default" },
 }
 
 export default function ActionPlansPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [actionPlans, setActionPlans] = useState<ActionPlan[]>(mockActionPlans)
-  const [statusFilters, setStatusFilters] = useState<Record<ActionPlanStatus, boolean>>({
+  const [actionPlans, setActionPlans] = useState<ActionPlan[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({
     "Not Started": false,
     "In Progress": false,
-    Completed: false,
-    Overdue: false,
-    "At Risk": false,
-    "Submitted for Review": false,
-    "Changes Requested": false,
+    "Completed": false,
   })
 
-  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false)
-  const [selectedPlanForReview, setSelectedPlanForReview] = useState<ActionPlan | null>(null)
+  // Fetch real data from API
+  useEffect(() => {
+    const fetchActionPlans = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/action-plans')
+        if (!response.ok) throw new Error('Failed to fetch action plans')
+        
+        const data = await response.json()
+        // Transform the data to add a default status and format dates
+        const transformedData: ActionPlan[] = data.map((plan: ActionPlanFromDB) => ({
+          ...plan,
+          status: plan.is_approved ? "In Progress" as const : "Not Started" as const
+        }))
+        
+        setActionPlans(transformedData)
+      } catch (error) {
+        console.error('Error loading action plans:', error)
+        setActionPlans([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchActionPlans()
+  }, [])
 
   const filteredActionPlans = useMemo(() => {
     let currentPlans = [...actionPlans]
     if (searchTerm) {
       currentPlans = currentPlans.filter(
         (plan) =>
-          plan.findingTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          plan.businessOwner.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (plan.auditorInCharge && plan.auditorInCharge.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          plan.overallObjective.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          plan.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
           plan.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          plan.findingId.toLowerCase().includes(searchTerm.toLowerCase()),
+          (plan.finding_title && plan.finding_title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (plan.finding_description && plan.finding_description.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
     const activeStatusFilters = Object.entries(statusFilters)
@@ -213,45 +139,6 @@ export default function ActionPlansPage() {
 
   const handleDeleteActionPlan = (planId: string) => {
     setActionPlans((prevPlans) => prevPlans.filter((p) => p.id !== planId))
-  }
-
-  const handleApproveActionPlan = (planId: string) => {
-    setActionPlans((prevPlans) =>
-      prevPlans.map((p) =>
-        p.id === planId ? { ...p, status: "In Progress", lastUpdated: new Date().toISOString().split("T")[0] } : p,
-      ),
-    )
-  }
-
-  const handleOpenRequestChangesModal = (plan: ActionPlan) => {
-    setSelectedPlanForReview(plan)
-    setIsRequestModalOpen(true)
-  }
-
-  const handleSubmitFeedback = (planId: string, feedback: string) => {
-    setActionPlans((prevPlans) =>
-      prevPlans.map((p) =>
-        p.id === planId
-          ? {
-              ...p,
-              status: "Changes Requested",
-              reviewFeedback: feedback,
-              lastUpdated: new Date().toISOString().split("T")[0],
-            }
-          : p,
-      ),
-    )
-    setIsRequestModalOpen(false)
-    setSelectedPlanForReview(null)
-  }
-
-  const getProgressColor = (status: ActionPlanStatus, progress: number) => {
-    if (status === "Completed") return "bg-green-500"
-    if (status === "Overdue") return "bg-red-500"
-    if (status === "At Risk") return "bg-orange-500"
-    if (status === "Changes Requested") return "bg-yellow-500"
-    if (progress > 60) return "bg-blue-500"
-    return "bg-blue-400"
   }
 
   return (
@@ -273,7 +160,7 @@ export default function ActionPlansPage() {
             <div className="relative w-full sm:flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                placeholder="Search by finding, owner, auditor..."
+                placeholder="Search by action plan, finding, owner, auditor..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full"
@@ -314,94 +201,94 @@ export default function ActionPlansPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px]">ID</TableHead>
-                  <TableHead className="min-w-[250px]">Finding</TableHead>
-                  <TableHead>Business Owner</TableHead>
-                  <TableHead className="min-w-[150px]">Auditor-in-Charge</TableHead>
-                  <TableHead className="min-w-[200px]">Status</TableHead>
-                  <TableHead className="w-[150px]">Progress</TableHead>
-                  <TableHead>Last Updated</TableHead>
-                  <TableHead className="text-right sticky right-0 bg-card z-10">Actions</TableHead>
+                  <TableHead className="min-w-[300px]">Action Plan Description</TableHead>
+                  <TableHead className="min-w-[200px]">Related Finding</TableHead>
+                  <TableHead className="min-w-[120px]">Responsible ID</TableHead>
+                  <TableHead className="min-w-[120px]">Due Date</TableHead>
+                  <TableHead className="min-w-[120px]">Priority</TableHead>
+                  <TableHead className="min-w-[120px]">Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredActionPlans.length > 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                        <span>Loading action plans...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredActionPlans.length > 0 ? (
                   filteredActionPlans.map((plan) => {
                     const statusInfo = actionPlanStatusConfig[plan.status]
                     return (
                       <TableRow key={plan.id}>
-                        <TableCell className="font-mono text-xs">{plan.id}</TableCell>
+                        <TableCell className="font-mono text-xs">
+                          <Link 
+                            href={`/action-plans/${plan.id}`}
+                            className="hover:underline text-blue-600 dark:text-blue-400"
+                          >
+                            {plan.id}
+                          </Link>
+                        </TableCell>
                         <TableCell>
                           <div
                             className="font-medium truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
-                            title={plan.findingTitle}
+                            title={plan.description}
                           >
-                            {plan.findingTitle}
+                            {plan.description}
                           </div>
-                          <div className="text-xs text-muted-foreground">Finding ID: {plan.findingId}</div>
                         </TableCell>
-                        <TableCell className="truncate max-w-[150px]" title={plan.businessOwner}>
-                          {plan.businessOwner}
-                        </TableCell>
-                        <TableCell className="truncate max-w-[150px]" title={plan.auditorInCharge}>
-                          {/* New Cell - Removed leading space and comment */}
-                          {plan.auditorInCharge || "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          {plan.status === "Submitted for Review" ? (
-                            <div className="flex gap-2 items-center">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="bg-green-500 hover:bg-green-600 text-white border-green-600 hover:border-green-700 h-8 px-2 py-1 text-xs"
-                                onClick={() => handleApproveActionPlan(plan.id)}
-                              >
-                                <ThumbsUp className="mr-1.5 h-3.5 w-3.5" /> Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 px-2 py-1 text-xs"
-                                onClick={() => handleOpenRequestChangesModal(plan)}
-                              >
-                                <MessageSquareWarning className="mr-1.5 h-3.5 w-3.5" /> Request Changes
-                              </Button>
-                            </div>
-                          ) : (
-                            <Badge
-                              variant={statusInfo.badgeVariant || "secondary"}
-                              className={
-                                plan.status === "Completed"
-                                  ? "bg-green-500 hover:bg-green-600 text-white"
-                                  : plan.status === "Overdue"
-                                    ? "bg-red-500 hover:bg-red-600 text-white"
-                                    : plan.status === "At Risk"
-                                      ? "bg-orange-500 hover:bg-orange-600 text-white"
-                                      : plan.status === "Changes Requested"
-                                        ? "bg-yellow-500 hover:bg-yellow-600 text-black"
-                                        : "" // Let badgeVariant and default styles handle others
-                              }
+                        <TableCell className="min-w-[200px]">
+                          {plan.finding_id && plan.finding_title ? (
+                            <Link
+                              href={`/findings/${plan.finding_id}`}
+                              className="hover:underline text-blue-600 dark:text-blue-400"
+                              title={plan.finding_description}
                             >
-                              {statusInfo && <statusInfo.icon className={`mr-1.5 h-3.5 w-3.5 ${statusInfo.color}`} />}
-                              {plan.status}
-                            </Badge>
+                              <div className="font-medium truncate max-w-[180px]" title={plan.finding_title}>
+                                {plan.finding_title}
+                              </div>
+                              <div className="text-xs text-muted-foreground truncate max-w-[180px]" title={plan.finding_description}>
+                                {plan.finding_description}
+                              </div>
+                            </Link>
+                          ) : (
+                            <span className="text-muted-foreground italic">No finding linked</span>
                           )}
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Progress
-                              value={plan.progress}
-                              className="h-2 flex-grow"
-                              indicatorClassName={getProgressColor(plan.status, plan.progress)}
-                            />
-                            <span className="text-xs text-muted-foreground">{plan.progress}%</span>
-                          </div>
+                        <TableCell className="truncate max-w-[120px]" title={plan.responsible_id}>
+                          {plan.responsible_id}
                         </TableCell>
-                        <TableCell>{new Date(plan.lastUpdated).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right sticky right-0 bg-card z-10">
+                        <TableCell className="text-center">
+                          {plan.due_date ? new Date(plan.due_date).toLocaleDateString() : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="outline" className="text-xs">
+                            {plan.priority_id}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={statusInfo?.badgeVariant || "secondary"}
+                            className={
+                              plan.status === "Completed"
+                                ? "bg-green-500 hover:bg-green-600 text-white"
+                                : plan.status === "In Progress"
+                                  ? "bg-blue-500 hover:bg-blue-600 text-white"
+                                  : "bg-gray-500 hover:bg-gray-600 text-white"
+                            }
+                          >
+                            {plan.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-5 w-5" />
+                                <MoreHorizontal className="h-5 w-4" />
                                 <span className="sr-only">Actions</span>
                               </Button>
                             </DropdownMenuTrigger>
@@ -411,6 +298,13 @@ export default function ActionPlansPage() {
                                   <Eye className="mr-2 h-4 w-4" /> View Details
                                 </Link>
                               </DropdownMenuItem>
+                              {plan.finding_id && (
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/findings/${plan.finding_id}`}>
+                                    <AlertTriangle className="mr-2 h-4 w-4" /> View Finding
+                                  </Link>
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem asChild>
                                 <Link href={`/action-plans/${plan.id}/edit`}>
                                   <Edit className="mr-2 h-4 w-4" /> Edit Plan
@@ -432,7 +326,6 @@ export default function ActionPlansPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={8} className="h-24 text-center">
-                      {/* Updated colSpan - Removed leading space and comment */}
                       No action plans match your criteria.
                     </TableCell>
                   </TableRow>
@@ -444,17 +337,6 @@ export default function ActionPlansPage() {
         </CardContent>
       </Card>
 
-      {selectedPlanForReview && (
-        <RequestChangesModal
-          isOpen={isRequestModalOpen}
-          onClose={() => {
-            setIsRequestModalOpen(false)
-            setSelectedPlanForReview(null)
-          }}
-          onSubmitFeedback={handleSubmitFeedback}
-          actionPlan={selectedPlanForReview}
-        />
-      )}
     </div>
   )
 }

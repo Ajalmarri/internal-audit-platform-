@@ -17,9 +17,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card" // Added Card and CardContent
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Bell, Search, ChevronRight, Home, Briefcase, ShieldAlert, Users, FileText, AlertTriangle } from "lucide-react" // Added more icons
+import { Bell, Search, ChevronRight, Home, Briefcase, ShieldAlert, Users, FileText, AlertTriangle, LogOut, User, Settings } from "lucide-react" // Added more icons
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 // Helper function to generate breadcrumbs (remains the same)
 const generateBreadcrumbs = (pathname: string) => {
@@ -32,7 +33,7 @@ const generateBreadcrumbs = (pathname: string) => {
     breadcrumbs.push({
       href: currentPath,
       label: part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, " "),
-      icon: null,
+      icon: Home, // Use Home as default icon
       isCurrent: index === pathParts.length - 1,
     })
   })
@@ -113,7 +114,13 @@ const mockAllData = {
     },
   ],
   stakeholders: [
-    { id: "sh1", title: "John Doe (Compliance Officer)", detail: "Internal", href: "/stakeholders/sh1", icon: Users },
+    {
+      id: "sh1",
+      title: "Compliance Officer",
+      detail: "Internal",
+      href: "/stakeholders/sh1",
+      icon: Users,
+    },
     { id: "sh2", title: "External Auditors Inc.", detail: "External Partner", href: "/stakeholders/sh2", icon: Users },
   ],
   reports: [
@@ -186,6 +193,7 @@ const getMockSearchResults = (query: string): SearchResults => {
 export default function Header() {
   const pathname = usePathname()
   const breadcrumbs = generateBreadcrumbs(pathname)
+  const { user, logout } = useAuth()
 
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<SearchResults>([])
@@ -319,21 +327,40 @@ export default function Header() {
             <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
               <Avatar className="h-9 w-9">
                 <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Profile" />
-                <AvatarFallback>UA</AvatarFallback>
+                <AvatarFallback>
+                  {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
-              <p className="font-medium">John Doe</p>
-              <p className="text-xs text-muted-foreground">audit.manager@example.com</p>
+              <p className="font-medium">
+                {user ? `${user.firstName} ${user.lastName}` : "User"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {user ? user.email : "user@example.com"}
+              </p>
+              {user && (
+                <p className="text-xs text-muted-foreground">
+                  Role: {user.roleName}
+                </p>
+              )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuItem>
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

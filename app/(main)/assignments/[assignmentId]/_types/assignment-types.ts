@@ -13,6 +13,8 @@ export interface UserStub {
   id: string
   name: string
   avatar?: string
+  email?: string
+  role?: string
 }
 
 export interface AssignmentRequirement {

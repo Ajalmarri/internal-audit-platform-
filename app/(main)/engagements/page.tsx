@@ -20,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import type { BadgeProps } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -47,99 +47,19 @@ type Engagement = {
   title: string
   stakeholder: string
   manager: string
-  startDate: string
-  endDate: string
-  status: EngagementStatus
-  kpis?: EngagementKpi
+  start_date: string
+  end_date: string
+  status: string
+  objective?: string
+  scope?: string
+  created_at: string
+  updated_at: string
 }
 
-const mockEngagements: Engagement[] = [
-  {
-    id: "ENG-001",
-    title: "2025 Annual IT Security Audit",
-    stakeholder: "IT Department",
-    manager: "Yema al Olman",
-    startDate: "2025-02-01",
-    endDate: "2025-05-31",
-    status: "In Progress",
-    kpis: {
-      openFindings: 5,
-      overdueActions: 2,
-    },
-  },
-  {
-    id: "ENG-002",
-    title: "Q3 Financial Systems Review",
-    stakeholder: "Finance Department",
-    manager: "Khaled M.",
-    startDate: "2025-07-01",
-    endDate: "2025-09-30",
-    status: "Planning",
-    kpis: {
-      openFindings: 0,
-      overdueActions: 0,
-    },
-  },
-  {
-    id: "ENG-003",
-    title: "2024 Compliance Check",
-    stakeholder: "Legal Department",
-    manager: "John Doe",
-    startDate: "2024-10-01",
-    endDate: "2024-11-30",
-    status: "Completed",
-    kpis: {},
-  },
-  {
-    id: "ENG-004",
-    title: "Vendor Risk Assessment",
-    stakeholder: "Procurement",
-    manager: "Yema al Olman",
-    startDate: "2025-03-15",
-    endDate: "2025-04-30",
-    status: "In Progress",
-    kpis: {
-      openFindings: 3,
-      overdueActions: 0,
-    },
-  },
-  {
-    id: "ENG-005",
-    title: "Data Privacy Audit (GDPR)",
-    stakeholder: "Compliance Office",
-    manager: "Jane Smith",
-    startDate: "2025-08-01",
-    endDate: "2025-10-31",
-    status: "Planning",
-    kpis: {
-      openFindings: 1,
-    },
-  },
-  {
-    id: "ENG-006",
-    title: "Post-Implementation ERP Review",
-    stakeholder: "Operations",
-    manager: "Khaled M.",
-    startDate: "2024-05-01",
-    endDate: "2024-07-31",
-    status: "Completed",
-  },
-  {
-    id: "ENG-007",
-    title: "Business Continuity Plan Test",
-    stakeholder: "Risk Management",
-    manager: "John Doe",
-    startDate: "2025-04-01",
-    endDate: "2025-04-15",
-    status: "On Hold",
-    kpis: {
-      openFindings: 1,
-      overdueActions: 1,
-    },
-  },
-]
+// Real data will be fetched from API
+const mockEngagements: Engagement[] = []
 
-const getStatusBadgeVariant = (status: EngagementStatus): BadgeProps["variant"] => {
+const getStatusBadgeVariant = (status: string): BadgeProps["variant"] => {
   switch (status) {
     case "In Progress":
       return "default"
@@ -149,6 +69,10 @@ const getStatusBadgeVariant = (status: EngagementStatus): BadgeProps["variant"] 
       return "outline"
     case "Completed":
       return "success"
+    case "Active":
+      return "default"
+    case "Cancelled":
+      return "destructive"
     default:
       return "default"
   }
@@ -225,14 +149,52 @@ export default function EngagementsPage() {
   const [searchTerm, setSearchTerm] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<string>("All")
   const [managerFilter, setManagerFilter] = React.useState<string>("All")
+  const [engagements, setEngagements] = React.useState<Engagement[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
 
-  const engagementManagers = React.useMemo(() => {
-    const managers = new Set(mockEngagements.map((e) => e.manager))
-    return ["All", ...Array.from(managers)]
+  // Fetch real data from API
+  React.useEffect(() => {
+    const fetchEngagements = async () => {
+      try {
+        console.log('Fetching engagements from API...')
+        setIsLoading(true)
+        const response = await fetch('/api/engagements')
+        if (!response.ok) throw new Error('Failed to fetch engagements')
+        const data = await response.json()
+        console.log('Engagements data received:', data)
+        console.log('Setting engagements state with:', data.length, 'items')
+        setEngagements(data)
+      } catch (error) {
+        console.error('Error loading engagements:', error)
+        // Fallback to empty array if API fails
+        setEngagements([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchEngagements()
   }, [])
 
+  // Debug: Monitor engagements state changes
+  React.useEffect(() => {
+    console.log('Engagements state changed:', engagements.length, 'items')
+  }, [engagements])
+
+  const engagementManagers = React.useMemo(() => {
+    const managers = new Set(engagements.map((e) => e.manager))
+    return ["All", ...Array.from(managers)]
+  }, [engagements])
+
   const filteredEngagements = React.useMemo(() => {
-    return mockEngagements.filter((engagement) => {
+    console.log('Filtering engagements. Total:', engagements.length, 'Search:', searchTerm, 'Status:', statusFilter, 'Manager:', managerFilter)
+    
+    if (engagements.length === 0) {
+      console.log('No engagements to filter')
+      return []
+    }
+    
+    const filtered = engagements.filter((engagement) => {
       const lowerCaseSearchTerm = searchTerm.toLowerCase()
       const matchesSearch =
         engagement.title.toLowerCase().includes(lowerCaseSearchTerm) ||
@@ -243,9 +205,18 @@ export default function EngagementsPage() {
 
       const matchesManager = managerFilter === "All" || engagement.manager === managerFilter
 
-      return matchesSearch && matchesStatus && matchesManager
+      const result = matchesSearch && matchesStatus && matchesManager
+      
+      if (!result) {
+        console.log('Engagement filtered out:', engagement.title, 'Search:', matchesSearch, 'Status:', matchesStatus, 'Manager:', matchesManager)
+      }
+      
+      return result
     })
-  }, [searchTerm, statusFilter, managerFilter])
+    
+    console.log('Filtered result:', filtered.length, 'items')
+    return filtered
+  }, [engagements, searchTerm, statusFilter, managerFilter])
 
   const handleViewDashboard = (engagementId: string) => {
     router.push(`/engagements/${engagementId}/dashboard`)
@@ -286,6 +257,8 @@ export default function EngagementsPage() {
           Initiate New Engagement
         </Button>
       </div>
+
+      
 
       <Card>
         <CardHeader>
@@ -353,67 +326,41 @@ export default function EngagementsPage() {
                 <TableHead>Start Date</TableHead>
                 <TableHead>End Date</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Key Metrics</TableHead>
+                <TableHead>Objective</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEngagements.length > 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                      <span>Loading engagements...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredEngagements.length > 0 ? (
                 filteredEngagements.map((engagement) => (
                   <TableRow key={engagement.id} className="hover:bg-muted/50">
                     <TableCell className="font-medium">{engagement.title}</TableCell>
                     <TableCell>{engagement.stakeholder}</TableCell>
                     <TableCell>{engagement.manager}</TableCell>
-                    <TableCell>{engagement.startDate}</TableCell>
-                    <TableCell>{engagement.endDate}</TableCell>
+                    <TableCell>{new Date(engagement.start_date).toLocaleDateString()}</TableCell>
+                    <TableCell>{new Date(engagement.end_date).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusBadgeVariant(engagement.status)}>{engagement.status}</Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center space-x-2">
-                        {engagement.status === "Completed" ? (
-                          <KpiIndicator
-                            iconType="success"
-                            tooltipContent="Engagement completed successfully."
-                            isClickable={false}
-                          />
+                      <div className="text-xs text-muted-foreground">
+                        {engagement.objective ? (
+                          <div title={engagement.objective} className="truncate max-w-[200px]">
+                            {engagement.objective}
+                          </div>
                         ) : (
-                          <>
-                            {typeof engagement.kpis?.openFindings !== "undefined" && (
-                              <KpiIndicator
-                                count={engagement.kpis.openFindings}
-                                iconType="warning"
-                                tooltipContent={
-                                  engagement.kpis.openFindings > 0
-                                    ? `Click to view ${engagement.kpis.openFindings} open findings`
-                                    : "No open findings"
-                                }
-                                onClick={() => handleKpiClick(engagement.title, "findings")}
-                              />
-                            )}
-                            {typeof engagement.kpis?.overdueActions !== "undefined" && (
-                              <KpiIndicator
-                                count={engagement.kpis.overdueActions}
-                                iconType="critical"
-                                tooltipContent={
-                                  engagement.kpis.overdueActions > 0
-                                    ? `Click to view ${engagement.kpis.overdueActions} overdue actions`
-                                    : "No overdue actions"
-                                }
-                                onClick={() => handleKpiClick(engagement.title, "actions")}
-                              />
-                            )}
-                            {(!engagement.kpis || Object.keys(engagement.kpis).length === 0) &&
-                              engagement.status !== "Completed" && (
-                                <KpiIndicator
-                                  iconType="neutral"
-                                  tooltipContent="Key metrics pending or not applicable."
-                                  isClickable={false}
-                                />
-                              )}
-                          </>
+                          <span>No objective set</span>
                         )}
                       </div>
                     </TableCell>

@@ -43,10 +43,43 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Loader2,
 } from "lucide-react"
 
 import type { Finding, FindingStatus, FindingSeverity, ActionPlanItem } from "./_types/finding-types"
-import { mockFindings } from "./_types/finding-types"
+
+// Interface for database finding
+interface FindingFromDB {
+  id: string
+  title: string
+  description?: string
+  status?: string
+  severity?: string
+  assignment_id?: string
+  created_at?: string
+  updated_at?: string
+}
+
+// Convert database finding to display finding
+const convertToFinding = (dbFinding: FindingFromDB): Finding => {
+  return {
+    id: dbFinding.id,
+    title: dbFinding.title,
+    description: dbFinding.description || '',
+    criteria: '', // Mock for now
+    condition: '', // Mock for now
+    cause: '', // Mock for now
+    effect: '', // Mock for now
+    recommendation: '', // Mock for now
+    status: (dbFinding.status as FindingStatus) || 'Draft',
+    severity: (dbFinding.severity as FindingSeverity) || 'Medium',
+    associatedRisks: '', // Mock for now
+    responsibleBusinessOwner: 'Business Owner', // Mock for now
+    dateCreated: dbFinding.created_at || new Date().toISOString(),
+    lastUpdated: dbFinding.updated_at || dbFinding.created_at || new Date().toISOString(),
+    assignmentName: 'Assignment', // Mock for now
+  }
+}
 
 const findingStatusConfig: Record<FindingStatus, { icon: React.ElementType; color: string; label: string }> = {
   Draft: { icon: FileText, color: "text-gray-500", label: "Draft" },
@@ -64,6 +97,8 @@ const findingStatusConfig: Record<FindingStatus, { icon: React.ElementType; colo
   Resolved: { icon: CheckCircle, color: "text-green-600", label: "Resolved" },
   Closed: { icon: Lock, color: "text-gray-700", label: "Closed" },
   Rejected: { icon: XCircle, color: "text-red-500", label: "Rejected" },
+  Open: { icon: AlertTriangle, color: "text-orange-500", label: "Open" },
+  "In Progress": { icon: Construction, color: "text-blue-500", label: "In Progress" },
 }
 
 const findingSeverityConfig: Record<FindingSeverity, { color: string; label: string }> = {
@@ -97,12 +132,7 @@ const isFindingOverdue = (finding: Finding): boolean => {
 const getActionPlanProgressValue = (finding: Finding): number => {
   if (finding.id === "FND002" && finding.status === "Action Plan Submitted") return 25
   if (finding.id === "FND003" && finding.status === "Action Plan Accepted") return 10
-
-  if (finding.actionPlan && finding.actionPlan.items && finding.actionPlan.items.length > 0) {
-    const completedItems = finding.actionPlan.items.filter((item) => item.status === "Completed").length
-    return Math.round((completedItems / finding.actionPlan.items.length) * 100)
-  }
-  return -1 // Represents N/A or no action plan
+  return 0
 }
 
 type SortableColumn =
@@ -116,7 +146,9 @@ export default function FindingsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchTerm, setSearchTerm] = useState("")
-  const [findings, setFindings] = useState<Finding[]>(mockFindings)
+  const [findings, setFindings] = useState<Finding[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showOnlyOverdue, setShowOnlyOverdue] = useState(false)
 
   const [sortColumn, setSortColumn] = useState<SortableColumn | null>(null)
@@ -148,12 +180,57 @@ export default function FindingsPage() {
   )
 
   useEffect(() => {
+    const fetchFindings = async () => {
+      try {
+        setLoading(true)
+        // Fetch findings and assignments from our local API (backed by MySQL)
+        const [findingsRes, assignmentsRes] = await Promise.all([
+          fetch('/api/findings'),
+          fetch('/api/assignments'),
+        ])
+
+        if (!findingsRes.ok) throw new Error(`Findings fetch failed: ${findingsRes.status}`)
+        if (!assignmentsRes.ok) throw new Error(`Assignments fetch failed: ${assignmentsRes.status}`)
+
+        const [findingsData, assignmentsData] = await Promise.all<[
+          FindingFromDB[],
+          { id: string; title: string }[]
+        ]>([findingsRes.json(), assignmentsRes.json()])
+
+        const assignmentIdToName = new Map<string, string>()
+        assignmentsData.forEach((a) => {
+          if (a?.id && a?.title) assignmentIdToName.set(a.id, a.title)
+        })
+
+        const converted = findingsData.map((db) => {
+          const f = convertToFinding(db)
+          // Enrich with assignment links if available
+          if (db.assignment_id) {
+            ;(f as any).assignmentId = db.assignment_id
+            ;(f as any).assignmentName = assignmentIdToName.get(db.assignment_id) || undefined
+          }
+          return f
+        })
+
+        setFindings(converted)
+      } catch (err) {
+        setError("Failed to fetch findings.")
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFindings()
+  }, [])
+
+  useEffect(() => {
     const statusFromUrl = searchParams.get("status") as FindingStatus | null
     const filterFromUrl = searchParams.get("filter")
 
     if (filterFromUrl === "overdue") {
       setShowOnlyOverdue(true)
-      setStatusFilters(allStatuses.reduce((acc, status) => ({ ...acc, [status]: false }), {}))
+      setStatusFilters(allStatuses.reduce((acc, status) => ({ ...acc, [status]: false }), {} as Record<FindingStatus, boolean>))
     } else {
       setShowOnlyOverdue(false)
       if (statusFromUrl && allStatuses.includes(statusFromUrl)) {
@@ -221,8 +298,8 @@ export default function FindingsPage() {
           valA = a.assignmentName?.toLowerCase() || ""
           valB = b.assignmentName?.toLowerCase() || ""
         } else {
-          valA = a[sortColumn as keyof Finding]
-          valB = b[sortColumn as keyof Finding]
+          valA = a[sortColumn as keyof Finding] as string | number | undefined
+          valB = b[sortColumn as keyof Finding] as string | number | undefined
         }
 
         // Handle undefined or null for general string/number comparison
@@ -244,8 +321,19 @@ export default function FindingsPage() {
     return currentFindings
   }, [findings, searchTerm, statusFilters, severityFilters, showOnlyOverdue, sortColumn, sortDirection])
 
-  const handleDeleteFinding = (findingId: string) => {
-    setFindings((prevFindings) => prevFindings.filter((f) => f.id !== findingId))
+  const handleDeleteFinding = async (findingId: string) => {
+    try {
+      const response = await fetch(`/api/findings/${findingId}`, {
+        method: "DELETE",
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      setFindings((prevFindings) => prevFindings.filter((f) => f.id !== findingId))
+    } catch (err) {
+      setError("Failed to delete finding.")
+      console.error(err)
+    }
   }
 
   const navigateToEdit = (findingId: string) => {
@@ -256,7 +344,7 @@ export default function FindingsPage() {
     const newOverdueState = !showOnlyOverdue
     setShowOnlyOverdue(newOverdueState)
     if (newOverdueState) {
-      setStatusFilters(allStatuses.reduce((acc, status) => ({ ...acc, [status]: false }), {}))
+              setStatusFilters(allStatuses.reduce((acc, status) => ({ ...acc, [status]: false }), {} as Record<FindingStatus, boolean>))
       router.push(`/findings?filter=overdue`, { scroll: false })
     } else {
       router.push(`/findings`, { scroll: false })
@@ -277,6 +365,31 @@ export default function FindingsPage() {
       <div className="flex items-center gap-2">
         <Progress value={progress} className="h-2 w-[60px]" />
         <span className="text-xs text-muted-foreground">{progress}%</span>
+      </div>
+    )
+  }
+
+  if (loading && !findings.length) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+        <p className="ml-2 text-lg text-muted-foreground">Loading findings...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">{error}</div>
+  }
+
+  if (findings.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <AlertTriangle className="h-12 w-12 text-muted-foreground mb-4" />
+        <p className="text-lg text-muted-foreground">No findings found. Create a new one!</p>
+        <Button className="mt-4" onClick={() => router.push("/findings/new")}>
+          <PlusCircle className="mr-2 h-5 w-5" /> Create New Finding
+        </Button>
       </div>
     )
   }
@@ -473,10 +586,11 @@ export default function FindingsPage() {
                         <TableCell>
                           <div className="flex items-center">
                             {isOverdue && !showOnlyOverdue && (
-                              <AlertTriangle
-                                className="h-4 w-4 text-red-500 mr-2 shrink-0"
-                                titleAccess="This finding has overdue items"
-                              />
+                              <span title="This finding has overdue items">
+                                <AlertTriangle
+                                  className="h-4 w-4 text-red-500 mr-2 shrink-0"
+                                />
+                              </span>
                             )}
                             <div
                               className="font-medium truncate max-w-[calc(100%-20px)] sm:max-w-xs md:max-w-sm lg:max-w-md"
@@ -537,11 +651,13 @@ export default function FindingsPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => navigateToEdit(finding.id)}>
-                                <Eye className="mr-2 h-4 w-4" /> View / Edit Details
+                              <DropdownMenuItem asChild>
+                                <Link href={`/findings/${finding.id}`}>
+                                  <Eye className="mr-2 h-4 w-4" /> View Details
+                                </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => navigateToEdit(finding.id)}>
-                                <ClipboardEdit className="mr-2 h-4 w-4" /> Manage Action Plan
+                                <ClipboardEdit className="mr-2 h-4 w-4" /> Edit Finding
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem

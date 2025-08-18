@@ -21,6 +21,8 @@ export type AssignmentDisplayStatus =
   | "Cancelled"
   | "Due Soon"
   | "Overdue"
+  | "In Review"
+  | "Not Started"
 
 export interface DisplayableAssignment {
   id: string

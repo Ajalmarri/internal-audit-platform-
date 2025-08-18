@@ -81,50 +81,7 @@ interface EngagementData {
   }
 }
 
-const mockEngagementData: EngagementData = {
-  id: "ENG-001",
-  title: "2025 Annual IT Security Audit",
-  status: "In Progress",
-  healthMetrics: {
-    progress: 60,
-    openHighRiskFindings: 2,
-    overdueTasks: 5,
-    budgetConsumed: 70, // 70%
-    budgetTotal: 50000,
-  },
-  details: {
-    primaryStakeholder: "IT Department",
-    engagementManager: "Yema al Olman",
-    startDate: "2025-02-01",
-    endDate: "2025-05-31",
-    objective:
-      "To assess the effectiveness of IT security controls, identify vulnerabilities, and ensure compliance with relevant regulations and internal policies. This audit will cover network infrastructure, data security, access controls, and incident response capabilities.",
-  },
-  linkedItems: {
-    assignments: [
-      { id: "ASGN-001", title: "Risk Assessment & Scoping", status: "Completed", date: "2025-02-15" },
-      { id: "ASGN-002", title: "Control Testing - Network", status: "In Progress", date: "2025-03-10" },
-      { id: "ASGN-003", title: "Control Testing - Data Security", status: "Pending", date: "2025-03-25" },
-      { id: "ASGN-004", title: "Reporting & Documentation", status: "Pending", date: "2025-04-15" },
-    ],
-    findings: [
-      { id: "FIND-001", title: "Weak Password Policy Enforcement", severity: "High", date: "2025-03-05" },
-      {
-        id: "FIND-002",
-        title: "Unpatched Server Vulnerability (CVE-2024-XXXX)",
-        severity: "Critical",
-        date: "2025-03-08",
-      },
-      { id: "FIND-003", title: "Insufficient Access Logging", severity: "Medium", date: "2025-03-12" },
-    ],
-    evidence: [
-      { id: "EVID-001", title: "Security Policy Document v2.3", type: "Document", date: "2025-02-05" },
-      { id: "EVID-002", title: "Server Patch Logs - Feb 2025", type: "Log File", date: "2025-03-01" },
-      { id: "EVID-003", title: "Access Control Review Checklist", type: "Checklist", date: "2025-02-20" },
-    ],
-  },
-}
-// --- End of Mock Data ---
+// Mock data removed - now using real data from database
 
 export default function EngagementDetailPage() {
   const params = useParams()
@@ -137,16 +94,54 @@ export default function EngagementDetailPage() {
   useEffect(() => {
     if (engagementId) {
       setIsLoading(true)
-      // Simulate API call to fetch data for this specific engagementId
-      // In a real app, you'd fetch based on engagementId. Here, we use the mock if ID matches.
-      setTimeout(() => {
-        if (engagementId === mockEngagementData.id) {
-          setEngagement(mockEngagementData)
-        } else {
-          setEngagement(null) // Or handle as "not found"
+      // Fetch real engagement data from the database
+      const fetchEngagement = async () => {
+        try {
+          const response = await fetch('/api/engagements')
+          if (!response.ok) throw new Error('Failed to fetch engagements')
+          
+          const allEngagements = await response.json()
+          const foundEngagement = allEngagements.find((eng: any) => eng.id === engagementId)
+          
+          if (foundEngagement) {
+            // Transform the real data to match our interface
+            const transformedEngagement: EngagementData = {
+              id: foundEngagement.id,
+              title: foundEngagement.title,
+              status: foundEngagement.status as EngagementData["status"],
+              healthMetrics: {
+                progress: 65, // Default progress for now
+                openHighRiskFindings: 0, // Default values
+                overdueTasks: 0,
+                budgetConsumed: 45,
+                budgetTotal: 50000,
+              },
+              details: {
+                primaryStakeholder: foundEngagement.stakeholder,
+                engagementManager: foundEngagement.manager,
+                startDate: foundEngagement.start_date,
+                endDate: foundEngagement.end_date,
+                objective: foundEngagement.objective || "No objective set",
+              },
+              linkedItems: {
+                assignments: [], // Will be populated when we have assignments API
+                findings: [], // Will be populated when we have findings API
+                evidence: [], // Will be populated when we have evidence API
+              },
+            }
+            setEngagement(transformedEngagement)
+          } else {
+            setEngagement(null)
+          }
+        } catch (error) {
+          console.error('Error fetching engagement:', error)
+          setEngagement(null)
+        } finally {
+          setIsLoading(false)
         }
-        setIsLoading(false)
-      }, 500)
+      }
+      
+      fetchEngagement()
     }
   }, [engagementId])
 
