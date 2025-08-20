@@ -17,26 +17,25 @@ interface EngagementFromDB {
 
 export async function GET() {
   try {
-    // Get engagements with proper column mapping and joins
     const rows = (await query(
       `SELECT
-         CAST(e.EngagementID AS CHAR) AS id,
-         e.EngagementTitle AS title,
-         ps.PrimaryStakeholder AS stakeholder,
-         CONCAT(u.FirstName, ' ', u.LastName) AS manager,
-         e.StartDate AS start_date,
-         e.EndDate AS end_date,
-         es.EngagementStatus AS status,
-         e.Objective AS objective,
-         e.Scope AS scope,
-         e.CreatedDate AS created_at,
-         e.ModifiedDate AS updated_at
+         e.engagementid::text AS id,
+         e.engagementtitle AS title,
+         ps.primarystakeholder AS stakeholder,
+         CONCAT(u.firstname, ' ', u.lastname) AS manager,
+         e.startdate AS start_date,
+         e.enddate AS end_date,
+         es.engagementstatus AS status,
+         e.objective AS objective,
+         e.scope AS scope,
+         e.createddate AS created_at,
+         e.modifieddate AS updated_at
        FROM engagements e
-       LEFT JOIN primarystakeholders ps ON ps.PrimaryStakeholderID = e.PrimaryStakeholderID
-       LEFT JOIN users u ON u.UserID = e.EngagementManagerID
-       LEFT JOIN engagementstatuses es ON es.EngagementStatusID = e.StatusID
-       WHERE IFNULL(e.IsDeleted, 0) = 0
-       ORDER BY e.EngagementID ASC`
+       LEFT JOIN primarystakeholders ps ON ps.primarystakeholderid = e.primarystakeholderid
+       LEFT JOIN users u ON u.userid = e.engagementmanagerid
+       LEFT JOIN engagementstatuses es ON es.engagementstatusid = e.statusid
+       WHERE COALESCE(e.isdeleted, false) = false
+       ORDER BY e.engagementid ASC`,
     )) as EngagementFromDB[]
 
     return NextResponse.json(rows)

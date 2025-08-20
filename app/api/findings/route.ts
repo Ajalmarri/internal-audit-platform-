@@ -14,22 +14,21 @@ interface FindingFromDB {
 
 export async function GET() {
   try {
-    // Get findings with proper column mapping
     const rows = (await query(
       `SELECT 
-         CAST(f.FindingID AS CHAR) AS id,
-         f.Title AS title,
-         f.FindingDescription AS description,
-         fs.FindingStatus AS status,
-         s.Severity AS severity,
-         CAST(f.AssignmentID AS CHAR) AS assignment_id,
-         f.CreatedDate AS created_at,
-         f.ModifiedDate AS updated_at
+         f.findingid::text AS id,
+         f.title AS title,
+         f.findingdescription AS description,
+         fs.findingstatus AS status,
+         s.severity AS severity,
+         f.assignmentid::text AS assignment_id,
+         f.createddate AS created_at,
+         f.modifieddate AS updated_at
        FROM findings f
-       LEFT JOIN findingstatuses fs ON fs.FindingStatusID = f.FindingStatusID
-       LEFT JOIN severities s ON s.SeverityID = f.SeverityID
-       WHERE IFNULL(f.IsDeleted, 0) = 0
-       ORDER BY f.CreatedDate DESC`
+       LEFT JOIN findingstatuses fs ON fs.findingstatusid = f.findingstatusid
+       LEFT JOIN severities s ON s.severityid = f.severityid
+       WHERE COALESCE(f.isdeleted, false) = false
+       ORDER BY f.createddate DESC`,
     )) as FindingFromDB[]
 
     return NextResponse.json(rows)
@@ -49,20 +48,20 @@ export async function GET() {
 export async function DELETE(request: Request) {
   try {
     const url = new URL(request.url)
-    const parts = url.pathname.split('/')
+    const parts = url.pathname.split("/")
     const id = parts[parts.length - 1]
-    if (!id || id === 'findings') {
-      return NextResponse.json({ message: 'Finding ID is required' }, { status: 400 })
+    if (!id || id === "findings") {
+      return NextResponse.json({ message: "Finding ID is required" }, { status: 400 })
     }
 
-    await query('UPDATE findings SET IsDeleted = 1 WHERE FindingID = ?', [id])
+    await query("UPDATE findings SET isdeleted = true WHERE findingid = $1", [id])
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Failed to delete finding:', error)
-    let errorMessage = 'An unknown error occurred'
+    console.error("Failed to delete finding:", error)
+    let errorMessage = "An unknown error occurred"
     if (error instanceof Error) {
       errorMessage = error.message
     }
-    return NextResponse.json({ message: 'Failed to delete finding.', error: errorMessage }, { status: 500 })
+    return NextResponse.json({ message: "Failed to delete finding.", error: errorMessage }, { status: 500 })
   }
 }

@@ -19,26 +19,25 @@ interface ActionPlanFromDB {
 
 export async function GET() {
   try {
-    // Get action plans from the database with proper joins
     const rows = (await query(
       `SELECT
-         CAST(ap.ActionPlanID AS CHAR) AS id,
-         ap.ActionPlanDescription AS description,
-         CAST(ap.ResponsibleID AS CHAR) AS responsible_id,
-         ap.DueDate AS due_date,
-         ap.ActionPlanStatusID AS status_id,
-         CAST(ap.FindingID AS CHAR) AS finding_id,
-         f.Title AS finding_title,
-         f.FindingDescription AS finding_description,
-         ap.Objective AS objective,
-         ap.PriorityID AS priority_id,
-         ap.Effort AS effort,
-         ap.CreatedDate AS created_date,
-         ap.IsApproved AS is_approved
+         ap.actionplanid::text AS id,
+         ap.actionplandescription AS description,
+         ap.responsibleid::text AS responsible_id,
+         ap.duedate AS due_date,
+         ap.actionplanstatusid AS status_id,
+         ap.findingid::text AS finding_id,
+         f.title AS finding_title,
+         f.findingdescription AS finding_description,
+         ap.objective AS objective,
+         ap.priorityid AS priority_id,
+         ap.effort AS effort,
+         ap.createddate AS created_date,
+         ap.isapproved AS is_approved
        FROM actionplans ap
-       LEFT JOIN findings f ON f.FindingID = ap.FindingID
-       WHERE ap.IsDeleted = 0
-       ORDER BY ap.ActionPlanID ASC`
+       LEFT JOIN findings f ON f.findingid = ap.findingid
+       WHERE COALESCE(ap.isdeleted, false) = false
+       ORDER BY ap.actionplanid ASC`,
     )) as ActionPlanFromDB[]
 
     return NextResponse.json(rows)

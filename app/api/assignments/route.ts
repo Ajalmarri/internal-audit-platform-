@@ -18,19 +18,19 @@ export async function GET() {
     // Get assignments with proper column mapping
     const rows = (await query(
       `SELECT 
-         CAST(a.AssignmentID AS CHAR) AS id,
-         a.AssignmentName AS title,
-         ast.StatusName AS status,
-         CAST(a.PlanID AS CHAR) AS audit_plan_id,
-         a.CreatedDate AS created_at,
-         a.ModifiedDate AS updated_at,
-         a.AssignmentDueDate AS end_date,
+         a.assignmentid::text AS id,
+         a.assignmentname AS title,
+         ast.statusname AS status,
+         a.planid::text AS audit_plan_id,
+         a.createddate AS created_at,
+         a.modifieddate AS updated_at,
+         a.assignmentduedate AS end_date,
          NULL AS description,
          NULL AS start_date
        FROM assignments a
-       LEFT JOIN assignmentstatuses ast ON ast.StatusID = a.AssignmentStatusID
-       WHERE IFNULL(a.IsDeleted, 0) = 0
-       ORDER BY a.CreatedDate DESC`
+       LEFT JOIN assignmentstatuses ast ON ast.statusid = a.assignmentstatusid
+       WHERE COALESCE(a.isdeleted, false) = false
+       ORDER BY a.createddate DESC`,
     )) as AssignmentFromDB[]
 
     return NextResponse.json(rows)
