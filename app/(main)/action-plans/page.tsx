@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -30,260 +29,116 @@ import {
   Trash2,
   CheckCircle,
   Clock,
+  Rocket,
   AlertTriangle,
-  XCircle,
 } from "lucide-react"
 
-// Types for Action Plans
-interface ActionPlanItem {
+import { useEffect } from "react"
+
+// Real data interface matching the database schema
+interface ActionPlanFromDB {
   id: string
-  action: string
-  responsiblePerson: string
-  dueDate: string // ISO Date string
-  status: "To Do" | "In Progress" | "Completed" | "Blocked"
+  description: string
+  responsible_id: string
+  due_date: string
+  status_id: number
+  finding_id: string
+  finding_title: string
+  finding_description: string
+  objective: string
+  priority_id: number
+  effort: string
+  created_date: string
+  is_approved: boolean
 }
 
+// Simple ActionPlan interface for the UI
 interface ActionPlan {
   id: string
-  findingId: string
-  findingTitle: string
-  businessOwner: string
-  overallObjective: string
-  items: ActionPlanItem[]
-  submittedDate: string
-  lastUpdated: string
-  progress: number // 0-100
-  status: "Not Started" | "In Progress" | "Completed" | "Overdue" | "At Risk"
+  description: string
+  responsible_id: string
+  due_date: string
+  status_id: number
+  finding_id: string
+  finding_title: string
+  finding_description: string
+  objective: string
+  priority_id: number
+  effort: string
+  created_date: string
+  is_approved: boolean
+  status: "Not Started" | "In Progress" | "Completed"
 }
 
-// Mock data for Action Plans
-const mockActionPlans: ActionPlan[] = [
-  {
-    id: "AP001",
-    findingId: "FND001",
-    findingTitle: "Unsecured S3 Bucket Exposing Sensitive Data",
-    businessOwner: "IT Security Manager",
-    overallObjective: "Secure all S3 buckets and implement proper access controls",
-    items: [
-      {
-        id: "AP001-1",
-        action: "Restrict public access to the S3 bucket",
-        responsiblePerson: "Cloud Security Team",
-        dueDate: "2025-06-15",
-        status: "Completed",
-      },
-      {
-        id: "AP001-2",
-        action: "Review and update S3 bucket ACLs and policies",
-        responsiblePerson: "Cloud Security Team",
-        dueDate: "2025-06-20",
-        status: "In Progress",
-      },
-      {
-        id: "AP001-3",
-        action: "Implement automated checks for S3 bucket configurations",
-        responsiblePerson: "DevOps Team",
-        dueDate: "2025-07-01",
-        status: "To Do",
-      },
-    ],
-    submittedDate: "2025-06-05",
-    lastUpdated: "2025-06-10",
-    progress: 40,
-    status: "In Progress",
-  },
-  {
-    id: "AP002",
-    findingId: "FND002",
-    findingTitle: "Lack of Segregation of Duties in Financial Reporting",
-    businessOwner: "Finance Department Head",
-    overallObjective: "Implement proper segregation of duties for financial reporting",
-    items: [
-      {
-        id: "AP002-1",
-        action: "Review all financial system roles and permissions",
-        responsiblePerson: "Finance Systems Admin",
-        dueDate: "2025-07-15",
-        status: "To Do",
-      },
-      {
-        id: "AP002-2",
-        action: "Redefine roles to ensure SoD",
-        responsiblePerson: "Finance Controller",
-        dueDate: "2025-08-15",
-        status: "To Do",
-      },
-      {
-        id: "AP002-3",
-        action: "Update SOPs and train relevant staff",
-        responsiblePerson: "Finance Training Lead",
-        dueDate: "2025-09-15",
-        status: "To Do",
-      },
-    ],
-    submittedDate: "2025-06-04",
-    lastUpdated: "2025-06-04",
-    progress: 0,
-    status: "Not Started",
-  },
-  {
-    id: "AP003",
-    findingId: "FND003",
-    findingTitle: "Outdated Anti-Virus Signatures on Critical Servers",
-    businessOwner: "IT Operations Lead",
-    overallObjective: "Ensure all critical servers have up-to-date AV signatures and robust monitoring",
-    items: [
-      {
-        id: "AP003-1",
-        action: "Manually update AV on SRV01, SRV05, DB02",
-        responsiblePerson: "SysAdmin Team",
-        dueDate: "2025-06-10",
-        status: "Completed",
-      },
-      {
-        id: "AP003-2",
-        action: "Investigate and fix automated AV update script",
-        responsiblePerson: "DevOps Team",
-        dueDate: "2025-06-15",
-        status: "Completed",
-      },
-      {
-        id: "AP003-3",
-        action: "Implement enhanced monitoring for AV update failures",
-        responsiblePerson: "Monitoring Team",
-        dueDate: "2025-06-20",
-        status: "Completed",
-      },
-    ],
-    submittedDate: "2025-06-02",
-    lastUpdated: "2025-06-18",
-    progress: 100,
-    status: "Completed",
-  },
-  {
-    id: "AP004",
-    findingId: "FND004",
-    findingTitle: "Inadequate Password Policy for Admin Accounts",
-    businessOwner: "IT Security Manager",
-    overallObjective: "Strengthen password policies for all administrative accounts",
-    items: [
-      {
-        id: "AP004-1",
-        action: "Update password policy in Active Directory",
-        responsiblePerson: "Identity Management Team",
-        dueDate: "2025-05-20",
-        status: "Blocked",
-      },
-      {
-        id: "AP004-2",
-        action: "Implement MFA for all admin accounts",
-        responsiblePerson: "Security Operations",
-        dueDate: "2025-05-25",
-        status: "In Progress",
-      },
-    ],
-    submittedDate: "2025-05-10",
-    lastUpdated: "2025-06-01",
-    progress: 30,
-    status: "At Risk",
-  },
-  {
-    id: "AP005",
-    findingId: "FND005",
-    findingTitle: "Missing Backup Verification Procedures",
-    businessOwner: "Data Management Lead",
-    overallObjective: "Establish and implement backup verification procedures",
-    items: [
-      {
-        id: "AP005-1",
-        action: "Document backup verification procedures",
-        responsiblePerson: "Backup Team Lead",
-        dueDate: "2025-04-15",
-        status: "Completed",
-      },
-      {
-        id: "AP005-2",
-        action: "Implement automated backup testing",
-        responsiblePerson: "DevOps Team",
-        dueDate: "2025-04-30",
-        status: "In Progress",
-      },
-      {
-        id: "AP005-3",
-        action: "Schedule regular backup restoration drills",
-        responsiblePerson: "Disaster Recovery Team",
-        dueDate: "2025-05-10",
-        status: "To Do",
-      },
-    ],
-    submittedDate: "2025-04-01",
-    lastUpdated: "2025-05-05",
-    progress: 45,
-    status: "Overdue",
-  },
-]
-
-// Configuration for Action Plan Status display
-const actionPlanStatusConfig: Record<ActionPlan["status"], { icon: React.ElementType; color: string }> = {
-  "Not Started": { icon: Clock, color: "text-gray-500" },
-  "In Progress": { icon: Clock, color: "text-blue-500" },
-  Completed: { icon: CheckCircle, color: "text-green-500" },
-  Overdue: { icon: AlertTriangle, color: "text-red-500" },
-  "At Risk": { icon: XCircle, color: "text-orange-500" },
+// Configuration for Action Plan Status display - Updated
+const actionPlanStatusConfig: Record<
+  string,
+  { icon: React.ElementType; color: string; badgeVariant?: "default" | "secondary" | "destructive" | "outline" }
+> = {
+  "Not Started": { icon: Clock, color: "text-gray-500", badgeVariant: "secondary" },
+  "In Progress": { icon: Rocket, color: "text-blue-500", badgeVariant: "default" },
+  "Completed": { icon: CheckCircle, color: "text-green-500", badgeVariant: "default" },
 }
 
 export default function ActionPlansPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [actionPlans, setActionPlans] = useState<ActionPlan[]>(mockActionPlans)
-
-  // Filter states
-  const [statusFilters, setStatusFilters] = useState<Record<ActionPlan["status"], boolean>>({
+  const [actionPlans, setActionPlans] = useState<ActionPlan[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({
     "Not Started": false,
     "In Progress": false,
-    Completed: false,
-    Overdue: false,
-    "At Risk": false,
+    "Completed": false,
   })
+
+  // Fetch real data from API
+  useEffect(() => {
+    const fetchActionPlans = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/action-plans')
+        if (!response.ok) throw new Error('Failed to fetch action plans')
+        
+        const data = await response.json()
+        // Transform the data to add a default status and format dates
+        const transformedData: ActionPlan[] = data.map((plan: ActionPlanFromDB) => ({
+          ...plan,
+          status: plan.is_approved ? "In Progress" as const : "Not Started" as const
+        }))
+        
+        setActionPlans(transformedData)
+      } catch (error) {
+        console.error('Error loading action plans:', error)
+        setActionPlans([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchActionPlans()
+  }, [])
 
   const filteredActionPlans = useMemo(() => {
     let currentPlans = [...actionPlans]
-
-    // Apply search term
     if (searchTerm) {
       currentPlans = currentPlans.filter(
         (plan) =>
-          plan.findingTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          plan.businessOwner.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          plan.overallObjective.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          plan.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
           plan.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          plan.findingId.toLowerCase().includes(searchTerm.toLowerCase()),
+          (plan.finding_title && plan.finding_title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (plan.finding_description && plan.finding_description.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
-
-    // Apply status filters
     const activeStatusFilters = Object.entries(statusFilters)
       .filter(([_, isActive]) => isActive)
       .map(([status]) => status)
-
     if (activeStatusFilters.length > 0) {
       currentPlans = currentPlans.filter((plan) => activeStatusFilters.includes(plan.status))
     }
-
     return currentPlans
   }, [actionPlans, searchTerm, statusFilters])
 
   const handleDeleteActionPlan = (planId: string) => {
-    // Placeholder for actual delete logic (e.g., API call)
     setActionPlans((prevPlans) => prevPlans.filter((p) => p.id !== planId))
-    console.log("Delete action plan:", planId)
-  }
-
-  const getProgressColor = (status: ActionPlan["status"], progress: number) => {
-    if (status === "Completed") return "bg-green-500"
-    if (status === "Overdue") return "bg-red-500"
-    if (status === "At Risk") return "bg-orange-500"
-    if (progress > 60) return "bg-blue-500"
-    return "bg-blue-400"
   }
 
   return (
@@ -305,7 +160,7 @@ export default function ActionPlansPage() {
             <div className="relative w-full sm:flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                placeholder="Search by finding, business owner, objective..."
+                placeholder="Search by action plan, finding, owner, auditor..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full"
@@ -317,25 +172,25 @@ export default function ActionPlansPage() {
                   <SlidersHorizontal className="mr-2 h-4 w-4" /> Filters
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
+              <DropdownMenuContent align="end" className="w-[220px]">
                 <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {Object.keys(statusFilters).map((status) => (
-                  <DropdownMenuCheckboxItem
-                    key={status}
-                    checked={statusFilters[status as ActionPlan["status"]]}
-                    onCheckedChange={(checked) => setStatusFilters((prev) => ({ ...prev, [status]: !!checked }))}
-                  >
-                    <span className="flex items-center">
-                      {status === "Not Started" && <Clock className="mr-2 h-4 w-4 text-gray-500" />}
-                      {status === "In Progress" && <Clock className="mr-2 h-4 w-4 text-blue-500" />}
-                      {status === "Completed" && <CheckCircle className="mr-2 h-4 w-4 text-green-500" />}
-                      {status === "Overdue" && <AlertTriangle className="mr-2 h-4 w-4 text-red-500" />}
-                      {status === "At Risk" && <XCircle className="mr-2 h-4 w-4 text-orange-500" />}
-                      {status}
-                    </span>
-                  </DropdownMenuCheckboxItem>
-                ))}
+                {Object.keys(statusFilters).map((statusKey) => {
+                  const status = statusKey as ActionPlanStatus
+                  const config = actionPlanStatusConfig[status]
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={status}
+                      checked={statusFilters[status]}
+                      onCheckedChange={(checked) => setStatusFilters((prev) => ({ ...prev, [status]: !!checked }))}
+                    >
+                      <span className="flex items-center">
+                        {config && <config.icon className={`mr-2 h-4 w-4 ${config.color}`} />}
+                        {status}
+                      </span>
+                    </DropdownMenuCheckboxItem>
+                  )
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -346,66 +201,94 @@ export default function ActionPlansPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px]">ID</TableHead>
-                  <TableHead className="min-w-[250px]">Finding</TableHead>
-                  <TableHead>Business Owner</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[150px]">Progress</TableHead>
-                  <TableHead>Last Updated</TableHead>
+                  <TableHead className="min-w-[300px]">Action Plan Description</TableHead>
+                  <TableHead className="min-w-[200px]">Related Finding</TableHead>
+                  <TableHead className="min-w-[120px]">Responsible ID</TableHead>
+                  <TableHead className="min-w-[120px]">Due Date</TableHead>
+                  <TableHead className="min-w-[120px]">Priority</TableHead>
+                  <TableHead className="min-w-[120px]">Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredActionPlans.length > 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                        <span>Loading action plans...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredActionPlans.length > 0 ? (
                   filteredActionPlans.map((plan) => {
                     const statusInfo = actionPlanStatusConfig[plan.status]
                     return (
                       <TableRow key={plan.id}>
-                        <TableCell className="font-mono text-xs">{plan.id}</TableCell>
+                        <TableCell className="font-mono text-xs">
+                          <Link 
+                            href={`/action-plans/${plan.id}`}
+                            className="hover:underline text-blue-600 dark:text-blue-400"
+                          >
+                            {plan.id}
+                          </Link>
+                        </TableCell>
                         <TableCell>
                           <div
                             className="font-medium truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
-                            title={plan.findingTitle}
+                            title={plan.description}
                           >
-                            {plan.findingTitle}
+                            {plan.description}
                           </div>
-                          <div className="text-xs text-muted-foreground">Finding ID: {plan.findingId}</div>
                         </TableCell>
-                        <TableCell className="truncate max-w-[150px]" title={plan.businessOwner}>
-                          {plan.businessOwner}
+                        <TableCell className="min-w-[200px]">
+                          {plan.finding_id && plan.finding_title ? (
+                            <Link
+                              href={`/findings/${plan.finding_id}`}
+                              className="hover:underline text-blue-600 dark:text-blue-400"
+                              title={plan.finding_description}
+                            >
+                              <div className="font-medium truncate max-w-[180px]" title={plan.finding_title}>
+                                {plan.finding_title}
+                              </div>
+                              <div className="text-xs text-muted-foreground truncate max-w-[180px]" title={plan.finding_description}>
+                                {plan.finding_description}
+                              </div>
+                            </Link>
+                          ) : (
+                            <span className="text-muted-foreground italic">No finding linked</span>
+                          )}
                         </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={plan.status === "Completed" ? "default" : "secondary"}
-                            className={
-                              plan.status === "Completed"
-                                ? "bg-green-500 hover:bg-green-600 text-white"
-                                : plan.status === "Overdue"
-                                  ? "bg-red-500 hover:bg-red-600 text-white"
-                                  : plan.status === "At Risk"
-                                    ? "bg-orange-500 hover:bg-orange-600 text-white"
-                                    : ""
-                            }
-                          >
-                            <statusInfo.icon className={`mr-1.5 h-3.5 w-3.5 ${statusInfo.color}`} />
-                            {plan.status}
+                        <TableCell className="truncate max-w-[120px]" title={plan.responsible_id}>
+                          {plan.responsible_id}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {plan.due_date ? new Date(plan.due_date).toLocaleDateString() : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="outline" className="text-xs">
+                            {plan.priority_id}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Progress
-                              value={plan.progress}
-                              className="h-2 flex-grow"
-                              indicatorClassName={getProgressColor(plan.status, plan.progress)}
-                            />
-                            <span className="text-xs text-muted-foreground">{plan.progress}%</span>
-                          </div>
+                          <Badge
+                            variant={statusInfo?.badgeVariant || "secondary"}
+                            className={
+                              plan.status === "Completed"
+                                ? "bg-green-500 hover:bg-green-600 text-white"
+                                : plan.status === "In Progress"
+                                  ? "bg-blue-500 hover:bg-blue-600 text-white"
+                                  : "bg-gray-500 hover:bg-gray-600 text-white"
+                            }
+                          >
+                            {plan.status}
+                          </Badge>
                         </TableCell>
-                        <TableCell>{new Date(plan.lastUpdated).toLocaleDateString()}</TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-5 w-5" />
+                                <MoreHorizontal className="h-5 w-4" />
                                 <span className="sr-only">Actions</span>
                               </Button>
                             </DropdownMenuTrigger>
@@ -415,6 +298,13 @@ export default function ActionPlansPage() {
                                   <Eye className="mr-2 h-4 w-4" /> View Details
                                 </Link>
                               </DropdownMenuItem>
+                              {plan.finding_id && (
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/findings/${plan.finding_id}`}>
+                                    <AlertTriangle className="mr-2 h-4 w-4" /> View Finding
+                                  </Link>
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem asChild>
                                 <Link href={`/action-plans/${plan.id}/edit`}>
                                   <Edit className="mr-2 h-4 w-4" /> Edit Plan
@@ -435,7 +325,7 @@ export default function ActionPlansPage() {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
+                    <TableCell colSpan={8} className="h-24 text-center">
                       No action plans match your criteria.
                     </TableCell>
                   </TableRow>
@@ -446,6 +336,7 @@ export default function ActionPlansPage() {
           </ScrollArea>
         </CardContent>
       </Card>
+
     </div>
   )
 }

@@ -9,6 +9,9 @@ import Header from "@/components/layout/header"
 import { Toaster } from "@/components/ui/toaster"
 import { cookies } from "next/headers"
 import { cn } from "@/lib/utils"
+import MainPanel from "@/components/layout/main-panel"
+import { AuthProvider } from "@/contexts/auth-context"
+import ConditionalLayout from "@/components/layout/conditional-layout"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,33 +21,25 @@ export const metadata: Metadata = {
     generator: 'v0.dev'
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   // Ensure defaultOpen is boolean. If cookie is not set, default to true (expanded).
   const defaultSidebarOpen = cookieStore.get("sidebar:state")?.value !== "false"
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.className, "overflow-hidden")}>
-        {" "}
-        {/* Prevent body scroll when sidebar is fixed */}
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <SidebarProvider defaultOpen={defaultSidebarOpen}>
-            <div className="flex h-screen w-full bg-background">
-              <AppSidebar />
-              <div className="flex flex-col flex-1 h-screen overflow-y-auto">
-                {" "}
-                {/* Make content area scrollable */}
-                <Header />
-                <main className="flex-1 p-4 md:p-6 lg:p-8 bg-muted/30">{children}</main>
-              </div>
-            </div>
-          </SidebarProvider>
-          <Toaster />
+          <AuthProvider>
+            <ConditionalLayout defaultSidebarOpen={defaultSidebarOpen}>
+              {children}
+            </ConditionalLayout>
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
