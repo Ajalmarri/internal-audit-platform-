@@ -15,18 +15,7 @@ export async function query(sqlQuery: string, params?: any[]) {
     console.log("[v0] Executing query:", sqlQuery)
     console.log("[v0] With params:", params)
 
-    // Convert MySQL-style ? placeholders to PostgreSQL-style $1, $2, etc.
-    let convertedQuery = sqlQuery
-    let paramIndex = 1
-
-    while (convertedQuery.includes("?")) {
-      convertedQuery = convertedQuery.replace("?", `$${paramIndex}`)
-      paramIndex++
-    }
-
-    console.log("[v0] Converted query:", convertedQuery)
-
-    const result = await sql(convertedQuery, params || [])
+    const result = await sql(sqlQuery, params || [])
     console.log("[v0] Query result:", result)
     return result
   } catch (error) {
