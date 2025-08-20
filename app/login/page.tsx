@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -9,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Building } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -17,6 +20,7 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const router = useRouter()
   const { toast } = useToast()
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,27 +28,19 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
+      const success = await login(email, password)
 
-      const data = await response.json()
-
-      if (response.ok) {
+      if (success) {
         toast({
           title: "Login successful",
-          description: `Welcome back, ${data.user.FirstName}!`,
+          description: `Welcome back!`,
         })
-        router.push('/dashboard')
+        router.push("/dashboard")
       } else {
-        setError(data.message || 'Login failed')
+        setError("Invalid email or password")
       }
     } catch (error) {
-      setError('An error occurred during login')
+      setError("An error occurred during login")
     } finally {
       setIsLoading(false)
     }
@@ -64,9 +60,7 @@ export default function LoginPage() {
         <Card>
           <CardHeader>
             <CardTitle>Login</CardTitle>
-            <CardDescription>
-              Enter your credentials to access the audit platform
-            </CardDescription>
+            <CardDescription>Enter your credentials to access the audit platform</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,7 +111,8 @@ export default function LoginPage() {
             <div className="mt-6 text-center text-sm text-gray-600">
               <p>Demo credentials:</p>
               <p className="font-mono text-xs mt-1">
-                Email: ahmed.almarri@d.gov.ae<br />
+                Email: ahmed.almarri@d.gov.ae
+                <br />
                 Password: admin123
               </p>
             </div>
