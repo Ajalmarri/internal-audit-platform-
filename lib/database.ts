@@ -15,7 +15,8 @@ export async function query(sqlQuery: string, params?: any[]) {
     console.log("[v0] Executing query:", sqlQuery)
     console.log("[v0] With params:", params)
 
-    const result = await sql(sqlQuery, params || [])
+    const result = params && params.length > 0 ? await sql.query(sqlQuery, params) : await sql(sqlQuery)
+
     console.log("[v0] Query result:", result)
     return result
   } catch (error) {
@@ -45,7 +46,7 @@ export async function getConnection() {
   // Return a mock connection object for compatibility
   return {
     execute: async (query: string, params?: any[]) => {
-      const result = await sql(query, params || [])
+      const result = params && params.length > 0 ? await sql.query(query, params) : await sql(query)
       return [result]
     },
   }
