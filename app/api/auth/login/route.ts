@@ -7,13 +7,13 @@ interface LoginRequest {
 }
 
 interface User {
-  UserID: number
-  Email: string
-  FirstName: string
-  LastName: string
-  UserRoleID: number
-  IsActive: number
-  IsDeleted: number
+  userid: number
+  email: string
+  firstname: string
+  lastname: string
+  userroleid: number
+  isactive: boolean
+  isdeleted: boolean
 }
 
 export async function POST(request: NextRequest) {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const user = users[0]
 
     // Check if user is active
-    if (!user.IsActive) {
+    if (!user.isactive) {
       return NextResponse.json({ message: "Account is deactivated" }, { status: 401 })
     }
 
@@ -50,17 +50,17 @@ export async function POST(request: NextRequest) {
     // In production, you would implement proper password authentication
     console.log("User found, accepting login for demo purposes")
 
-    const roles = (await query(`SELECT rolename FROM userroles WHERE roleid = $1`, [user.UserRoleID])) as any[]
+    const roles = (await query(`SELECT rolename FROM userroles WHERE roleid = $1`, [user.userroleid])) as any[]
 
-    const roleName = roles.length > 0 ? roles[0].RoleName : "Unknown"
+    const roleName = roles.length > 0 ? roles[0].rolename : "Unknown"
 
     // Create session data (in production, use proper session management)
     const sessionData = {
-      userID: user.UserID,
-      email: user.Email,
-      firstName: user.FirstName,
-      lastName: user.LastName,
-      roleID: user.UserRoleID,
+      userID: user.userid,
+      email: user.email,
+      firstName: user.firstname,
+      lastName: user.lastname,
+      roleID: user.userroleid,
       roleName: roleName,
       isAuthenticated: true,
     }
@@ -69,11 +69,11 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       message: "Login successful",
       user: {
-        UserID: user.UserID,
-        Email: user.Email,
-        FirstName: user.FirstName,
-        LastName: user.LastName,
-        UserRoleID: user.UserRoleID,
+        UserID: user.userid,
+        Email: user.email,
+        FirstName: user.firstname,
+        LastName: user.lastname,
+        UserRoleID: user.userroleid,
         RoleName: roleName,
       },
     })
