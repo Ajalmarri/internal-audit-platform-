@@ -2,12 +2,12 @@ import { NextResponse } from "next/server"
 import { query } from "@/lib/database"
 
 interface RouteParams {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function GET(_request: Request, { params }: RouteParams) {
   try {
-    const { id } = params
+    const { id } = await params
     if (!id) {
       return NextResponse.json({ message: "Finding ID is required" }, { status: 400 })
     }
@@ -50,7 +50,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
   try {
-    const { id } = params
+    const { id } = await params
     if (!id) {
       return NextResponse.json({ message: "Finding ID is required" }, { status: 400 })
     }

@@ -1,0 +1,614 @@
+﻿"Sequance","Year","Audit Plan Name","Assignment Name: ID","Assignment Name","Assignment Name:Cycle","Finding Title","Finding Detail","Management Response","Acceptance","Finding Rating","Control Rating","Recommendations","Core Risks","Core Risks ID (linked to item)","Cycle (Linked)","Inh_Risk_Rating (Linked)","Related Risks","Related Risks:Title (linked to item)","Related Risks:Inh_Risk_Rating-2","Core Function","Core Function:Division","Related Functions","Related Functions:Division","Rating Calculation","Weightage to Core ","Weightage to Related","Created By"
+"C&P-2022-ContractReviewQ1-01","2022","Contract Review Q1",,,"Procure to pay","The Contract Commencement date is earlier than the contract's date and signatures","<div style=""""><font color=""#000000"" face=""Calibri, Arial, Helvetica, sans-serif""><span style=""font-size&#58;11pt;color&#58;black;""></span><span>During&#160;</span></font><span style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, Arial, Helvetica, sans-serif;"">the Procure to Pay review Internal Audit picked Mace Macro Technical Services LLC (DFF_ 1200 Contract as a sample noted that the contract Commencement date</span><font color=""#000000"" face=""Calibri, Arial, Helvetica, sans-serif""><span><br></span><span>was in 01 10 2020 while the contract signing date was 18 02 2021</span><span style=""font-size&#58;11pt;""></span></font><br></div>","<span style=""color&#58;black;"">​<span lang=""EN-US"" style=""font-size&#58;11.0pt;font-family&#58;&quot;Calibri&quot;,sans-serif;"">Not to proceed with works without a signed contract or a signed LOA. </span></span><br>",,"2-Medium","2-Control Ineffective","[""Ensure Contracts' commencement and signature dates are following the rightful sequence ""]","Accounting - Failure in delivering the service or material,Procure to Pay - Delay in sourcing services and products to the Foundation","R.CP.16; R.CP.03","Accounting; Procure to Pay","6; 8","R.CP.03 - Delay in Projects and Operations,R.CP.07 - Legal actions against the foundation due to libel publication","R.FDA.04; R.CKD.12","8; 8","Contracts & Procurement","Corporate Affairs","Offices Of the Future","Corporate Affairs","4","100%","25%","Hamda Abdulla"
+"C&P-2022-ContractReviewQ1-02","2022","Contract Review Q1",,,"Procure to pay","Edited vendor bank details with no visibility of change performer due to absence of change trail records in ERP		","<span style=""color&#58;black;"">​<span>During the review of the Procure to Pay process; Internal Audit noted the mismatch between Mace Macro's IBAN numbers in FutureBuy and ERP. Furthermore, we have requested the details of the change in ERP records to note who performed the change and when was it performed. The review resulted in the following observations&#58; 		<br></span><div>1- Absence of a change trail report in ERP as we were not able to identify the change performer and the date of change 		<br></div><div>2- Vendor editing permissions granted to 18 DFF employees across Finance, Procurement and EMT		<br></div><div>3- Procurement employee directly contacted e-solutions to change vendor details without involving the IT team 		<br></div><div>4- FutureBuy and ERP were not synced to reflect any changes/updates		<br></div><span></span></span><br>",,,"3-High","3-Control Inadequate","[""1- Formulate a vendor registration and details change process between Procurement and Finance"",""2- Align system permissions to the vendor registration process""]","Procure to Pay - Delay in vendor payments,Procure to Pay - Unauthorized changes to the vendors/customers balances,Procure to Pay - Inaccurate payments to vendors,Procure to Pay - Ineffective monitoring mechanisim over Procurement","R.FA.05; R.FA.08; R.FA.06; R.CP.09","Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay","8; 7; 7; 6","R.FA.03 - Delay in Projects and Operations,R.CP.10 - Improper authorization rights","R.FDA.04; R.LD.08","8; 6","Contracts & Procurement","Corporate Affairs","Finance,Information Technology","Corporate Affairs; Corporate Affairs","9","100%","25%","Hamda Abdulla"
+"C&P-2022-ContractReview-Q4-01","2022","Contract Review Q4",,,"Procure to pay","Delay in Procurement Cycle","<span style=""color&#58;black;""><b><u>​Findings&#58;</u></b><div style=""margin-top&#58;14.6667px;margin-bottom&#58;14.6667px;""><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Internal Audit has conducted
+a review over a procurement process for a tender pertaining to Internal Audit
+Framework Agreement. Based on Internal Audit record of the exercise, we have
+noted that the procurement cycle was initiated on 05-Apr-2022, and till 24-Oct-2022
+(cutoff date of the audit exercise) the exercise is still running without
+finalization. Based on Internal Audit records, the following table explain the
+different phases of the exercise and the number of calendar days taken by each
+function/party (detail breakdown available in attached file)&#58;</span></p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;"">&#160;</p><table width=""873"" style=""width&#58;654.5pt;border-collapse&#58;collapse;"">
+ <tbody><tr style=""height&#58;14.25pt;"">
+  <td width=""154"" style=""width&#58;115.55pt;border&#58;solid windowtext 1.0pt;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><b><span style=""color&#58;black;"">Phase</span></b></p>
+  </td>
+  <td width=""79"" style=""width&#58;59.4pt;border&#58;solid windowtext 1.0pt;border-left&#58;none;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><b><span style=""color&#58;black;"">IA</span></b></p>
+  </td>
+  <td width=""99"" style=""width&#58;74.25pt;border&#58;solid windowtext 1.0pt;border-left&#58;none;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><b><span style=""color&#58;black;"">C&amp;P</span></b></p>
+  </td>
+  <td width=""76"" style=""width&#58;56.7pt;border&#58;solid windowtext 1.0pt;border-left&#58;none;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><b><span style=""color&#58;black;"">Legal</span></b></p>
+  </td>
+  <td width=""146"" style=""width&#58;109.5pt;border&#58;solid windowtext 1.0pt;border-left&#58;none;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><b><span style=""color&#58;black;"">Vendor</span></b></p>
+  </td>
+  <td width=""129"" style=""width&#58;96.55pt;border&#58;solid windowtext 1.0pt;border-left&#58;none;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><b><span style=""color&#58;black;"">Others</span></b></p>
+  </td>
+  <td width=""119"" style=""width&#58;89.1pt;border&#58;solid windowtext 1.0pt;border-left&#58;none;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><b><span style=""color&#58;black;"">KPMG</span></b></p>
+  </td>
+  <td width=""71"" style=""width&#58;53.45pt;border&#58;solid windowtext 1.0pt;border-left&#58;none;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><b><span style=""color&#58;black;"">PWC</span></b></p>
+  </td>
+ </tr>
+ <tr style=""height&#58;14.25pt;"">
+  <td width=""154"" style=""width&#58;115.55pt;border&#58;solid windowtext 1.0pt;border-top&#58;none;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><span style=""color&#58;black;"">PR</span></p>
+  </td>
+  <td width=""79"" style=""width&#58;59.4pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">0</span></p>
+  </td>
+  <td width=""99"" style=""width&#58;74.25pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">20</span></p>
+  </td>
+  <td width=""76"" style=""width&#58;56.7pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""146"" style=""width&#58;109.5pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""129"" style=""width&#58;96.55pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""119"" style=""width&#58;89.1pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;"">&#160;</span></p>
+  </td>
+  <td width=""71"" style=""width&#58;53.45pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;"">&#160;</span></p>
+  </td>
+ </tr>
+ <tr style=""height&#58;14.25pt;"">
+  <td width=""154"" style=""width&#58;115.55pt;border&#58;solid windowtext 1.0pt;border-top&#58;none;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><span style=""color&#58;black;"">RFQ</span></p>
+  </td>
+  <td width=""79"" style=""width&#58;59.4pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""99"" style=""width&#58;74.25pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">5</span></p>
+  </td>
+  <td width=""76"" style=""width&#58;56.7pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""146"" style=""width&#58;109.5pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">37</span></p>
+  </td>
+  <td width=""129"" style=""width&#58;96.55pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""119"" style=""width&#58;89.1pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+  <td width=""71"" style=""width&#58;53.45pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+ </tr>
+ <tr style=""height&#58;14.25pt;"">
+  <td width=""154"" style=""width&#58;115.55pt;border&#58;solid windowtext 1.0pt;border-top&#58;none;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><span style=""color&#58;black;"">Technical
+  Evaluation</span></p>
+  </td>
+  <td width=""79"" style=""width&#58;59.4pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">8</span></p>
+  </td>
+  <td width=""99"" style=""width&#58;74.25pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">13</span></p>
+  </td>
+  <td width=""76"" style=""width&#58;56.7pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""146"" style=""width&#58;109.5pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;"">&#160;</span></p>
+  </td>
+  <td width=""129"" style=""width&#58;96.55pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;"">&#160;</span></p>
+  </td>
+  <td width=""119"" style=""width&#58;89.1pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+  <td width=""71"" style=""width&#58;53.45pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+ </tr>
+ <tr style=""height&#58;14.25pt;"">
+  <td width=""154"" style=""width&#58;115.55pt;border&#58;solid windowtext 1.0pt;border-top&#58;none;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><span style=""color&#58;black;"">Commercial
+  Evaluation</span></p>
+  </td>
+  <td width=""79"" style=""width&#58;59.4pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">2</span></p>
+  </td>
+  <td width=""99"" style=""width&#58;74.25pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""76"" style=""width&#58;56.7pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""146"" style=""width&#58;109.5pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""129"" style=""width&#58;96.55pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""119"" style=""width&#58;89.1pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+  <td width=""71"" style=""width&#58;53.45pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+ </tr>
+ <tr style=""height&#58;14.25pt;"">
+  <td width=""154"" style=""width&#58;115.55pt;border&#58;solid windowtext 1.0pt;border-top&#58;none;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><span style=""color&#58;black;"">BAFCO</span></p>
+  </td>
+  <td width=""79"" style=""width&#58;59.4pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">3</span></p>
+  </td>
+  <td width=""99"" style=""width&#58;74.25pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">6</span></p>
+  </td>
+  <td width=""76"" style=""width&#58;56.7pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""146"" style=""width&#58;109.5pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">12</span><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;""></span></p>
+  </td>
+  <td width=""129"" style=""width&#58;96.55pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;"">&#160;</span></p>
+  </td>
+  <td width=""119"" style=""width&#58;89.1pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+  <td width=""71"" style=""width&#58;53.45pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+ </tr>
+ <tr style=""height&#58;14.25pt;"">
+  <td width=""154"" style=""width&#58;115.55pt;border&#58;solid windowtext 1.0pt;border-top&#58;none;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><span style=""color&#58;black;"">Contract
+  Approval</span></p>
+  </td>
+  <td width=""79"" style=""width&#58;59.4pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">0</span></p>
+  </td>
+  <td width=""99"" style=""width&#58;74.25pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">&#160;</span></p>
+  </td>
+  <td width=""76"" style=""width&#58;56.7pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;"">&#160;</span></p>
+  </td>
+  <td width=""146"" style=""width&#58;109.5pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;"">&#160;</span></p>
+  </td>
+  <td width=""129"" style=""width&#58;96.55pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">1</span><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;""></span></p>
+  </td>
+  <td width=""119"" style=""width&#58;89.1pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+  <td width=""71"" style=""width&#58;53.45pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;""></td>
+ </tr>
+ <tr style=""height&#58;14.25pt;"">
+  <td width=""154"" style=""width&#58;115.55pt;border&#58;solid windowtext 1.0pt;border-top&#58;none;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><span style=""color&#58;black;"">Contract
+  Drafting</span></p>
+  </td>
+  <td width=""79"" style=""width&#58;59.4pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">6</span></p>
+  </td>
+  <td width=""99"" style=""width&#58;74.25pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">37</span></p>
+  </td>
+  <td width=""76"" style=""width&#58;56.7pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">36</span><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;""></span></p>
+  </td>
+  <td width=""146"" style=""width&#58;109.5pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;"">&#160;</span></p>
+  </td>
+  <td width=""129"" style=""width&#58;96.55pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">6</span></p>
+  </td>
+  <td width=""119"" style=""width&#58;89.1pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">27</span></p>
+  </td>
+  <td width=""71"" style=""width&#58;53.45pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><span style=""color&#58;black;"">23</span><span style=""font-family&#58;&quot;Times New Roman&quot;,serif;""></span></p>
+  </td>
+ </tr>
+ <tr style=""height&#58;14.25pt;"">
+  <td width=""154"" style=""width&#58;115.55pt;border&#58;solid windowtext 1.0pt;border-top&#58;none;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;line-height&#58;105%;""><b><span style=""color&#58;black;"">Grand
+  Total (Days)</span></b></p>
+  </td>
+  <td width=""79"" style=""width&#58;59.4pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><b><span style=""color&#58;black;"">19</span></b></p>
+  </td>
+  <td width=""99"" style=""width&#58;74.25pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><b><span style=""color&#58;black;"">81</span></b></p>
+  </td>
+  <td width=""76"" style=""width&#58;56.7pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><b><span style=""color&#58;black;"">36</span></b></p>
+  </td>
+  <td width=""146"" style=""width&#58;109.5pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><b><span style=""color&#58;black;"">49</span></b></p>
+  </td>
+  <td width=""129"" style=""width&#58;96.55pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><b><span style=""color&#58;black;"">7</span></b></p>
+  </td>
+  <td width=""119"" style=""width&#58;89.1pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><b><span style=""color&#58;black;"">27</span></b></p>
+  </td>
+  <td width=""71"" style=""width&#58;53.45pt;border-top&#58;none;border-left&#58;none;border-bottom&#58;solid windowtext 1.0pt;border-right&#58;solid windowtext 1.0pt;background&#58;#D9E1F2;padding&#58;0in 5.4pt 0in 5.4pt;height&#58;14.25pt;"">
+  <p align=""right"" style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;right;line-height&#58;105%;""><b><span style=""color&#58;black;"">23</span></b></p>
+  </td>
+ </tr></tbody></table><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">The total number of calendar
+days from initiating the request till 24-Oct-2022 is around 202 calendar days,
+which is more than 6 months. Via a discussion session with both Legal and
+Contracts &amp; Procurement (C&amp;P) teams to identify optimization opportunities,
+the following issues were highlighted&#58;</span></p><ol style=""margin-bottom&#58;0in;""><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Weak scope
+preparation by the project managers;</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Limited monitoring
+mechanism over the procurement cycle;</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Contracts templates
+have been developed by legal department, but was not activated by the contracts
+&amp; procurement team;</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Absence of a
+complete procure to pay system/module;</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Absence of a
+complete process mapping over the entity processes that would allow for a
+process engineering/re-engineering.</span></li></ol><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Based on the identified
+issued both legal and C&amp;P teams agreed on a short term and a long plans to
+optimize the procurement process as follow&#58;</span></p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""><br></span></p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;line-height&#58;105%;""><b><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Short term plan (3
+months) from December till Feb 2023&#58;</span></u></b></p><ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""1"" type=""1"">
+ <ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""1"" type=""1"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-31.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Legal and C&amp;P to develop a
+      Form/sheet for project managers to fill in developing their scope of work
+      for any request.</span></li>
+ </ol>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-.25in;line-height&#58;105%;display&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;display&#58;none;"">&#160;</span></li>
+ <ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""1"" type=""1"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-31.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">C&amp;P to develop a monitoring
+      mechanism (dashboard/tracker) showing the status of procurement process
+      from initiation as PR till completion. </span></li>
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-31.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Legal team to optimize their
+      review process via establishing a prioritization mechanism and specifying
+      an SLA based on the prioritization.</span></li>
+ </ol></ol><ul style=""margin-bottom&#58;0in;""><li><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">KPI</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58;
+3 days average for contract review.</span></li></ul><ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""3"" type=""1"">
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-.25in;line-height&#58;105%;display&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;display&#58;none;"">&#160;</span></li>
+ <ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""1"" type=""1"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-31.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Contracts of low risks and value
+      below AED 200k&#58;</span></li>
+ </ol></ol><ul style=""margin-bottom&#58;0in;""><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">C&amp;P to utilize Contract automation tool (Josef) and
+Legal to review the outputs for 3 months. After 3 months and achievement of
+stated KPIs, Legal review over contracts will be limited to exceptional cases
+and quality assurance.</span></li><li><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">KPI</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58;
+1<sup>st</sup> month </span><span style=""font-family&#58;Wingdings;"">à</span><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""> All low risks and low value (below AED
+200K) contracts to be developed using Josef (exception for first of its kind
+contracts, or where the contract template hasn’t been developed or linked with
+Jose). </span></li><li><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">KPI</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58;
+2<sup>nd</sup> &amp; 3<sup>rd</sup> months </span><span style=""font-family&#58;Wingdings;"">à</span><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""> 0 mistakes in
+the developed contracts based on legal review.</span></li><li><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Monitoring</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58;
+</span></li></ul><ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+ <ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Legal to monitor the utilization
+      of Josef and provide feedback to C&amp;P on the quality of output and
+      utilization. </span></li>
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">C&amp;P to monitor the team
+      utilization of Josef and the feedback provided by Legal.</span></li>
+ </ul></ul><ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""3"" type=""1"">
+ <ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""2"" type=""1"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-31.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Contracts above AED 200K (not
+      related to IT or IP)&#58;</span></li>
+ </ol></ol><ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">C&amp;P to utilize contracts
+     template developed by legal. Legal to review the output for 3 months, and
+     if KPIs achieved, Legal review will be limited to exceptional cases and
+     quality assurance.</span></li>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">KPI&#58; </span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">1st month </span><span style=""font-family&#58;Wingdings;"">à</span><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">
+     C&amp;P to communicate with Legal the scope of work and related
+     information of the purchase, and for Legal to provide/direct C&amp;P to
+     the template to utilize and fill.</span></li>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">KPI&#58; </span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">2nd &amp; 3rd months </span><span style=""font-family&#58;Wingdings;"">à</span><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">
+     C&amp;P will utilize the developed templates available in the shared drive
+     with 90% acceptance rate by legal without modifications.</span></li>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Monitoring&#58; </span></li>
+ <ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Legal to monitor the utilization
+      of templates and quality of output and utilization. </span></li>
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">C&amp;P to monitor the team
+      utilization of templates and the feedback provided by Legal.</span></li>
+ </ul></ul><ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""3"" type=""1"">
+ <ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""3"" type=""1"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-31.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Contracts related to IT or IP&#58;</span></li>
+ </ol></ol><ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Legal and C&amp;P to develop a
+     Form/Checklist for IT/IP related contracts to be filled by project
+     managers.</span></li>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Legal and C&amp;P to communicate
+     the Form/Checklist and provide training to the Project Managers</span></li>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;40.5pt;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">The Form/Checklist shall be filled
+     by the project manager and attached to the PR, and then updated after the
+     tender award.</span></li></ul><br></span></p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;text-align&#58;justify;line-height&#58;105%;""><b><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Long term plan&#58;</span></u></b></p><ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""1"" type=""1"">
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-.25in;text-align&#58;justify;line-height&#58;105%;display&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;display&#58;none;"">&#160;</span></li>
+ <ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""1"" type=""1"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-31.5pt;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">System automation&#58;</span></li>
+ </ol></ol><ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;.25in;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Review IT systems integrations and
+     look for possible one system for Procure-to-pay that covers the full cycle
+     from PR, contract management, and payments.</span></li></ul><ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""2"" type=""1"">
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-.25in;text-align&#58;justify;line-height&#58;105%;display&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;display&#58;none;"">&#160;</span></li>
+ <ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""1"" type=""1"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;-31.5pt;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Process Optimization&#58;</span></li>
+ </ol></ol><ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;.25in;text-align&#58;justify;line-height&#58;105%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Engage consultant to map entity
+     processes</span></li><li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;8.0pt;margin-left&#58;.25in;text-align&#58;justify;line-height&#58;105%;"">Based on the output of the process mapping, DFF may
+engage a consultant to provide process engineering/re-engineering services to
+optimize entity-wide processes.</li></ul><div><p><b><u>Potential Impact&#58;</u></b></p><div style=""margin-top&#58;14.6667px;margin-bottom&#58;14.6667px;""><ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;1.35pt;margin-left&#58;-.25in;line-height&#58;105%;text-autospace&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Delay in projects;</span></li><li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-right&#58;1.35pt;margin-left&#58;-.25in;line-height&#58;105%;text-autospace&#58;none;"">Delay n budget utilization.</li></ul></div></div></div></span>","<div style=""""><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;""><span style=""color&#58;black;""><b><u>C&amp;P team response&#58;</u></b></span></p><p style=""margin&#58;0in;line-height&#58;105%;""><p style=""color&#58;black;font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in 1.35pt 0in 0in;line-height&#58;105%;"">C&amp; P understand the above and we are working
+in enhancing the process .mean while this case still running due to contracts
+negotiation which I do believe that &#160;DFF &#160;needs to optimize legal
+terms and condition for smoother contractual experience . </p><p style=""margin&#58;0in 1.35pt 0in 0in;line-height&#58;105%;""><font color=""#000000"" face=""Calibri, sans-serif""><span style=""font-size&#58;11pt;"">I do Understand that &#160;there have been a delay
+due to the work load and the summer &#160;vacations but this is not an excuse
+&#160;on the other had &#160;the task is still running &#160;we are aiming to
+close it with in this month.&#160;This RFP started on April and now we are in
+November and still it is not </span><span style=""font-size&#58;14.6667px;"">finalized</span><span style=""font-size&#58;11pt;"">&#160;&#160;(7 Month ).</span></font></p><b style=""color&#58;black;font-family&#58;Calibri, sans-serif;font-size&#58;11pt;text-decoration-line&#58;underline;"">​</b></p><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;""><b><u><br></u></b></p><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;""><b><u>Legal team response&#58;</u></b></p><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;""><br></p><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;"">Please also note that we work from
+Monday to Friday as a team (and the lead lawyer works from Monday to Thursday
+as per her contract (and only to capped hours to reduce fees)). That being
+said, we are only noting the lead lawyer’s contract for efficiency purposes and
+not as a waiver of our obligations. We would recommend that the “days” noted in
+your report should be re-calculated to “business days” and exclude weekends and
+public holidays. For record keeping, please note that legal can not control
+“input” days (i.e. third parties, procurement, business etc.) turn around
+times. We will however work to optimise our response times upon receipt of
+“input” information. Please also note that the legal team services not only DFF
+but the group generally + third parties outside the group (at the same staffing
+level created only for optimised DFF work). This is something we will assess
+post the trial. </p><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;"">&#160;</p><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;"">On SLA’s please note we already
+have an internal prioritization methodology on our allocation software. These
+are “ASAP/48 Working hours”; “High”; “Medium” and “Low”. &#160;We have an SLA
+being finalised and will aim to meet the proposed 3 day SLA for read and
+review. We will monitor this and provide feedback on the reality of workloads
+etc. for consideration after the trial. For record keeping purposes, internal
+prioritization shall not be fixed – it needs to be agile and flexible based on
+competing priorities of the group and leadership. </p><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;"">&#160;</p><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;"">In terms of going forward, the procurement
+team has&#58;</p><ul style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, Arial, Helvetica, sans-serif;font-size&#58;11pt;margin-bottom&#58;0in;margin-top&#58;0in;"">
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;line-height&#58;105%;"">been provided to a share drive folder with all templates;</li>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;line-height&#58;105%;"">received training in 2021 and 2022 (by Nadia and myself)
+     on scopes of work (which has been identified by my team as a key area of
+     development); and</li>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;10pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;line-height&#58;105%;"">received automation tools to support with low value/low
+     risk contacts.</li></ul><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;"">&#160;</p><p style=""color&#58;rgb(0, 0, 0);font-family&#58;Calibri, sans-serif;font-size&#58;11pt;margin&#58;0in;line-height&#58;105%;"">In terms of your other findings, we
+concur with the same and support remedial measures urgently. </p><br></div>",,"3-High","2-Control Ineffective","[""Legal and C&P to establish contracts prioritization mechanism"",""Development of Center of excellency or service partner concept to ensure custodianship and tracking of projects and SLA"",""Establish clear roles and responsibilities between C&P and Legal to ensure alignment""]","Procure to Pay - Delay in sourcing services and products to the Foundation,Procure to Pay - Failure in delivering the service or material,Procure to Pay - Ineffective monitoring mechanisim over Procurement,Organization Governance - Inconsistent execution of wok and performance due to lack of Policies & Procedures in place,Procure to Pay - Loss of company rights due to weak Procurement contracts,Procure to Pay - Conflict with vendors and contractors,Procure to Pay - Poor quality of work completed or materials received,Organization Governance - Resistance from employees to changes in the Organization Structure and Policies & Procedures,Organization Governance - Absence of a methodology to measure initiatives performance","R.CP.03; R.CP.16; R.CP.09; R.STG.07; R.CP.12; R.CP.14; R.CP.15; R.PC.03; R.STG.06","Procure to Pay; Procure to Pay; Procure to Pay; Organization Governance; Procure to Pay; Procure to Pay; Procure to Pay; Organization Governance; Organization Governance","8; 6; 6; 8; 6; 7; 7; 6; 5","R.CP.03 - Delay in Projects and Operations,R.CP.16 - Loss of Company's right,R.CP.09 - Ineffectve monitorng system over Project Management,R.CP.12 - Absence of standaralized template for contracts and forms","R.FDA.04; R.FDA.06; R.FDA.10; R.LD.05","8; 7; 6; 5","Contracts & Procurement,Legal","Corporate Affairs; General","Governance","General","6","100%","25%","Ahmad AlMarzooqi"
+"C&P-2022-ContractReview-Q3-01","2022","Contract Review Q3",,,"Procure to pay","Vendor contracted without tender and incomplete details in FutureBuy","<span style=""color&#58;black;""><b><u>​Finding&#58;</u></b><div style=""margin-top&#58;14.6667px;margin-bottom&#58;14.6667px;""><p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-top&#58;0in;margin-right&#58;1.35pt;margin-bottom&#58;0in;margin-left&#58;0in;text-autospace&#58;none;""><span style=""font-size&#58;11pt;font-family&#58;Dubai, sans-serif;line-height&#58;normal;"">As
+part of the annual Internal Audit Plan; future vision was chosen for contract
+review. During the review Internal Audit noted the following&#58; </span></p><ul style=""margin-bottom&#58;0in;""><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Contract tender was not released to the market and future
+vision was the only company listed in the tender</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Vendor registration was set as an individual under (Khalifa
+Almarri) and not as a company</span></li><li><span style=""font-size&#58;10.0pt;font-family&#58;&quot;Dubai&quot;,sans-serif;"">NDA not signed by owner of the company
+(Khalifa Almarri) instead it is signed by the director (Abdol javad ahmed) </span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Vendor was contracted (10<sup>th</sup> June 2021) with
+shortly after creating the company (2<sup>nd</sup> of February 2021) with no portfolio
+or previous projects submitted</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Contract template is tailored for a consultancy service,
+yet we utilize it as an outsource service. The contract template created a
+visibility limitation to review and compare employees’ compensation breakdown
+along with vendor’s markup</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Contract weakness was noted where an audit clause is not included
+to grant Dubai Future Foundation the right to audit the vendor to ensure employees’
+welfare which might impact their quality of work</span></li></ul><p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Vendor
+registration details do not have the trade license in Futurebuy it was instead
+found as part of the contract attachments</span></p></div></span><b><u>Potential Impact&#58;</u></b><div style=""margin-top&#58;14.6667px;margin-bottom&#58;14.6667px;""><ul style=""margin-bottom&#58;0in;""><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Financial loss</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Incomplete vendor records</span></li><li>Compliance to HR
+policy because not applicable to consultants, unclear head count due to not
+including consultants <span style=""font-family&#58;Dubai, sans-serif;font-size&#58;11pt;"">&#160;</span></li></ul></div>","<span style=""color&#58;black;""><b><u>​C&amp;P&#58;</u></b><div style=""margin-top&#58;14.6667px;margin-bottom&#58;14.6667px;""><p><span style=""font-family&#58;&quot;Segoe UI&quot;;font-size&#58;9pt;"">We previously had a company  providing the same services the company name was 360 and the value was much higher although the services was provided on add hock basis only </span></p><p><span style=""font-family&#58;&quot;Segoe UI&quot;;font-size&#58;9pt;"">Iast at a min 45k and a max f 100 K per month  each resource</span></p></div></span><p><span style=""font-family&#58;&quot;Segoe UI&quot;;font-size&#58;9pt;"">Vendor was interviewed by the chief  of CA and a presentation of there previous jobs was presented  </span></p><p><span style=""font-family&#58;&quot;Segoe UI&quot;;font-size&#58;9pt;"">We don't  utilize it as  out source as they don't hold any vacancy in our org chart </span></p>Audit Response&#58;<div style=""margin-top&#58;14.6667px;margin-bottom&#58;14.6667px;""><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;"">Hi Nayef,</p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;"">&#160;</p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;"">Thank you for your prompt response. I’ve reviewed your
+comments and add my comments for consideration. The main points to highlight&#58;</p><ul style=""margin-bottom&#58;0in;"">
+ <li style=""margin-right&#58;0in;margin-left&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;""><span style="""">With regard to our previous engagement with 360, it was
+     also single sourced, which support audit point that without having a
+     tender in place and obtaining proposals from different vendors, we could
+     be still paying more than needed as visibility is not available for
+     comparison.</span></li>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;""><span style="""">With regard to the
+     supplier previous project, Futurebuy should reflect their history and
+     previous works done for similar entities if any.</span></li>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;""><span style="""">Regarding point that the
+     consultant are not outsource employee and don’t take a position on the
+     organization structure, kindly note the following&#58;</span></li></ul><ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+ <ol style=""margin-bottom&#58;0in;margin-top&#58;0in;"" start=""1"" type=""1"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;""><span style="""">Considering we are
+      contracting for individuals based on their competencies, their wellbeing
+      and their compensation is directly linked to the quality of work they
+      provide to the organization and maintaining good reflection and loyalty
+      to the organization.<span style=""color&#58;red;""> The team are always
+      monitored &#160;by the assigned manager when meeting external CC on the
+      email</span></span></li>
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;""><span style="""">The contract doesn't
+      include any tangible deliverables with deadlines (project based) thus not
+      sure what consultation the consulting company is being providing to
+      C&amp;P section. <span style=""color&#58;red;"">We did not cap the number of
+      tenders that that the individuals works on it However we manage there
+      perfomance by the deadlines of the tasks provided by Cand P </span></span></li>
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;""><span style="""">Regardless of how you
+      categorize the contract, optimizing the cost need to be taken under
+      consideration rather than bypassing the org structure through
+      consultants.<span style=""color&#58;red;""> Agreed and this can be sorted out
+      only once we have a clear Procurement plan and &#160;a clear design of
+      the amount of supports is required on yearly basis and based on DFF
+      strategic plan
+      &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</span></span></li>
+ </ol></ul><ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+ <ul style=""margin-bottom&#58;0in;margin-top&#58;0in;"">
+  <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;""><u><span style="""">This to be raised to
+      People &amp; Culture and CCA for their feedback. </span></u></li>
+ </ul>
+ <li style=""margin&#58;0in 0in 0in 0.5in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;0in;""><span style="""">Regarding the audit
+     right in the contract, we shall raise this to Legal for their feedback.</span></li></ul><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;"">&#160;</p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;"">Kindly add your comments and action plans as stated in your
+noted in the designated are of the report.</p><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;"">&#160;</p><br></div>",,"3-High","2-Control Ineffective","[""Update and complete Futurebuy records"",""Release tender to the market instead of using single source""]","Procure to Pay - Bias process for the selection and award of procurement and contracts to vendors,Procure to Pay - Direct purchase of service or materials,Procure to Pay - Inaccurate/Incomplete Financial Documents and archiving,Procure to Pay - Weak maintenance of knowledge from outsourced employees,Procure to Pay - Loss of company rights due to weak Procurement contracts,Procure to Pay - Conflict with vendors and contractors","R.CP.08; R.CP.04; R.FA.15; R.PC.26; R.CP.12; R.CP.14","Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay","7; 7; 6; 6; 6; 7","[]",,,"Contracts & Procurement,People & Culture,Legal","Corporate Affairs; Corporate Affairs; General","MOTF","Subsidiary","6","100%","20%","Ahmad AlMarzooqi"
+"C&P-2023-contract review-02-01 ","2023","Procure to Pay 2023-01","2","Procure to Pay-2023-02","Procure to Pay","Ineffective Documentation over Contracting and Amendment Process","<span style=""color&#58;black;"">​<table width=""934"" style=""width&#58;700.65pt;margin-left&#58;-49.75pt;border-collapse&#58;collapse;border&#58;none;"">
+ <tbody><tr style=""height&#58;34.1pt;"">
+  <td width=""802"" style=""width&#58;601.65pt;border&#58;solid windowtext 1.0pt;padding&#58;.75pt 5.4pt 0in 5.4pt;height&#58;34.1pt;"">
+  <p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;margin-top&#58;0in;margin-right&#58;1.35pt;margin-bottom&#58;0in;margin-left&#58;0in;text-align&#58;justify;text-justify&#58;kashida;text-autospace&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">As part of our annual
+  Internal Audit Plan for the year 2023, The internal audit office carried a
+  review over Procure to pay, where the Internal Audit Office selected United
+  software contract (contract_2021 and contract 3389) as a sample for the review.
+  Based on the review, internal audit noted the following&#58;</span></p>
+  <p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;margin-top&#58;0in;margin-right&#58;1.35pt;margin-bottom&#58;0in;margin-left&#58;.5in;text-align&#58;justify;text-justify&#58;kashida;text-autospace&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p>
+  <ol style=""margin-bottom&#58;0in;""><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Via reviewing the tendering process in futurebuy, we’ve
+  noted that two tenders were made for the same services “DFF Annual
+  Maintenance &amp; Development 2021“ (rfq_520 &amp; rfq_784). In rfq_520 three
+  vendors submitted their proposals including Monsterlab, Motius, Tiger Spike. After
+  finalizing the evaluations, the RFQ was awarded to Tiger Spike and the
+  project proceeded to contracting phase. However, during the contracting
+  prosses the direction changed, and Tiger Spike was dropped from the awarding
+  prosses. After our inquiry to Procurement team to understand the reason for
+  dropping the vendor, their response was that “<i>Tiger Spike was being
+  difficult in the contracting negotiation phase, hence it was decided that
+  Tiger Spike needed to be replaced given the tight timeline and projects that
+  the IT team were undergoing on the platform</i>”, and also based on the
+  procurement response, IT proposed United software as an alternative, hence
+  rfq_784 was created and it was awarding as direct sourcing.</span><br><br><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Based on the above and with
+  reference to article 9 section 9.1 of the C&amp;P policy, which states that
+  tender is the main method of selecting any vendor. RFQ_784 did not follow the
+  main method, instead DFF engaged United Software directly. Nevertheless,
+  direct sourcing requires proper business justification and approvals based on
+  article 11 section 11.3 of C&amp;P policy. However, the internal audit office
+  obtained and reviewed the “business justification” which was submitted by the
+  procurement team and concluded it was lacking more supporting documents, such
+  as&#58; documents supporting contract negotiations phase, further detail and
+  supporting documents regarding the “tight timeline and projects that the IT
+  team were undergoing.” As per procurement response and provide a rationale
+  for why the proposed initiative is the most viable and beneficial option
+  among the alternatives.</span></li></ol>
+  
+  <p style=""margin&#58;0in 0in 6pt 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;margin-top&#58;0in;margin-right&#58;1.35pt;margin-bottom&#58;0in;margin-left&#58;21.8pt;text-align&#58;justify;text-justify&#58;kashida;text-indent&#58;-21.8pt;text-autospace&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">3.<span style="""">&#160;&#160;&#160;&#160;&#160;&#160; </span>With regards to the contract amendment
+  “contract_3389”, and by referring to article 16 section 16.1 from C&amp;P
+  policy which states that a reasonable justification shall be submitted for
+  amending any contract. we found that it was lacking the sufficient supporting
+  document and reasoning such as&#58; document assessing the impact of not amending
+  the contract with highlighting the risk factor if there is any, reasoning why
+  DFF didn’t consider alternative option and compare it with the exiting one
+  and relevant documents to support the reason that necessitated the proposed
+  amendment.</span></p>
+  </td>
+ </tr></tbody></table></span>Impacts&#58;&#160;<span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Financial loss,&#160;<span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Loss of audit trail and&#160;<span style=""font-size&#58;11.0pt;line-height&#58;107%;font-family&#58;&quot;Dubai&quot;,sans-serif;"">Impaired stakeholder confidence </span></span></span>","<span style=""color&#58;black;"">​<ul style=""margin-bottom&#58;0in;"">
+ <li style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;color&#58;black;""><span style="""">Section 1&#58;</span></li>
+ <ul style=""margin-bottom&#58;0in;"">
+  <li style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;color&#58;black;""><span style="""">We have received the
+      attached email titled &quot;RE_ Dev Contract_ TigerSpike _ Motius - Next
+      Steps - Unified Software&quot; in June 2021, from Rakan on the way
+      forward related to the RFQs subject matter and based on the 3<sup>rd</sup>&#160;point in his original email we have
+      considered United Software endorsed to move&#160;forward in August 2021,
+      this was considered a justification to directly contract them. Moving
+      forward we will make sure such cases are documented in the correct
+      form.&#160; </span></li>
+ </ul></ul><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;1.0in;""><span style=""color&#58;black;"">&#160;</span></p><ul style=""margin-bottom&#58;0in;"">
+ <li style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;color&#58;black;""><span style="""">Section 3&#58;</span></li>
+ <ul style=""margin-bottom&#58;0in;"">
+  <li style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;color&#58;black;""><span style="""">Regarding the amendment
+      request, we have received an email from Rakan attached here titled
+      &quot;United Software Annual Contract&quot; with a reasonable
+      justification to amend the contract.&#160;</span></li>
+ </ul></ul></span><br>",,"2-Medium","2-Control Ineffective","[""Adhere to approved procedures."",""Enhance documentation practices."",""Conduct periodic reviews by the concerned stakeholders.""]","Procure to Pay - Bias process for the selection and award of procurement and contracts to vendors,Procure to Pay - Direct purchase of service or materials,Procure to Pay - Engaging poor quaity vendors/supplier,Procure to Pay - Inaccurate/Incomplete Procurement/Contracts Documents","R.CP.08; R.CP.04; R.CP.06; R.CP.11","Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay","7; 7; 7; 7","R.CP.04 - Lack of involvement of Legal in strategic decision making,R.CP.06 - Loss of Company's right,R.CP.11 - Inaccurate/Incomplete Project Documentation,R.CP.11 - Inaccurate/Incomplete work documentation,R.CP.11 - Loss of Company documents","R.LD.10; R.FDA.06; R.FDA.07; R.LD.07; R.OF.04","6; 7; 8; 6; 6","Contracts & Procurement","Corporate Affairs","Information Technology","Corporate Affairs","4","100%","40%","Ahmed AlMarri"
+"C&P-2023-contract review-02-02","2023","Procure to Pay 2023-01","2","Procure to Pay-2023-02","Procure to Pay","Loose workflows process allowed for nonadherence to authority matrix","<span style=""color&#58;black;"">​<p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-top&#58;0in;margin-right&#58;1.35pt;margin-bottom&#58;0in;margin-left&#58;0in;text-align&#58;justify;text-justify&#58;kashida;text-autospace&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">As
+per the Internal Audit Plan for the year 2023, <span style="""">&#160;</span>Internal Audit Office reviewed United software
+(contract_2021 and contract 3389) as part of Procure to pay cycle review.
+During the review internal audit noted the following&#58; </span></p><p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-top&#58;0in;margin-right&#58;1.35pt;margin-bottom&#58;0in;margin-left&#58;0in;text-align&#58;justify;text-justify&#58;kashida;text-autospace&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p><p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-top&#58;0in;margin-right&#58;1.35pt;margin-bottom&#58;0in;margin-left&#58;26.3pt;text-align&#58;justify;text-justify&#58;kashida;text-indent&#58;-26.3pt;text-autospace&#58;none;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">1.<span style="""">&#160;&#160;&#160;&#160;&#160; </span>The
+contract amendment (Contract_3389) extends the term of the original contract
+for an additional 1 year and amends the cap value by increase it to 3 million.
+However, it was lacking the required double signatures as per as the authority
+matrix (point 66). </span></p><span style=""font-size&#58;11.0pt;line-height&#58;107%;font-family&#58;&quot;Dubai&quot;,sans-serif;"">2.<span style="""">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; </span>The internal audit office obtained the
+configured workflows in futurebuy, which include 5 types of approval (Direct
+above AED 2M, Direct below AED 2M, Tender Above AED 2M, Tender above AED 2M,
+Purchase Order Approval), which doesn’t reflect the current authority matrix.
+Also based on the technology team statement “Approvers can be sent manually”,
+which allow for bypassing the configured workflows. Based on the above the
+Internal Audit Office reviewed the workflow for the amendment (contract_3389)
+under review and noted that there is no configured workflow for amendments, and
+that it was set-up manually by the C&amp;P team, which allowed for the workflow
+to be approved without the required double signatures/approvals.</span><p><br></p><p>impact &#58;&#160;<span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Bypass the authority matrix,&#160;<span style=""font-size&#58;11.0pt;line-height&#58;107%;font-family&#58;&quot;Dubai&quot;,sans-serif;"">Financial loss and&#160;<span style=""font-size&#58;11.0pt;line-height&#58;107%;font-family&#58;&quot;Dubai&quot;,sans-serif;"">Lack of accountability.</span></span></span></p></span><br>","<span style=""color&#58;black;""><p><br></p></span><ul style=""margin-bottom&#58;0in;"">
+ <li style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;color&#58;black;""><span style="""">Section 1&#58;&#160;</span></li>
+ <ul style=""margin-bottom&#58;0in;"">
+  <li style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;color&#58;black;""><span style="""">According to the advice
+      received from Legal, we should not back date the signature. In any case
+      in future, we will double sign as per the DOA. Attached attachment
+      referenced titled &quot;Legal Email&quot;. </span></li>
+ </ul></ul><p style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;1.0in;""><span style=""color&#58;black;"">&#160;</span></p><ul style=""margin-bottom&#58;0in;"">
+ <li style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;color&#58;black;""><span style="""">Section 2&#58;</span></li>
+ <ul style=""margin-bottom&#58;0in;"">
+  <li style=""margin&#58;0in;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;color&#58;black;""><span style="""">We have been using the
+      manual approval selection to match the latest received DOA as the current
+      approval workflows are incorrect as highlighted by Audit. The issuance of
+      the new DOA needs to be communicated to the Technology to update the
+      system workflows, as all configuration requests are executed by the
+      Technology team.&#160;</span></li>
+ </ul></ul><br>",,"3-High","3-Control Inadequate","[""Modifying the configured workflows to reflect current authority matrix"",""Enforcing tight measurements to control the approval chain."",""Ensure adhering to the authority matrix."",""Rectifying the amendment (Contract_3389) approval   ""]","Procure to Pay - Changes and variations are not in favor of company interest,Procure to Pay - Ineffective monitoring mechanisim over Procurement,Procure to Pay - Conflict with vendors and contractors,Procure to Pay - Inaccurate/Incomplete Procurement/Contracts Documents,Procure to Pay - Bias process for the selection and award of procurement and contracts to vendors","R.CP.13; R.CP.09; R.CP.14; R.CP.11; R.CP.08","Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay","6; 6; 7; 7; 7","R.CP.13 - Improper authorization rights,R.CP.13 - Ineffectve monitorng system over Project Management,R.CP.13 - Loss of Company's right,R.CP.09 - Ineffiency in processing Foundation adminstrative requests,R.CP.09 - Ineffectve monitorng system over Project Management,R.CP.14 - Delay in Projects and Operations,R.CP.11 - Inaccurate/Incomplete Project Documentation,R.CP.11 - Loss of Company documents","R.LD.08; R.FDA.10; R.FDA.06; R.OF.10; R.FDA.10; R.FDA.04; R.FDA.07; R.OF.04","6; 6; 7; 7; 6; 8; 8; 6","Contracts & Procurement","Corporate Affairs","Information Technology,Legal","Corporate Affairs; General","9","100%","70%","Ahmed AlMarri"
+"C&P-2023-contract review-02-03","2023","Procure to Pay 2023-01","2","Procure to Pay-2023-02","Procure to Pay","Ineffective controls over contract management","<table width=""934"" style=""width&#58;700.65pt;margin-left&#58;-49.75pt;border-collapse&#58;collapse;border&#58;none;"">
+ <tbody><tr style=""height&#58;34.1pt;"">
+  <td width=""802"" style=""width&#58;601.65pt;border&#58;solid windowtext 1.0pt;padding&#58;.75pt 5.4pt 0in 5.4pt;height&#58;34.1pt;"">
+  <p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;justify;""><span style=""font-size&#58;10.0pt;font-family&#58;&quot;Dubai&quot;,sans-serif;"">As part of our annual
+  Internal Audit Plan for the year 2023, the Internal Audit Office conducted a
+  review of United Software (contract_2021 and contract 3389) under the Procure
+  to Pay assignment. The audit findings are as follows&#58;</span></p>
+  <p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;text-indent&#58;-.25in;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""><span style="""">1.<span style=""font&#58;7.0pt &quot;Times New Roman&quot;;"">&#160;&#160;&#160;&#160;&#160;&#160;
+  </span></span></span><span dir=""LTR""></span><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Access on AWS</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58; It was observed that the contractors
+  have access to both the staging and production environments on AWS. This
+  raises concerns regarding potential security risks and the need for proper
+  access controls and monitoring.</span></p>
+  <p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p>
+  <p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;text-indent&#58;-.25in;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""><span style="""">2.<span style=""font&#58;7.0pt &quot;Times New Roman&quot;;"">&#160;&#160;&#160;&#160;&#160;&#160;
+  </span></span></span><span dir=""LTR""></span><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">GitHub Repository Access</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58; Based on the web assessment
+  conducted by &quot;Help AG,&quot; it was discovered that a user, likely
+  affiliated with United Software, has access to a GitHub repository containing
+  the source code of Dubai Future Academy. This presents a high risk and
+  highlights the importance of reviewing and restricting access permissions.</span><br><br><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p>
+  
+  <p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;text-indent&#58;-.25in;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""><span style="""">3.<span style=""font&#58;7.0pt &quot;Times New Roman&quot;;"">&#160;&#160;&#160;&#160;&#160;&#160;
+  </span></span></span><span dir=""LTR""></span><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Audit Compliance</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58; According to the contract, Dubai
+  Future Foundation (DFF) has the right to conduct audits of all projects
+  handled by United Software. However, it was found that no audit has been
+  conducted since the initiation of the original contract. This raises concerns
+  about transparency and accountability.</span><br><br><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p>
+  
+  <p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;text-indent&#58;-.25in;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""><span style="""">4.<span style=""font&#58;7.0pt &quot;Times New Roman&quot;;"">&#160;&#160;&#160;&#160;&#160;&#160;
+  </span></span></span><span dir=""LTR""></span><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Profile Segregation</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58; There is a lack of profile
+  segregation between third-party employees and DFF employees. The provided
+  list, in the form of a screenshot from the IT team, does not clearly specify
+  the type of permissions granted, the level of access rights, or the specific
+  DFF systems to which access is granted. This ambiguity poses a potential
+  security risk and calls for improved access management practices.</span><br><br><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p>
+  
+  <p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;text-indent&#58;-.25in;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""><span style="""">5.<span style=""font&#58;7.0pt &quot;Times New Roman&quot;;"">&#160;&#160;&#160;&#160;&#160;&#160;
+  </span></span></span><span dir=""LTR""></span><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Time Tracking</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58; Upon examining Jira, it was observed
+  that there is inadequate time tracking for most of the projects handled by
+  United Software. This lack of tracking hinders accurate monitoring of project
+  progress, resource allocation, and accountability.</span><br><br><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p>
+  
+  <p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;text-indent&#58;-.25in;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;""><span style="""">6.<span style=""font&#58;7.0pt &quot;Times New Roman&quot;;"">&#160;&#160;&#160;&#160;&#160;&#160;
+  </span></span></span><span dir=""LTR""></span><u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Invoice Compliance</span></u><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#58; As per Schedule 5, Section C of the
+  contract, each invoice should include specific details such as the order
+  number, specified services provided, deliverables provided, and the
+  calculated amount in accordance with the agreement and any orders. However,
+  upon reviewing a sample of invoices, it was noted that the specified services
+  provided, and any deliverables provided were missing. This non-compliance
+  with the invoicing requirements calls for improved documentation and
+  adherence to the contract terms.</span></p>
+  <p style=""margin&#58;0in 0in 6pt 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;margin-bottom&#58;8.0pt;text-align&#58;justify;text-justify&#58;kashida;line-height&#58;107%;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">&#160;</span></p>
+  </td>
+ </tr></tbody></table><p><br></p>impact &#58;<br><span style=""font-size&#58;11pt;"">&#160;</span><span style=""font-size&#58;11pt;font-family&#58;Dubai, sans-serif;"">Leak of confidential data<br></span><span style=""font-family&#58;Dubai, sans-serif;font-size&#58;11pt;"">Loss of audit trail<br></span><span style=""font-family&#58;Dubai, sans-serif;font-size&#58;11pt;"">Financial loss</span><span style=""font-family&#58;Dubai, sans-serif;font-size&#58;11pt;""><p><br></p></span>",,,"3-High","2-Control Ineffective","[""Enhance documentation practices."",""Conduct product reviews by the concerned stakeholders."",""Enhance security measures."",""Utilize time tracking tools."",""Conduct periodic security assessments""]","Procure to Pay - Changes and variations are not in favor of company interest,Procure to Pay - Poor quality of work completed or materials received,Procure to Pay - Ineffective monitoring mechanisim over Procurement,Procure to Pay - Inaccurate payments to vendors,Procure to Pay - Excess payment to vendor,Procure to Pay - Weak maintenance of knowledge from outsourced employees","R.CP.13; R.CP.15; R.CP.09; R.FA.06; R.FA.07; R.PC.26","Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay","6; 7; 6; 7; 6; 6","R.CP.13 - Ineffective execution of Planned courses,R.CP.13 - Ineffectve monitorng system over Project Management,R.CP.13 - Unplanned changes to Projects,R.CP.15 - Unclear Responsibilites and Accountabilities in Project-wise,R.CP.09 - Ineffectve monitorng system over Project Management,R.CP.09 - Ineffiency in processing Foundation adminstrative requests,R.PC.26 - Ineffectve monitorng system over Project Management","R.CB.02; R.FDA.10; R.FDA.05; R.FDA.03; R.FDA.10; R.OF.10; R.FDA.10","7; 6; 7; 8; 6; 7; 6","Information Technology","Corporate Affairs","[]",,"6","100%","0%","Ahmed AlMarri"
+"C&P-2023-contract review-02-04","2023","Procure to Pay 2023-01","1","Procure to Pay-2023-01","Procure to Pay","Scope of improvement regarding contracting prosses","<span style=""color&#58;black;"">​<span style=""font-size&#58;11.0pt;line-height&#58;107%;font-family&#58;&quot;Dubai&quot;,sans-serif;"">Upon reviewing the procedures, it appears that there is currently no
+formal mandate for the Procurement department to approve or review new
+contracts before they reach the Legal department. This finding underscores the
+lack of a well-defined procedure between the two departments for contract
+review and approval. Consequently, this situation has the potential to affect
+the overall efficiency and effectiveness of the approval process. </span></span><br>",,,"2-Medium","3-Control Inadequate","[""Update or establish clear procedures between the two departments""]","Procure to Pay - Unauthorized changes to the procurement information,Procure to Pay - Engaging poor quaity vendors/supplier,Procure to Pay - Bias process for the selection and award of procurement and contracts to vendors,Procure to Pay - Inaccurate/Incomplete Procurement/Contracts Documents,Procure to Pay - Loss of company rights due to weak Procurement contracts,Organization Governance - Inconsistent execution of wok and performance due to lack of Policies & Procedures in place","R.CP.05; R.CP.06; R.CP.08; R.CP.11; R.CP.12; R.STG.07","Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay; Organization Governance","6; 7; 7; 7; 6; 8","R.CP.06 - Loss of Company's right,R.CP.08 - Inadeqaute advices to the Foundation Department,R.CP.11 - Absence of standaralized template for contracts and forms,R.CP.11 - Inaccurate/Incomplete Project Documentation,R.CP.11 - Inaccurate/Incomplete work documentation,R.CP.12 - Absence of standaralized template for contracts and forms,R.CP.12 - Inadeqaute advices to the Foundation Department,R.CP.12 - Loss of Company's right","R.FDA.06; R.LD.03; R.LD.05; R.FDA.07; R.LD.07; R.LD.05; R.LD.03; R.FDA.06","7; 7; 5; 8; 6; 5; 7; 7","MOTF","Subsidiary","[]",,"6","100%","0%","Ahmed AlMarri"
+"C&P-2023-contract review-02-05","2023","Procure to Pay 2023-01","1","Procure to Pay-2023-01","Procure to Pay","Noncompliance with contracting process and authority matrix","<p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;text-align&#58;justify;text-justify&#58;kashida;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">As part of the Procure to Pay
+annual Internal Audit Plan for the year 2023, the Internal Audit Office
+conducted a review of the Netcraft contract (dff_contract_4407). The audit
+identified the following issues&#58;</span></p><p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;text-align&#58;justify;text-justify&#58;kashida;text-indent&#58;-.25in;""><span style=""font-size&#58;11.0pt;font-family&#58;&quot;Dubai&quot;,sans-serif;""><span style="""">1.<span style=""font&#58;7.0pt &quot;Times New Roman&quot;;"">&#160;&#160;&#160;&#160;&#160;&#160; </span></span></span><span dir=""LTR""></span><span style=""font-size&#58;11.0pt;font-family&#58;&quot;Dubai&quot;,sans-serif;"">The
+audit team noted there are discrepancy in Contract Versions, where the audit
+team obtained the version reviewed by legal based on the request from Director
+of IT in MOTF. The audit team also obtained the version signed by the Director
+of IT in MOTF, and obtained the version signed by the Executive Director of MOTF
+and noted the following&#58;</span></p><ul style=""margin-bottom&#58;0in;""><li><span style=""font-size&#58;11.0pt;line-height&#58;110%;font-family&#58;&quot;Dubai&quot;,sans-serif;"">The contract submitted
+for legal review differed from the one signed by the Director of IT and the ED
+of MOTF. </span></li><li><span style=""font-size&#58;11.0pt;line-height&#58;110%;font-family&#58;&quot;Dubai&quot;,sans-serif;"">The variance was found
+in the &quot;Schedule&quot; section of the contract.</span></li><li><span style=""font-size&#58;11.0pt;line-height&#58;110%;font-family&#58;&quot;Dubai&quot;,sans-serif;"">The original version
+reviewed by legal mentioned a charge of £1,100 for weekly review, However, the
+version signed by the Director of IT and ED of MOTF indicated a charge of
+£39,500 per annum.</span></li></ul><p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;.5in;text-align&#58;justify;text-justify&#58;kashida;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">The audit
+team raised the matter with the legal team, who confirmed that the version they
+have reviewed differ from the version signed by the Director of IT and the
+version signed by the Executive Director of MOTF.</span></p><p style=""margin&#58;0in 0in 0in 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;text-align&#58;justify;text-justify&#58;kashida;text-indent&#58;-.25in;""><span style=""font-size&#58;11.0pt;font-family&#58;&quot;Dubai&quot;,sans-serif;""><span style="""">2.<span style=""font&#58;7.0pt &quot;Times New Roman&quot;;"">&#160;&#160;&#160;&#160;&#160;&#160; </span></span></span><span dir=""LTR""></span><span style=""font-size&#58;11.0pt;font-family&#58;&quot;Dubai&quot;,sans-serif;"">The
+audit team observed that one version of the contract in question was signed by
+the Director of IT on 5<sup>th</sup> of June 2023, indicating a deviation from
+the established authority matrix and contract management procedures. The
+authority matrix is a crucial component of the organization's governance
+structure, which defines the levels of authorization required for various transactions
+and decisions. By overstepping the prescribed authority, the Director of IT
+acted beyond their designated scope, potentially leading to issues related to
+accountability, control, and compliance.</span></p><p style=""margin&#58;0in 0in 6pt 0.5in;line-height&#58;110%;font-size&#58;10pt;font-family&#58;Arial, sans-serif;text-align&#58;justify;text-justify&#58;kashida;""><span style=""font-size&#58;11.0pt;font-family&#58;&quot;Dubai&quot;,sans-serif;"">The audit team raised the matter with the executive
+director and the legal team, who provided their response as follow&#58;</span></p><p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;.5in;""><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Executive
+Director&#58; ‘</span><i><span lang=""en-AE"" style="""">I believe
+that was done in error following a communication from legal to Sundar. Please
+find a copy of the agreement that was subsequently signed by myself later that
+same day</span></i><span lang=""en-AE"" style="""">.’</span></p><p style=""margin&#58;0in 0in 8pt;line-height&#58;107%;font-size&#58;11pt;font-family&#58;Calibri, sans-serif;margin-left&#58;.5in;""><span lang=""en-AE"" style="""">Legal team&#58; ‘</span><i>To clarify any ambiguity, I am not aware of the
+authority matrix for contract signature for any of the entities. My
+confirmation was simply that the contract was ok to sign.</i>’</p>impact&#58;<div style=""margin-top&#58;14.6667px;margin-bottom&#58;14.6667px;""><ul style=""margin-bottom&#58;0in;""><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Financial loss due to the limited opportunity for Procurement
+team to negotiate the pricing;</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Noncompliance with processes and authority matrix;</span></li><li><span style=""font-family&#58;&quot;Dubai&quot;,sans-serif;"">Loss of accountability;</span></li></ul><span style=""font-size&#58;11.0pt;line-height&#58;107%;font-family&#58;&quot;Dubai&quot;,sans-serif;""><ul><li><span style=""font-size&#58;11.0pt;line-height&#58;107%;font-family&#58;&quot;Dubai&quot;,sans-serif;"">Legal exposure.</span></li></ul></span></div>",,,"3-High","2-Control Ineffective","[""Issuing a memo to authorize individual addressing the incident for further direction ""]","Procure to Pay - Changes and variations are not in favor of company interest,Procure to Pay - Failure in delivering the service or material,Procure to Pay - Engaging poor quaity vendors/supplier,Procure to Pay - Unauthorized changes to the procurement information","R.CP.13; R.CP.16; R.CP.06; R.CP.05","Procure to Pay; Procure to Pay; Procure to Pay; Procure to Pay","6; 6; 7; 6","[]",,,"MOTF","Subsidiary","[]",,"6","100%","0%","Ahmed AlMarri"

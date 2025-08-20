@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { PlusCircle, MoreHorizontal, CalendarDays, UserCircle, List, LayoutGrid, Loader2 } from "lucide-react"
+import { PlusCircle, MoreHorizontal, CalendarDays, UserCircle, List, LayoutGrid, Loader2, Trash2 } from "lucide-react"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -31,6 +31,7 @@ interface AssignmentFromDB {
   audit_plan_id?: string
   created_at?: string
   updated_at?: string
+  end_date?: string
 }
 
 // Convert database assignment to displayable assignment
@@ -113,6 +114,75 @@ export default function AssignmentsPage() {
     setSelectedAssignments(newSelected)
   }
 
+  const handleDeleteAssignment = async (assignmentId: string) => {
+    if (!confirm("Are you sure you want to delete this assignment? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/assignments/${assignmentId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || `Failed to delete assignment: ${response.statusText}`)
+      }
+
+      // Remove the deleted assignment from local state
+      setAssignments(prev => prev.filter(a => a.id !== assignmentId))
+      
+      // Also remove from selected assignments if it was selected
+      setSelectedAssignments(prev => {
+        const newSelected = new Set(prev)
+        newSelected.delete(assignmentId)
+        return newSelected
+      })
+
+      console.log('Assignment deleted successfully')
+      // You could add a toast notification here if you have a toast system
+    } catch (error) {
+      console.error('Error deleting assignment:', error)
+      alert(`Failed to delete assignment: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedAssignments.size === 0) {
+      alert('Please select assignments to delete.')
+      return
+    }
+
+    if (!confirm(`Are you sure you want to delete ${selectedAssignments.size} assignment(s)? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const deletePromises = Array.from(selectedAssignments).map(assignmentId =>
+        fetch(`/api/assignments/${assignmentId}`, { method: 'DELETE' })
+      )
+
+      const responses = await Promise.all(deletePromises)
+      const failedDeletes = responses.filter(response => !response.ok)
+
+      if (failedDeletes.length > 0) {
+        throw new Error(`${failedDeletes.length} assignment(s) failed to delete`)
+      }
+
+      // Remove deleted assignments from local state
+      setAssignments(prev => prev.filter(a => !selectedAssignments.has(a.id)))
+      
+      // Clear selected assignments
+      setSelectedAssignments(new Set())
+
+      console.log(`${selectedAssignments.size} assignment(s) deleted successfully`)
+      // You could add a toast notification here if you have a toast system
+    } catch (error) {
+      console.error('Error bulk deleting assignments:', error)
+      alert(`Failed to delete some assignments: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
   const mockAssignmentsWithKanban: DisplayableAssignmentWithKanban[] = assignments
     .map((assignment, index) => {
       let calculatedKanbanStatus: KanbanWorkflowStatus
@@ -163,12 +233,24 @@ export default function AssignmentsPage() {
     <div className="flex flex-col gap-6 p-4 md:p-6 h-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-2xl font-semibold">Assignments</h1>
-        <Link href="/assignments/new" passHref>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create New Assignment
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {selectedAssignments.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Selected ({selectedAssignments.size})
+            </Button>
+          )}
+          <Link href="/assignments/new" passHref>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create New Assignment
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card className="flex-grow flex flex-col">
@@ -277,6 +359,13 @@ export default function AssignmentsPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                               <Link href={`/assignments/${assignment.id}/documents`}>Manage Documents</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteAssignment(assignment.id)}
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

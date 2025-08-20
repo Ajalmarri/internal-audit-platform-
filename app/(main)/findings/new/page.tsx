@@ -30,6 +30,7 @@ import {
   ChevronsUpDown,
   Check,
   RotateCw,
+  CheckCircle,
 } from "lucide-react"
 import type { FindingCreationData, FindingSeverity, MockAssignment } from "../_types/finding-creation-types" // Added MockAssignment
 import {
@@ -38,6 +39,7 @@ import {
   initialFindingCreationData,
   // mockAssignments is no longer imported here
 } from "../_types/finding-creation-types"
+import { SaveModeIndicator, useSaveMode } from "@/components/ui/save-mode-indicator"
 
 // Mock AI Processor Function (remains unchanged)
 const mockAiProcessor = async (notes: string): Promise<Partial<FindingCreationData>> => {
@@ -91,6 +93,23 @@ export default function CreateNewFindingPage() {
   const [assignmentsLoading, setAssignmentsLoading] = useState(true)
   const [assignmentsError, setAssignmentsError] = useState<string | null>(null)
   const [assignmentPopoverOpen, setAssignmentPopoverOpen] = useState(false)
+
+  // Save mode management
+  const { status, lastSaved, save, markUnsaved, reset } = useSaveMode()
+
+  // Mark form as unsaved when data changes
+  useEffect(() => {
+    if (formData.observationTitle || formData.detailedObservation) {
+      markUnsaved()
+    }
+  }, [formData, markUnsaved])
+
+  // Reset save mode when form is reset
+  useEffect(() => {
+    if (status === 'idle') {
+      reset()
+    }
+  }, [status, reset])
 
   const fetchAssignments = async () => {
     setAssignmentsLoading(true)
@@ -218,7 +237,7 @@ export default function CreateNewFindingPage() {
     }
   }
 
-  const handleSubmit = (action: "saveDraft" | "submitForVerification") => {
+  const handleSubmit = async (action: "saveDraft" | "submitForVerification") => {
     if (!formData.observationTitle || !formData.detailedObservation) {
       toast({
         title: "Missing Information",
@@ -229,24 +248,56 @@ export default function CreateNewFindingPage() {
     }
 
     const findingToSubmit = {
-      ...formData,
+      title: formData.observationTitle,
+      description: formData.detailedObservation,
       status: action === "saveDraft" ? "Draft" : "Pending Verification",
-      auditPlanId: auditPlanIdFromParams,
+      severity: formData.severity,
+      assignment_id: formData.parentAssignmentId || null,
+      criteria: formData.criteriaExpectation,
+      condition: formData.detailedObservation,
+      cause: formData.rootCause,
+      effect: formData.impactRiskAssociated,
+      recommendation: formData.recommendation,
+      responsibleBusinessOwner: formData.affectedBusinessUnit,
     }
 
-    console.log("Finding Data:", findingToSubmit)
+    await save(async () => {
+      const response = await fetch("/api/findings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(findingToSubmit),
+      })
 
-    toast({
-      title: `Finding ${action === "saveDraft" ? "Saved as Draft" : "Submitted for Verification"}`,
-      description: `Title: ${formData.observationTitle}`,
-    })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || `Failed to save finding: ${response.statusText}`)
+      }
 
-    setFormData({
-      ...initialFindingCreationData,
-      parentAssignmentId: assignmentIdFromParams || "",
+      const result = await response.json()
+      console.log("Finding saved successfully:", result)
+
+      toast({
+        title: `Finding ${action === "saveDraft" ? "Saved as Draft" : "Submitted for Verification"}`,
+        description: `Title: ${formData.observationTitle}`,
+      })
+
+      // Reset form after successful save
+      setFormData({
+        ...initialFindingCreationData,
+        parentAssignmentId: assignmentIdFromParams || "",
+      })
+      setSelectedTemplateId(mockFindingTemplates[0].id)
+      setAiNotes("")
+
+      // Navigate back to findings list or assignment
+      if (formData.parentAssignmentId && formData.parentAssignmentId !== "ASGN_NONE") {
+        router.push(`/assignments/${formData.parentAssignmentId}`)
+      } else {
+        router.push("/findings")
+      }
     })
-    setSelectedTemplateId(mockFindingTemplates[0].id)
-    setAiNotes("")
   }
 
   const selectedAssignmentName =
@@ -286,6 +337,15 @@ export default function CreateNewFindingPage() {
         )}
         <h1 className="text-3xl font-semibold text-foreground">Create New Audit Finding</h1>
         <p className="text-muted-foreground">Document your observations and findings systematically.</p>
+        
+        {/* Save Mode Indicator */}
+        <div className="mt-4">
+          <SaveModeIndicator 
+            status={status} 
+            lastSaved={lastSaved}
+            className="justify-start"
+          />
+        </div>
       </div>
 
       <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
@@ -610,7 +670,7 @@ export default function CreateNewFindingPage() {
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon-sm"
+                        size="icon"
                         onClick={() => handleRemoveFile(file.name)}
                         className="text-destructive hover:text-destructive-hover"
                       >

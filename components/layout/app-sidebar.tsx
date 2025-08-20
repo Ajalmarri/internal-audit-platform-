@@ -56,6 +56,7 @@ const menuGroups = [
       { href: "/engagements", label: "Engagements", icon: Briefcase },
       { href: "/assignments", label: "Assignments", icon: ClipboardList },
       { href: "/findings", label: "Findings", icon: ClipboardCheck },
+      { href: "/csv-findings", label: "CSV Findings", icon: FileText },
       { href: "/action-plans", label: "Action Plans", icon: ListChecks },
     ],
   },

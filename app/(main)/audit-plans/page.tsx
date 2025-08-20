@@ -150,6 +150,7 @@ export default function AuditPlansPage() {
     setCurrentTitle("")
     setCurrentDescription("")
     setCurrentStatus("Draft")
+    setSelectedYear(String(currentYear))
   }
 
   const openAddPlanForm = () => {
@@ -162,6 +163,7 @@ export default function AuditPlansPage() {
     setEditingPlan(plan)
     setCurrentTitle(plan.title)
     setCurrentDescription(plan.year || "")
+    setSelectedYear(plan.year || String(currentYear))
     setCurrentStatus(plan.status || "Draft")
     setIsFormOpen(true)
   }
@@ -171,31 +173,87 @@ export default function AuditPlansPage() {
     toast({ title: "Success", description: "Audit plan deleted." })
   }
 
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const planData: Partial<AuditPlan> = {
-      title: currentTitle,
-      year: currentDescription,
-      status: currentStatus,
+    
+    if (!currentTitle.trim()) {
+      toast({ 
+        title: "Missing Information", 
+        description: "Please enter a title for the audit plan.",
+        variant: "destructive"
+      })
+      return
     }
 
-    if (editingPlan) {
-      setAuditPlans((prevPlans) =>
-        prevPlans.map((p) => (p.id === editingPlan.id ? { ...editingPlan, ...planData } : p)),
-      )
-      toast({ title: "Success", description: "Audit plan updated." })
-    } else {
-      const newPlan: AuditPlan = {
-        ...planData,
-        id: `AP${String(auditPlans.length + 1).padStart(3, "0")}`,
-        title: currentTitle,
-        year: currentDescription || "2024",
-        is_deleted: 0,
-      }
-      setAuditPlans((prevPlans) => [...prevPlans, newPlan])
-      toast({ title: "Success", description: "New audit plan created." })
+    if (!selectedYear) {
+      toast({ 
+        title: "Missing Information", 
+        description: "Please select a year for the audit plan.",
+        variant: "destructive"
+      })
+      return
     }
-    setIsFormOpen(false)
+
+    try {
+      if (editingPlan) {
+        // TODO: Implement PUT method for updating audit plans
+        const planData = {
+          title: currentTitle,
+          year: selectedYear,
+          status: currentStatus,
+        }
+        setAuditPlans((prevPlans) =>
+          prevPlans.map((p) => (p.id === editingPlan.id ? { ...editingPlan, ...planData } : p)),
+        )
+        toast({ title: "Success", description: "Audit plan updated." })
+      } else {
+        // Create new audit plan via API
+        const planData = {
+          title: currentTitle,
+          year: selectedYear, // Use selectedYear instead of currentDescription
+          status: currentStatus,
+        }
+
+        const response = await fetch("/api/audit-plans", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(planData),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.message || `Failed to create audit plan: ${response.statusText}`)
+        }
+
+        const result = await response.json()
+        console.log("Audit plan created successfully:", result)
+
+        // Add the new plan to local state
+        const newPlan: AuditPlan = {
+          id: result.auditPlan.id,
+          title: result.auditPlan.title,
+          year: result.auditPlan.year,
+          status: result.auditPlan.status,
+          is_deleted: 0,
+        }
+        
+        setAuditPlans((prevPlans) => [...prevPlans, newPlan])
+        toast({ title: "Success", description: "New audit plan created successfully." })
+      }
+      
+      setIsFormOpen(false)
+      resetFormStates()
+      
+    } catch (error) {
+      console.error("Error saving audit plan:", error)
+      toast({ 
+        title: "Error", 
+        description: error instanceof Error ? error.message : "Failed to save audit plan. Please try again.",
+        variant: "destructive"
+      })
+    }
   }
 
   const availableYears = useMemo(() => {
@@ -284,7 +342,7 @@ export default function AuditPlansPage() {
                     Year
                   </Label>
                   <Select
-                    value={String(currentYear)}
+                    value={selectedYear}
                     onValueChange={(value) => setSelectedYear(value)}
                   >
                     <SelectTrigger className="col-span-3">
