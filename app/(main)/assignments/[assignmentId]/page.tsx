@@ -72,6 +72,13 @@ export default function AssignmentDetailPage() {
     assignmentRole: "Team Member"
   })
 
+  // Risk and Control state
+  const [isAddRiskControlModalOpen, setIsAddRiskControlModalOpen] = useState(false)
+  const [availableRisks, setAvailableRisks] = useState<any[]>([])
+  const [availableControls, setAvailableControls] = useState<any[]>([])
+  const [selectedRiskId, setSelectedRiskId] = useState("")
+  const [selectedControlId, setSelectedControlId] = useState("")
+
   // Calculate progress - reactive to task status changes
   const totalTasks = tasks.length
   const completedTasks = tasks.filter(task => task.status === "Completed").length
@@ -358,19 +365,122 @@ export default function AssignmentDetailPage() {
       const updatedTask = await response.json()
 
       // Update the task in local state
-      setTasks(tasks.map(task => 
-        task.id === taskId 
-          ? { ...task, status: updatedTask.status }
-          : task
+      setTasks(prev => prev.map(task => 
+        task.id === taskId ? { ...task, status: newStatus } : task
       ))
-
-      // Show success feedback
-      console.log(`Task status updated to: ${newStatus}`)
     } catch (error) {
       console.error('Error updating task status:', error)
       alert('Failed to update task status. Please try again.')
     }
   }
+
+  const handleAddRiskControl = async () => {
+    if (!params.assignmentId || !selectedRiskId || !selectedControlId) return
+
+    try {
+      // Create a new risk-control relationship for this assignment
+      const newRiskControl = {
+        id: `arc-${Date.now()}`,
+        risk: availableRisks.find(r => r.id === selectedRiskId),
+        controls: [availableControls.find(c => c.id === selectedControlId)],
+        residualRisk: "Medium" // Default value
+      }
+
+      // Add to local state
+      setRelatedRisksData(prev => [...prev, newRiskControl])
+      
+      // Close modal and reset selections
+      setIsAddRiskControlModalOpen(false)
+      setSelectedRiskId("")
+      setSelectedControlId("")
+      
+      console.log('Added risk-control relationship:', newRiskControl)
+    } catch (error) {
+      console.error('Error adding risk and control:', error)
+    }
+  }
+
+  const fetchAvailableRisksAndControls = async () => {
+    try {
+      // In a real app, these would be API calls to the governance system
+      // For now, using mock data similar to what's in the governance pages
+      const mockRisks = [
+        {
+          id: "RISK001",
+          title: "Data Breach due to Unpatched Systems",
+          description: "Potential unauthorized access to sensitive customer data through vulnerabilities in unpatched software.",
+          categories: ["Operational", "Enterprise"],
+          status: "Open",
+          inherentRisk: "Critical",
+          residualRisk: "High",
+          lastUpdated: "2025-05-28",
+          controlsCount: 3,
+        },
+        {
+          id: "RISK002",
+          title: "Financial Misstatement from Manual Errors",
+          description: "Risk of errors in financial reporting due to reliance on manual data entry and reconciliation processes.",
+          categories: ["Financial", "Operational"],
+          status: "Open",
+          inherentRisk: "High",
+          residualRisk: "Low",
+          lastUpdated: "2025-05-15",
+          controlsCount: 5,
+        },
+        {
+          id: "RISK003",
+          title: "Regulatory Non-Compliance with GDPR",
+          description: "Failure to adhere to GDPR requirements leading to potential fines and reputational damage.",
+          categories: ["Compliance", "Enterprise"],
+          status: "Open",
+          inherentRisk: "High",
+          residualRisk: "Medium",
+          lastUpdated: "2025-06-01",
+          controlsCount: 2,
+        }
+      ]
+
+      const mockControls = [
+        {
+          id: "ctrl_001",
+          name: "Quarterly Vulnerability Scanning",
+          description: "Automated scans of all external-facing systems to identify potential weaknesses.",
+          type: "Detective",
+          status: "Active",
+          effectiveness: "Effective",
+          linkedRisksCount: 3,
+          lastAssessed: "2025-05-15",
+        },
+        {
+          id: "ctrl_002",
+          name: "Segregation of Duties Policy",
+          description: "Ensures no single individual has control over all aspects of a financial transaction.",
+          type: "Preventive",
+          status: "Active",
+          effectiveness: "Effective",
+          linkedRisksCount: 5,
+          lastAssessed: "2025-04-20",
+        },
+        {
+          id: "ctrl_003",
+          name: "New Vendor Onboarding Approval",
+          description: "Requires dual approval for all new vendor contracts and security assessments.",
+          type: "Preventive",
+          status: "Active",
+          effectiveness: "Needs Improvement",
+          linkedRisksCount: 2,
+          lastAssessed: "2025-06-01",
+        }
+      ]
+
+      setAvailableRisks(mockRisks)
+      setAvailableControls(mockControls)
+    } catch (error) {
+      console.error('Error fetching available risks and controls:', error)
+    }
+  }
+
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -842,6 +952,87 @@ export default function AssignmentDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Add Risk & Control Modal */}
+      {isAddRiskControlModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4">
+            <h3 className="text-lg font-semibold mb-4">Link Risk & Control to Assignment</h3>
+            <div className="space-y-6">
+              {/* Risk Selection */}
+              <div>
+                <label className="block text-sm font-medium mb-3">Select Risk</label>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {availableRisks.map((risk) => (
+                    <div key={risk.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="radio"
+                        id={`risk-${risk.id}`}
+                        name="riskSelection"
+                        value={risk.id}
+                        checked={selectedRiskId === risk.id}
+                        onChange={(e) => setSelectedRiskId(e.target.value)}
+                        className="h-4 w-4 text-blue-600"
+                      />
+                      <label htmlFor={`risk-${risk.id}`} className="flex-1 cursor-pointer">
+                        <div className="font-medium">{risk.title}</div>
+                        <div className="text-sm text-gray-600">{risk.description}</div>
+                        <div className="flex gap-2 mt-1">
+                          <span className="text-xs px-2 py-1 bg-gray-100 rounded">{risk.inherentRisk}</span>
+                          <span className="text-xs px-2 py-1 bg-gray-100 rounded">{risk.categories.join(', ')}</span>
+                        </div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Control Selection */}
+              <div>
+                <label className="block text-sm font-medium mb-3">Select Control</label>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {availableControls.map((control) => (
+                    <div key={control.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="radio"
+                        id={`control-${control.id}`}
+                        name="controlSelection"
+                        value={control.id}
+                        checked={selectedControlId === control.id}
+                        onChange={(e) => setSelectedControlId(e.target.value)}
+                        className="h-4 w-4 text-blue-600"
+                      />
+                      <label htmlFor={`control-${control.id}`} className="flex-1 cursor-pointer">
+                        <div className="font-medium">{control.name}</div>
+                        <div className="text-sm text-gray-600">{control.description}</div>
+                        <div className="flex gap-2 mt-1">
+                          <span className="text-xs px-2 py-1 bg-gray-100 rounded">{control.type}</span>
+                          <span className="text-xs px-2 py-1 bg-gray-100 rounded">{control.effectiveness}</span>
+                        </div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <Button variant="outline" onClick={() => {
+                setIsAddRiskControlModalOpen(false)
+                setSelectedRiskId("")
+                setSelectedControlId("")
+              }}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddRiskControl}
+                disabled={!selectedRiskId || !selectedControlId}
+              >
+                Link Risk & Control
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 })}
@@ -854,11 +1045,23 @@ export default function AssignmentDetailPage() {
         <TabsContent value="risks" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Risks & Controls
-              </CardTitle>
-              <CardDescription>Risk assessment and control effectiveness</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Risks & Controls
+                  </CardTitle>
+                  <CardDescription>Risk assessment and control effectiveness</CardDescription>
+                </div>
+                <Button onClick={async () => {
+                  console.log('Add Risk & Control button clicked!')
+                  await fetchAvailableRisksAndControls()
+                  setIsAddRiskControlModalOpen(true)
+                }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Risk & Control
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">

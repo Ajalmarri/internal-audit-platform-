@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { useToast } from "@/hooks/use-toast"
 import {
   ArrowLeft,
   Edit,
@@ -40,26 +41,14 @@ import {
 } from "lucide-react"
 
 // --- Enhanced Mock Data and Types ---
-interface HealthMetric {
-  value: string | number
-  label: string
-  icon: React.ElementType
-  variant?: "default" | "warning" | "critical"
-}
 
-interface LinkedItem {
-  id: string
-  title: string
-  status?: string // e.g., for Assignments
-  severity?: string // e.g., for Findings
-  type?: string // e.g., for Evidence
-  date?: string
-}
+
+
 
 interface EngagementData {
   id: string
   title: string
-  status: "Planning" | "In Progress" | "In Review" | "Completed" | "On Hold"
+  status: string
   healthMetrics: {
     progress: number
     openHighRiskFindings: number
@@ -74,11 +63,28 @@ interface EngagementData {
     endDate: string
     objective: string
   }
-  linkedItems: {
-    assignments: LinkedItem[]
-    findings: LinkedItem[]
-    evidence: LinkedItem[]
-  }
+  // Real data from API
+  assignments: Array<{
+    id: string
+    title: string
+    status: string
+    dueDate: string | null
+    priority: string
+  }>
+  findings: Array<{
+    id: string
+    title: string
+    severity: string
+    status: string
+    date: string | null
+  }>
+  evidence: Array<{
+    id: string
+    title: string
+    type: string
+    date: string | null
+    status: string
+  }>
 }
 
 // Mock data removed - now using real data from database
@@ -86,10 +92,12 @@ interface EngagementData {
 export default function EngagementDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { toast } = useToast()
   const engagementId = params.engagementId as string // This is the main engagement ID from the URL
 
   const [engagement, setEngagement] = useState<EngagementData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
     if (engagementId) {
@@ -97,37 +105,48 @@ export default function EngagementDetailPage() {
       // Fetch real engagement data from the database
       const fetchEngagement = async () => {
         try {
-          const response = await fetch('/api/engagements')
-          if (!response.ok) throw new Error('Failed to fetch engagements')
+          const response = await fetch(`/api/engagements/${engagementId}`)
+          if (!response.ok) {
+            if (response.status === 404) {
+              setEngagement(null)
+              return
+            }
+            throw new Error('Failed to fetch engagement')
+          }
           
-          const allEngagements = await response.json()
-          const foundEngagement = allEngagements.find((eng: any) => eng.id === engagementId)
+          const foundEngagement = await response.json()
           
           if (foundEngagement) {
+            // Calculate real metrics from the data
+            const highRiskFindings = foundEngagement.findings?.filter(f => f.severity === 'High')?.length || 0
+            const overdueTasks = foundEngagement.assignments?.filter(a => {
+              if (!a.dueDate) return false
+              return new Date(a.dueDate) < new Date()
+            })?.length || 0
+            
             // Transform the real data to match our interface
             const transformedEngagement: EngagementData = {
               id: foundEngagement.id,
               title: foundEngagement.title,
-              status: foundEngagement.status as EngagementData["status"],
+              status: foundEngagement.status,
               healthMetrics: {
                 progress: 65, // Default progress for now
-                openHighRiskFindings: 0, // Default values
-                overdueTasks: 0,
+                openHighRiskFindings: highRiskFindings,
+                overdueTasks: overdueTasks,
                 budgetConsumed: 45,
                 budgetTotal: 50000,
               },
               details: {
                 primaryStakeholder: foundEngagement.stakeholder,
                 engagementManager: foundEngagement.manager,
-                startDate: foundEngagement.start_date,
-                endDate: foundEngagement.end_date,
+                startDate: foundEngagement.startDate,
+                endDate: foundEngagement.endDate,
                 objective: foundEngagement.objective || "No objective set",
               },
-              linkedItems: {
-                assignments: [], // Will be populated when we have assignments API
-                findings: [], // Will be populated when we have findings API
-                evidence: [], // Will be populated when we have evidence API
-              },
+              // Use real data from API
+              assignments: foundEngagement.assignments || [],
+              findings: foundEngagement.findings || [],
+              evidence: foundEngagement.evidence || [],
             }
             setEngagement(transformedEngagement)
           } else {
@@ -144,6 +163,19 @@ export default function EngagementDetailPage() {
       fetchEngagement()
     }
   }, [engagementId])
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (engagementId) {
+      const interval = setInterval(() => {
+        if (engagement) {
+          handleRefresh()
+        }
+      }, 30000) // 30 seconds
+
+      return () => clearInterval(interval)
+    }
+  }, [engagementId, engagement])
 
   if (isLoading) {
     return (
@@ -187,7 +219,7 @@ export default function EngagementDetailPage() {
     }
   }
 
-  const healthMetricsDisplay: HealthMetric[] = [
+  const healthMetricsDisplay = [
     {
       value: `${engagement.healthMetrics.openHighRiskFindings}`,
       label: "Open High-Risk Findings",
@@ -206,15 +238,92 @@ export default function EngagementDetailPage() {
     router.push(`/engagements/${engagement.id}/edit`)
   }
 
-  const getLinkedItemIcon = (type: string | undefined, itemType: "assignments" | "findings" | "evidence") => {
-    if (itemType === "assignments") return Briefcase
-    if (itemType === "findings") return Search
-    if (itemType === "evidence") {
-      if (type?.toLowerCase().includes("document")) return FileText
-      return Paperclip
+  const handleRefresh = async () => {
+    if (engagementId) {
+      setIsRefreshing(true)
+      try {
+        const response = await fetch(`/api/engagements/${engagementId}`)
+        if (response.ok) {
+          const foundEngagement = await response.json()
+          
+          if (foundEngagement) {
+            // Calculate real metrics from the data
+            const highRiskFindings = foundEngagement.findings?.filter(f => f.severity === 'High')?.length || 0
+            const overdueTasks = foundEngagement.assignments?.filter(a => {
+              if (!a.dueDate) return false
+              return new Date(a.dueDate) < new Date()
+            })?.length || 0
+            
+            // Transform the real data to match our interface
+            const transformedEngagement: EngagementData = {
+              id: foundEngagement.id,
+              title: foundEngagement.title,
+              status: foundEngagement.status,
+              healthMetrics: {
+                progress: 65, // Default progress for now
+                openHighRiskFindings: highRiskFindings,
+                overdueTasks: overdueTasks,
+                budgetConsumed: 45,
+                budgetTotal: 50000,
+              },
+              details: {
+                primaryStakeholder: foundEngagement.stakeholder,
+                engagementManager: foundEngagement.manager,
+                startDate: foundEngagement.startDate,
+                endDate: foundEngagement.endDate,
+                objective: foundEngagement.objective || "No objective set",
+              },
+              // Use real data from API
+              assignments: foundEngagement.assignments || [],
+              findings: foundEngagement.findings || [],
+              evidence: foundEngagement.evidence || [],
+            }
+            setEngagement(transformedEngagement)
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing engagement:', error)
+      } finally {
+        setIsRefreshing(false)
+      }
     }
-    return FileText
   }
+
+  const handleUnlinkAssignment = async (assignmentId: number) => {
+    try {
+      const response = await fetch('/api/engagement-assignments', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          engagementId: parseInt(engagementId),
+          assignmentId: assignmentId
+        }),
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Assignment unlinked successfully!",
+        })
+        
+        // Refresh the engagement data to update the UI
+        handleRefresh()
+      } else {
+        throw new Error('Failed to unlink assignment')
+      }
+    } catch (error) {
+      console.error('Error unlinking assignment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to unlink assignment",
+        variant: "destructive"
+      })
+    }
+  }
+
+
 
   return (
     <div className="p-4 md:p-6 space-y-6">
@@ -235,6 +344,18 @@ export default function EngagementDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
+            ) : (
+              <div className="mr-2 h-4 w-4" />
+            )}
+            Refresh
+          </Button>
           <Button variant="outline" onClick={handleEditEngagement}>
             <Edit className="mr-2 h-4 w-4" /> Edit Engagement
           </Button>
@@ -393,118 +514,178 @@ export default function EngagementDetailPage() {
             <CardHeader className="pb-0">
               <div className="flex justify-between items-center">
                 <CardTitle>Linked Items</CardTitle>
-                {/* "Create New Finding" button added here, visible when Findings tab is active or always */}
-                {/* This example shows it always, adjust with activeTab state if needed */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="ml-auto" // Pushes button to the right
-                >
-                  <Link href={`/engagements/${engagementId}/findings/new`}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Create New Finding
-                  </Link>
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                  >
+                    <Link href={`/engagements/${engagementId}/assignments/new`}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      New Assignment
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                  >
+                    <Link href={`/engagements/${engagementId}/findings/new`}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      New Finding
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                  >
+                    <Link href={`/engagements/${engagementId}/evidence/new`}>
+                      <Paperclip className="mr-2 h-4 w-4" />
+                      Upload Evidence
+                    </Link>
+                  </Button>
+                </div>
               </div>
               <TabsList className="grid w-full grid-cols-3 mt-2">
-                <TabsTrigger value="assignments">Assignments ({engagement.linkedItems.assignments.length})</TabsTrigger>
-                <TabsTrigger value="findings">Findings ({engagement.linkedItems.findings.length})</TabsTrigger>
-                <TabsTrigger value="evidence">Evidence ({engagement.linkedItems.evidence.length})</TabsTrigger>
+                <TabsTrigger value="assignments">Assignments ({engagement.assignments.length})</TabsTrigger>
+                <TabsTrigger value="findings">Findings ({engagement.findings.length})</TabsTrigger>
+                <TabsTrigger value="evidence">Evidence ({engagement.evidence.length})</TabsTrigger>
               </TabsList>
             </CardHeader>
             <CardContent className="pt-0 flex-grow">
               <TabsContent value="assignments" className="mt-4 space-y-2">
-                {engagement.linkedItems.assignments.map((item) => {
-                  const ItemIcon = getLinkedItemIcon(item.status, "assignments")
-                  return (
-                    <Link key={item.id} href={`/engagements/${engagementId}/assignments/${item.id}`} passHref>
-                      <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-                        <div className="flex items-center gap-3">
-                          <ItemIcon className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{item.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.status && (
-                                <Badge variant="secondary" className="mr-1">
-                                  {item.status}
-                                </Badge>
-                              )}
-                              {item.date && `Due: ${new Date(item.date).toLocaleDateString()}`}
-                            </p>
-                          </div>
+                {engagement.assignments.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Briefcase className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{item.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant={
+                            item.status === 'Completed' ? 'default' :
+                            item.status === 'In Progress' ? 'secondary' :
+                            'outline'
+                          }>
+                            {item.status}
+                          </Badge>
+                          {item.dueDate && (
+                            <Badge variant={
+                              new Date(item.dueDate) < new Date() ? 'destructive' : 'secondary'
+                            }>
+                              {new Date(item.dueDate) < new Date() ? 'Overdue' : `Due: ${new Date(item.dueDate).toLocaleDateString()}`}
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            {item.priority}
+                          </Badge>
                         </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </div>
-                    </Link>
-                  )
-                })}
-                {engagement.linkedItems.assignments.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">No assignments linked.</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUnlinkAssignment(item.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        Unlink
+                      </Button>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </div>
+                ))}
+                {engagement.assignments.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Briefcase className="h-8 w-8 mx-auto mb-2" />
+                    <p>No assignments linked yet.</p>
+                    <p className="text-xs mt-1">Click "New Assignment" to get started</p>
+                  </div>
                 )}
               </TabsContent>
               <TabsContent value="findings" className="mt-4 space-y-2">
-                {engagement.linkedItems.findings.map((item) => {
-                  const ItemIcon = getLinkedItemIcon(item.severity, "findings")
-                  return (
-                    <Link key={item.id} href={`/engagements/${engagementId}/findings/${item.id}`} passHref>
-                      <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-                        <div className="flex items-center gap-3">
-                          <ItemIcon className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{item.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.severity && (
-                                <Badge
-                                  variant={
-                                    item.severity === "Critical" || item.severity === "High" ? "destructive" : "outline"
-                                  }
-                                  className="mr-1"
-                                >
-                                  {item.severity}
-                                </Badge>
-                              )}
-                              {item.date && `Identified: ${new Date(item.date).toLocaleDateString()}`}
-                            </p>
-                          </div>
+                {engagement.findings.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <AlertOctagon className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{item.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant={
+                            item.severity === 'High' ? 'destructive' :
+                            item.severity === 'Medium' ? 'secondary' :
+                            'outline'
+                          }>
+                            {item.severity}
+                          </Badge>
+                          <Badge variant={
+                            item.status === 'Open' ? 'destructive' :
+                            item.status === 'In Progress' ? 'secondary' :
+                            'default'
+                          }>
+                            {item.status}
+                          </Badge>
+                          {item.date && (
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(item.date).toLocaleDateString()}
+                            </span>
+                          )}
                         </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </div>
-                    </Link>
-                  )
-                })}
-                {engagement.linkedItems.findings.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">No findings linked.</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                ))}
+                {engagement.findings.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <AlertOctagon className="h-8 w-8 mx-auto mb-2" />
+                    <p>No findings created yet.</p>
+                    <p className="text-xs mt-1">Click "New Finding" to document audit discoveries</p>
+                  </div>
                 )}
               </TabsContent>
               <TabsContent value="evidence" className="mt-4 space-y-2">
-                {engagement.linkedItems.evidence.map((item) => {
-                  const ItemIcon = getLinkedItemIcon(item.type, "evidence")
-                  return (
-                    <Link key={item.id} href={`/engagements/${engagementId}/evidence/${item.id}`} passHref>
-                      <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
-                        <div className="flex items-center gap-3">
-                          <ItemIcon className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{item.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.type && <span className="mr-1">{item.type}</span>}
-                              {item.date && `Uploaded: ${new Date(item.date).toLocaleDateString()}`}
-                            </p>
-                          </div>
+                {engagement.evidence.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Paperclip className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{item.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline">
+                            {item.type}
+                          </Badge>
+                          <Badge variant={
+                            item.status === 'Approved' ? 'default' :
+                            item.status === 'Pending Review' ? 'secondary' :
+                            'outline'
+                          }>
+                            {item.status}
+                          </Badge>
+                          {item.date && (
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(item.date).toLocaleDateString()}
+                            </span>
+                          )}
                         </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </div>
-                    </Link>
-                  )
-                })}
-                {engagement.linkedItems.evidence.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">No evidence linked.</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                ))}
+                {engagement.evidence.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Paperclip className="h-8 w-8 mx-auto mb-2" />
+                    <p>No evidence uploaded yet.</p>
+                    <p className="text-xs mt-1">Click "Upload Evidence" to attach supporting documents</p>
+                  </div>
                 )}
               </TabsContent>
             </CardContent>
           </Tabs>
         </Card>
+
+
       </div>
     </div>
   )

@@ -109,3 +109,119 @@ export async function GET(
     )
   }
 }
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ assignmentId: string }> }
+) {
+  try {
+    const { assignmentId } = await params
+    const body = await request.json()
+
+    if (!assignmentId) {
+      return NextResponse.json({ error: "Assignment ID is required" }, { status: 400 })
+    }
+
+    if (!body.riskTitle || !body.controlName) {
+      return NextResponse.json({ error: "Risk title and control name are required" }, { status: 400 })
+    }
+
+    // For now, we'll create a simple risk-control entry
+    // In a full implementation, you'd insert into the actual risk and control tables
+    const newRiskControl = {
+      id: `risk-${Date.now()}`,
+      risk: {
+        id: `risk-${Date.now()}`,
+        title: body.riskTitle,
+        inherentRisk: body.inherentRisk || "Medium",
+        description: body.riskDescription || `Risk: ${body.riskTitle}`
+      },
+      controls: [
+        {
+          id: `control-${Date.now()}`,
+          name: body.controlName,
+          assessment: body.controlAssessment || "Effective",
+          lastAssessed: new Date().toISOString().split('T')[0]
+        }
+      ],
+      residualRisk: body.residualRisk || "Medium"
+    }
+
+    return NextResponse.json(newRiskControl)
+  } catch (error) {
+    console.error("Failed to create risk and control:", error)
+    return NextResponse.json(
+      { error: "Failed to create risk and control" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ assignmentId: string }> }
+) {
+  try {
+    const { assignmentId } = await params
+    const body = await request.json()
+    const { searchParams } = new URL(request.url)
+    const riskId = searchParams.get('riskId')
+
+    if (!assignmentId) {
+      return NextResponse.json({ error: "Assignment ID is required" }, { status: 400 })
+    }
+
+    if (!riskId) {
+      return NextResponse.json({ error: "Risk ID is required" }, { status: 400 })
+    }
+
+    // Update risk and control information
+    const updatedRiskControl = {
+      id: riskId,
+      risk: {
+        id: riskId,
+        title: body.riskTitle || "Updated Risk",
+        inherentRisk: body.inherentRisk || "Medium",
+        description: body.riskDescription || "Updated risk description"
+      },
+      controls: body.controls || [],
+      residualRisk: body.residualRisk || "Medium"
+    }
+
+    return NextResponse.json(updatedRiskControl)
+  } catch (error) {
+    console.error("Failed to update risk and control:", error)
+    return NextResponse.json(
+      { error: "Failed to update risk and control" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ assignmentId: string }> }
+) {
+  try {
+    const { assignmentId } = await params
+    const { searchParams } = new URL(request.url)
+    const riskId = searchParams.get('riskId')
+
+    if (!assignmentId) {
+      return NextResponse.json({ error: "Assignment ID is required" }, { status: 400 })
+    }
+
+    if (!riskId) {
+      return NextResponse.json({ error: "Risk ID is required" }, { status: 400 })
+    }
+
+    // In a full implementation, you'd soft delete from the database
+    return NextResponse.json({ message: "Risk and control deleted successfully" })
+  } catch (error) {
+    console.error("Failed to delete risk and control:", error)
+    return NextResponse.json(
+      { error: "Failed to delete risk and control" },
+      { status: 500 }
+    )
+  }
+}

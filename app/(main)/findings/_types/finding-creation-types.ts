@@ -21,6 +21,10 @@ export interface MockAssignment {
   id: string
   name: string
   auditPlanName?: string
+  status?: string
+  description?: string
+  startDate?: string
+  endDate?: string
 }
 
 // This data is now primarily for the API route, not direct import by the page

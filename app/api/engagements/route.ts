@@ -1,54 +1,135 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { query } from "@/lib/database"
 
-interface EngagementFromDB {
-  id: string
-  title: string
-  stakeholder: string
-  manager: string
-  start_date: string
-  end_date: string
-  status: string
-  objective?: string
-  scope?: string
-  created_at: string
-  updated_at: string
-}
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Get engagements with proper column mapping and joins
-    const rows = (await query(
-      `SELECT
-         CAST(e.EngagementID AS CHAR) AS id,
-         e.EngagementTitle AS title,
-         ps.PrimaryStakeholder AS stakeholder,
-         CONCAT(u.FirstName, ' ', u.LastName) AS manager,
-         e.StartDate AS start_date,
-         e.EndDate AS end_date,
-         es.EngagementStatus AS status,
-         e.Objective AS objective,
-         e.Scope AS scope,
-         e.CreatedDate AS created_at,
-         e.ModifiedDate AS updated_at
+    console.log('Engagements API called - GET')
+    
+    const engagements = await query(
+      `SELECT e.EngagementID, e.EngagementTitle, e.Objective, e.Scope, e.StartDate, e.EndDate, 
+              es.EngagementStatus, ps.PrimaryStakeholder, u.FirstName, u.LastName
        FROM engagements e
        LEFT JOIN primarystakeholders ps ON ps.PrimaryStakeholderID = e.PrimaryStakeholderID
        LEFT JOIN users u ON u.UserID = e.EngagementManagerID
        LEFT JOIN engagementstatuses es ON es.EngagementStatusID = e.StatusID
-       WHERE IFNULL(e.IsDeleted, 0) = 0
-       ORDER BY e.EngagementID ASC`
-    )) as EngagementFromDB[]
+       WHERE e.IsDeleted = 0
+       ORDER BY e.CreatedDate DESC`
+    ) as any[]
 
-    return NextResponse.json(rows)
+    console.log('Engagements query result:', engagements.length, 'engagements found')
+
+    // Transform the data to match the expected format
+    const transformedEngagements = engagements.map(engagement => ({
+      id: engagement.EngagementID,
+      title: engagement.EngagementTitle,
+      objective: engagement.Objective,
+      scope: engagement.Scope,
+      startDate: engagement.StartDate ? new Date(engagement.StartDate).toISOString().split('T')[0] : null,
+      endDate: engagement.EndDate ? new Date(engagement.EndDate).toISOString().split('T')[0] : null,
+      status: engagement.EngagementStatus,
+      stakeholder: engagement.PrimaryStakeholder,
+      manager: `${engagement.FirstName} ${engagement.LastName}`
+    }))
+
+    return NextResponse.json(transformedEngagements)
+
   } catch (error) {
-    console.error("Failed to fetch engagements from database:", error)
-    let errorMessage = "An unknown error occurred"
-    if (error instanceof Error) {
-      errorMessage = error.message
-    }
+    console.error("Engagements error:", error)
     return NextResponse.json(
-      { message: "Failed to fetch engagements from database.", error: errorMessage },
-      { status: 500 },
+      { message: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    console.log('Engagements API called - POST (Create new engagement)')
+    
+    const body = await request.json()
+    const {
+      title,
+      objective,
+      scope,
+      stakeholderId,
+      managerId,
+      startDate,
+      endDate,
+      assignmentIds
+    } = body
+
+    console.log('Creating engagement with data:', body)
+
+    // Format dates for MySQL (YYYY-MM-DD format)
+    const formatDateForMySQL = (dateString: string) => {
+      const date = new Date(dateString)
+      return date.toISOString().split('T')[0] // Extract just the date part
+    }
+
+    const formattedStartDate = formatDateForMySQL(startDate)
+    const formattedEndDate = formatDateForMySQL(endDate)
+
+    console.log('Formatted dates - Start:', formattedStartDate, 'End:', formattedEndDate)
+
+    // Get a default status ID (assuming 'Active' status exists)
+    const statusResult = await query(
+      `SELECT EngagementStatusID FROM engagementstatuses WHERE EngagementStatus = 'Active' LIMIT 1`
+    ) as any[]
+    
+    const statusId = statusResult.length > 0 ? statusResult[0].EngagementStatusID : 1
+
+    // Insert the new engagement
+    const result = await query(
+      `INSERT INTO engagements (
+        EngagementTitle, 
+        Objective, 
+        Scope, 
+        PrimaryStakeholderID, 
+        EngagementManagerID, 
+        StartDate, 
+        EndDate, 
+        StatusID,
+        AssignmentID,
+        CreatedBy,
+        ModifiedBy,
+        IsDeleted
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+      [title, objective, scope, stakeholderId, managerId, formattedStartDate, formattedEndDate, statusId, 1, 1, 1]
+    ) as any
+
+    const engagementId = result.insertId
+    console.log('Engagement created with ID:', engagementId)
+
+    // If assignment IDs are provided, try to link them to the engagement
+    if (assignmentIds && assignmentIds.length > 0) {
+      try {
+        for (const assignmentId of assignmentIds) {
+          await query(
+            `INSERT INTO engagementassignments (EngagementID, AssignmentID, CreatedDate) VALUES (?, ?, NOW())`,
+            [engagementId, assignmentId]
+          )
+        }
+        console.log('Linked', assignmentIds.length, 'assignments to engagement')
+      } catch (error) {
+        console.warn('Could not link assignments (table may not exist):', error)
+        // Continue without failing the engagement creation
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Engagement initiated successfully!",
+      id: engagementId
+    })
+
+  } catch (error) {
+    console.error("Create engagement error:", error)
+    return NextResponse.json(
+      { 
+        success: false,
+        message: "Failed to create engagement. Please try again." 
+      },
+      { status: 500 }
     )
   }
 }

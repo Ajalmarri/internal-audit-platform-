@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     if (!sessionCookie) {
       return NextResponse.json(
         { isAuthenticated: false },
-        { status: 401 }
+        { status: 200 }
       )
     }
 
@@ -17,14 +17,14 @@ export async function GET(request: NextRequest) {
     } catch (error) {
       return NextResponse.json(
         { isAuthenticated: false },
-        { status: 401 }
+        { status: 200 }
       )
     }
 
     if (!sessionData.isAuthenticated) {
       return NextResponse.json(
         { isAuthenticated: false },
-        { status: 401 }
+        { status: 200 }
       )
     }
 
@@ -44,10 +44,12 @@ export async function GET(request: NextRequest) {
     console.error("Session check error:", error)
     return NextResponse.json(
       { isAuthenticated: false },
-      { status: 401 }
+      { status: 200 }
     )
   }
 }
+
+
 
 
 

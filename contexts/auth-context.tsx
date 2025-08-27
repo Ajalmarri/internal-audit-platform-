@@ -33,9 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('AuthContext - Checking authentication...')
       const response = await fetch('/api/auth/session')
+      console.log('AuthContext - Session response status:', response.status)
+      
       const data = await response.json()
-
-      console.log('AuthContext - Session response:', data)
+      console.log('AuthContext - Session response data:', data)
 
       if (data.isAuthenticated) {
         console.log('AuthContext - User is authenticated')
@@ -68,12 +69,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
 
       const data = await response.json()
-      console.log('AuthContext - Login response:', data)
+      console.log('AuthContext - Login response status:', response.status)
+      console.log('AuthContext - Login response data:', data)
 
       if (response.ok) {
-        console.log('AuthContext - Login successful')
+        console.log('AuthContext - Login successful, setting user and auth state')
         setUser(data.user)
         setIsAuthenticated(true)
+        console.log('AuthContext - State updated, user:', data.user, 'isAuthenticated: true')
         return true
       } else {
         console.log('AuthContext - Login failed:', data.message)
@@ -101,6 +104,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('AuthContext - Initializing auth check...')
     checkAuth()
   }, [])
+
+  // Add effect to handle redirect after successful login
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('AuthContext - User authenticated, redirecting to dashboard')
+      router.push('/dashboard')
+    }
+  }, [isAuthenticated, user, router])
 
   const value: AuthContextType = {
     user,

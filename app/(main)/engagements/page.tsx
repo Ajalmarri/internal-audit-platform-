@@ -47,8 +47,8 @@ type Engagement = {
   title: string
   stakeholder: string
   manager: string
-  start_date: string
-  end_date: string
+  startDate: string
+  endDate: string
   status: string
   objective?: string
   scope?: string
@@ -348,8 +348,8 @@ export default function EngagementsPage() {
                     <TableCell className="font-medium">{engagement.title}</TableCell>
                     <TableCell>{engagement.stakeholder}</TableCell>
                     <TableCell>{engagement.manager}</TableCell>
-                    <TableCell>{new Date(engagement.start_date).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(engagement.end_date).toLocaleDateString()}</TableCell>
+                                    <TableCell>{engagement.startDate ? new Date(engagement.startDate).toLocaleDateString() : 'Not set'}</TableCell>
+                <TableCell>{engagement.endDate ? new Date(engagement.endDate).toLocaleDateString() : 'Not set'}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusBadgeVariant(engagement.status)}>{engagement.status}</Badge>
                     </TableCell>

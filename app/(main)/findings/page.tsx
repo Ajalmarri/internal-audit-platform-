@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Progress } from "@/components/ui/progress"
+import { toast } from "@/components/ui/use-toast"
 import {
   PlusCircle,
   Search,
@@ -322,17 +323,42 @@ export default function FindingsPage() {
   }, [findings, searchTerm, statusFilters, severityFilters, showOnlyOverdue, sortColumn, sortDirection])
 
   const handleDeleteFinding = async (findingId: string) => {
+    if (!confirm('Are you sure you want to delete this finding? This action cannot be undone.')) {
+      return
+    }
+
     try {
       const response = await fetch(`/api/findings/${findingId}`, {
         method: "DELETE",
       })
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`HTTP error! status: ${response.status}${errorData.message ? `: ${errorData.message}` : ''}`)
       }
+      
+      const result = await response.json()
+      console.log('Finding deleted successfully:', result)
+      
+      // Remove from local state
       setFindings((prevFindings) => prevFindings.filter((f) => f.id !== findingId))
+      
+      // Show success message
+      toast({
+        title: "Finding Deleted",
+        description: "The finding has been successfully deleted.",
+      })
     } catch (err) {
-      setError("Failed to delete finding.")
-      console.error(err)
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete finding."
+      setError(errorMessage)
+      console.error('Delete finding error:', err)
+      
+      // Show error toast
+      toast({
+        title: "Delete Failed",
+        description: errorMessage,
+        variant: "destructive",
+      })
     }
   }
 

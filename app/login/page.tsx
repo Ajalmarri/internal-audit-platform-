@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Building } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const router = useRouter()
   const { toast } = useToast()
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,24 +26,16 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
+      const success = await login(email, password)
 
-      const data = await response.json()
-
-      if (response.ok) {
+      if (success) {
         toast({
           title: "Login successful",
-          description: `Welcome back, ${data.user.FirstName}!`,
+          description: `Welcome back!`,
         })
-        router.push('/dashboard')
+        // The auth context will handle the redirect automatically
       } else {
-        setError(data.message || 'Login failed')
+        setError('Invalid email or password')
       }
     } catch (error) {
       setError('An error occurred during login')

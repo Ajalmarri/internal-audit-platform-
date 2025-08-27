@@ -14,19 +14,19 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Loader2 } from "lucide-react"
-import { MultiSelectCombobox, type MultiSelectOption } from "@/components/ui/multi-select-combobox" // Import the new component
+import { MultiSelectCombobox, type MultiSelectOption } from "@/components/ui/multi-select-combobox"
 
-// Mock data - replace with actual data fetching or props
-const mockStakeholders = [
-  { id: "stakeholder-1", name: "IT Department" },
-  { id: "stakeholder-2", name: "Finance Department" },
-  { id: "stakeholder-3", name: "Legal Department" },
-]
+// Define types for stakeholders and managers
+type Stakeholder = {
+  id: string
+  name: string
+}
 
-const mockManagers = [
-  { id: "manager-1", name: "Yema al Olman" },
-  { id: "manager-2", name: "Khaled M." },
-]
+type Manager = {
+  id: string
+  name: string
+  role: string
+}
 
 // Define a type for assignments (ensure it matches API response)
 type Assignment = {
@@ -43,7 +43,7 @@ const engagementSchema = z
     managerId: z.string().min(1, "Engagement Manager is required"),
     startDate: z.date({ required_error: "Start Date is required" }),
     endDate: z.date({ required_error: "End Date is required" }),
-    assignmentIds: z.array(z.string()).optional(), // Changed to array for multiple assignments
+    assignmentIds: z.array(z.string()).optional(),
   })
   .refine((data) => data.endDate >= data.startDate, {
     message: "End Date cannot be before Start Date",
@@ -54,15 +54,36 @@ type EngagementFormData = z.infer<typeof engagementSchema>
 
 async function saveEngagement(data: EngagementFormData) {
   console.log("Saving engagement:", data)
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-  if (Math.random() > 0.1) {
-    return {
-      success: true,
-      message: "Engagement initiated successfully!",
-      id: `ENG-${Math.floor(Math.random() * 900) + 100}`,
+  
+  try {
+    const response = await fetch('/api/engagements', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    const result = await response.json()
+    
+    if (response.ok && result.success) {
+      return {
+        success: true,
+        message: result.message,
+        id: result.id
+      }
+    } else {
+      return { 
+        success: false, 
+        message: result.message || 'Failed to create engagement. Please try again.' 
+      }
     }
-  } else {
-    return { success: false, message: "Failed to initiate engagement. Please try again." }
+  } catch (error) {
+    console.error('Error saving engagement:', error)
+    return { 
+      success: false, 
+      message: 'An error occurred while creating the engagement. Please try again.' 
+    }
   }
 }
 
@@ -71,13 +92,17 @@ export default function NewEngagementPage() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [assignments, setAssignments] = React.useState<Assignment[]>([])
+  const [stakeholders, setStakeholders] = React.useState<Stakeholder[]>([])
+  const [managers, setManagers] = React.useState<Manager[]>([])
   const [isLoadingAssignments, setIsLoadingAssignments] = React.useState(true)
+  const [isLoadingStakeholders, setIsLoadingStakeholders] = React.useState(true)
+  const [isLoadingManagers, setIsLoadingManagers] = React.useState(true)
 
   React.useEffect(() => {
     async function fetchAssignments() {
       setIsLoadingAssignments(true)
       try {
-        const response = await fetch("/api/assignments") // Ensure this API returns { id: string, title: string }[]
+        const response = await fetch("/api/assignments")
         if (!response.ok) {
           throw new Error(`Failed to fetch assignments: ${response.statusText}`)
         }
@@ -86,22 +111,81 @@ export default function NewEngagementPage() {
           setAssignments(data)
         } else {
           console.error("Fetched assignments data is not an array:", data)
-          setAssignments([]) // Set to empty array on unexpected format
-          throw new Error("Fetched assignments data is not in the expected format.")
+          setAssignments([])
         }
       } catch (error) {
-        console.error(error)
+        console.error("Error fetching assignments:", error)
         toast({
           title: "Error Loading Assignments",
           description: "Could not load assignments. You can proceed without linking any.",
           variant: "destructive",
         })
-        setAssignments([]) // Ensure assignments is an empty array on error
+        setAssignments([])
       } finally {
         setIsLoadingAssignments(false)
       }
     }
     fetchAssignments()
+  }, [toast])
+
+  React.useEffect(() => {
+    async function fetchStakeholders() {
+      setIsLoadingStakeholders(true)
+      try {
+        const response = await fetch("/api/primary-stakeholders")
+        if (!response.ok) {
+          throw new Error(`Failed to fetch stakeholders: ${response.statusText}`)
+        }
+        const data: Stakeholder[] = await response.json()
+        if (Array.isArray(data)) {
+          setStakeholders(data)
+        } else {
+          console.error("Fetched stakeholders data is not an array:", data)
+          setStakeholders([])
+        }
+      } catch (error) {
+        console.error("Error fetching stakeholders:", error)
+        toast({
+          title: "Error Loading Stakeholders",
+          description: "Could not load stakeholders. Please refresh the page.",
+          variant: "destructive",
+        })
+        setStakeholders([])
+      } finally {
+        setIsLoadingStakeholders(false)
+      }
+    }
+    fetchStakeholders()
+  }, [toast])
+
+  React.useEffect(() => {
+    async function fetchManagers() {
+      setIsLoadingManagers(true)
+      try {
+        const response = await fetch("/api/managers")
+        if (!response.ok) {
+          throw new Error(`Failed to fetch managers: ${response.statusText}`)
+        }
+        const data: Manager[] = await response.json()
+        if (Array.isArray(data)) {
+          setManagers(data)
+        } else {
+          console.error("Fetched managers data is not an array:", data)
+          setManagers([])
+        }
+      } catch (error) {
+        console.error("Error fetching managers:", error)
+        toast({
+          title: "Error Loading Managers",
+          description: "Could not load managers. Please refresh the page.",
+          variant: "destructive",
+        })
+        setManagers([])
+      } finally {
+        setIsLoadingManagers(false)
+      }
+    }
+    fetchManagers()
   }, [toast])
 
   const {
@@ -119,7 +203,7 @@ export default function NewEngagementPage() {
       managerId: "",
       startDate: undefined,
       endDate: undefined,
-      assignmentIds: [], // Default to an empty array
+      assignmentIds: [],
     },
   })
 
@@ -171,7 +255,6 @@ export default function NewEngagementPage() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-            {/* ... other fields (title, objective, scope, stakeholder, manager, dates) remain the same ... */}
             <div className="space-y-2">
               <Label htmlFor="title">Engagement Title</Label>
               <Controller
@@ -225,12 +308,12 @@ export default function NewEngagementPage() {
                   name="stakeholderId"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingStakeholders}>
                       <SelectTrigger id="stakeholderId">
-                        <SelectValue placeholder="Select stakeholder" />
+                        <SelectValue placeholder={isLoadingStakeholders ? "Loading stakeholders..." : "Select stakeholder"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {mockStakeholders.map((stakeholder) => (
+                        {stakeholders.map((stakeholder) => (
                           <SelectItem key={stakeholder.id} value={stakeholder.id}>
                             {stakeholder.name}
                           </SelectItem>
@@ -248,12 +331,12 @@ export default function NewEngagementPage() {
                   name="managerId"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingManagers}>
                       <SelectTrigger id="managerId">
-                        <SelectValue placeholder="Select manager" />
+                        <SelectValue placeholder={isLoadingManagers ? "Loading managers..." : "Select manager"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {mockManagers.map((manager) => (
+                        {managers.map((manager) => (
                           <SelectItem key={manager.id} value={manager.id}>
                             {manager.name}
                           </SelectItem>
@@ -292,7 +375,6 @@ export default function NewEngagementPage() {
               </div>
             </div>
 
-            {/* Updated Field for Linking Multiple Assignments */}
             <div className="space-y-2">
               <Label htmlFor="assignmentIds">Link to Existing Assignments (Optional)</Label>
               <Controller
@@ -317,7 +399,7 @@ export default function NewEngagementPage() {
             <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || isLoadingAssignments}>
+            <Button type="submit" disabled={isSubmitting || isLoadingAssignments || isLoadingStakeholders || isLoadingManagers}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

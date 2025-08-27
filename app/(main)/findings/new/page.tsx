@@ -86,6 +86,7 @@ export default function CreateNewFindingPage() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>(mockFindingTemplates[0].id)
   const [aiNotes, setAiNotes] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // State for assignments
@@ -93,6 +94,10 @@ export default function CreateNewFindingPage() {
   const [assignmentsLoading, setAssignmentsLoading] = useState(true)
   const [assignmentsError, setAssignmentsError] = useState<string | null>(null)
   const [assignmentPopoverOpen, setAssignmentPopoverOpen] = useState(false)
+
+  // Computed values
+  const selectedAssignment = availableAssignments.find(a => a.id === formData.parentAssignmentId)
+  const selectedAssignmentName = selectedAssignment ? selectedAssignment.name : "Select an assignment..."
 
   // Save mode management
   const { status, lastSaved, save, markUnsaved, reset } = useSaveMode()
@@ -115,12 +120,39 @@ export default function CreateNewFindingPage() {
     setAssignmentsLoading(true)
     setAssignmentsError(null)
     try {
-      const response = await fetch("/api/assignments")
-      if (!response.ok) {
-        throw new Error(`Failed to fetch assignments: ${response.statusText}`)
+      // Fetch assignments
+      const assignmentsResponse = await fetch("/api/assignments")
+      if (!assignmentsResponse.ok) {
+        throw new Error(`Failed to fetch assignments: ${assignmentsResponse.statusText}`)
       }
-      const data: MockAssignment[] = await response.json()
-      setAvailableAssignments(data)
+      const assignmentsData = await assignmentsResponse.json()
+      
+      // Fetch audit plans to get names
+      let auditPlansData: any[] = []
+      try {
+        const auditPlansResponse = await fetch("/api/audit-plans")
+        if (auditPlansResponse.ok) {
+          auditPlansData = await auditPlansResponse.json()
+        }
+      } catch (error) {
+        console.log("Could not fetch audit plans, continuing without them")
+      }
+      
+      // Transform the API data to match our MockAssignment interface
+      const transformedAssignments: MockAssignment[] = assignmentsData.map((assignment: any) => {
+        const auditPlan = auditPlansData.find(plan => plan.id === assignment.audit_plan_id)
+        return {
+          id: assignment.id,
+          name: assignment.title || assignment.name || "Untitled Assignment",
+          auditPlanName: auditPlan ? auditPlan.title : (assignment.audit_plan_id ? `Plan ID: ${assignment.audit_plan_id}` : undefined),
+          status: assignment.status,
+          description: assignment.description,
+          startDate: assignment.start_date,
+          endDate: assignment.end_date
+        }
+      })
+      
+      setAvailableAssignments(transformedAssignments)
     } catch (error) {
       console.error("Error fetching assignments:", error)
       setAssignmentsError(error instanceof Error ? error.message : "An unknown error occurred")
@@ -178,6 +210,8 @@ export default function CreateNewFindingPage() {
     }
   }
 
+
+
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplateId(templateId)
     const template = mockFindingTemplates.find((t) => t.id === templateId)
@@ -214,6 +248,7 @@ export default function CreateNewFindingPage() {
 
   const handleAssignmentChange = (assignmentId: string) => {
     setFormData((prev) => ({ ...prev, parentAssignmentId: assignmentId }))
+    markUnsaved()
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,6 +282,12 @@ export default function CreateNewFindingPage() {
       return
     }
 
+    if (isSubmitting) {
+      return // Prevent multiple submissions
+    }
+
+    setIsSubmitting(true)
+
     const findingToSubmit = {
       title: formData.observationTitle,
       description: formData.detailedObservation,
@@ -261,47 +302,55 @@ export default function CreateNewFindingPage() {
       responsibleBusinessOwner: formData.affectedBusinessUnit,
     }
 
-    await save(async () => {
-      const response = await fetch("/api/findings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(findingToSubmit),
+    try {
+      await save(async () => {
+        const response = await fetch("/api/findings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(findingToSubmit),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.message || `Failed to save finding: ${response.statusText}`)
+        }
+
+        const result = await response.json()
+        console.log("Finding saved successfully:", result)
+
+        toast({
+          title: `Finding ${action === "saveDraft" ? "Saved as Draft" : "Submitted for Verification"}`,
+          description: `Title: ${formData.observationTitle}`,
+        })
+
+        // Reset form after successful save
+        setFormData({
+          ...initialFindingCreationData,
+          parentAssignmentId: assignmentIdFromParams || "",
+        })
+        setSelectedTemplateId(mockFindingTemplates[0].id)
+        setAiNotes("")
+
+        // Navigate back to findings list after a brief delay to show success message
+        setTimeout(() => {
+          router.push("/findings")
+        }, 1500)
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || `Failed to save finding: ${response.statusText}`)
-      }
-
-      const result = await response.json()
-      console.log("Finding saved successfully:", result)
-
+    } catch (error) {
+      console.error('Error submitting finding:', error)
       toast({
-        title: `Finding ${action === "saveDraft" ? "Saved as Draft" : "Submitted for Verification"}`,
-        description: `Title: ${formData.observationTitle}`,
+        title: "Submission Failed",
+        description: error instanceof Error ? error.message : "An error occurred while submitting the finding.",
+        variant: "destructive",
       })
-
-      // Reset form after successful save
-      setFormData({
-        ...initialFindingCreationData,
-        parentAssignmentId: assignmentIdFromParams || "",
-      })
-      setSelectedTemplateId(mockFindingTemplates[0].id)
-      setAiNotes("")
-
-      // Navigate back to findings list or assignment
-      if (formData.parentAssignmentId && formData.parentAssignmentId !== "ASGN_NONE") {
-        router.push(`/assignments/${formData.parentAssignmentId}`)
-      } else {
-        router.push("/findings")
-      }
-    })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const selectedAssignmentName =
-    availableAssignments.find((a) => a.id === formData.parentAssignmentId)?.name || "Select an assignment..."
+
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -327,7 +376,7 @@ export default function CreateNewFindingPage() {
                     ? `/assignments/${formData.parentAssignmentId}`
                     : auditPlanIdFromParams
                       ? `/audit-plans/${auditPlanIdFromParams}`
-                      : "/dashboard"
+                      : "/findings"
                 }
               >
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Context
@@ -470,11 +519,23 @@ export default function CreateNewFindingPage() {
                                 formData.parentAssignmentId === assignment.id ? "opacity-100" : "opacity-0"
                               }`}
                             />
-                            <div>
-                              {assignment.name}
-                              {assignment.auditPlanName && (
-                                <div className="text-xs text-muted-foreground">Plan: {assignment.auditPlanName}</div>
+                            <div className="flex-1">
+                              <div className="font-medium">{assignment.name}</div>
+                              {assignment.description && (
+                                <div className="text-xs text-muted-foreground truncate">{assignment.description}</div>
                               )}
+                              <div className="flex gap-2 mt-1">
+                                {assignment.status && (
+                                  <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                                    {assignment.status}
+                                  </span>
+                                )}
+                                {assignment.auditPlanName && (
+                                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">
+                                    {assignment.auditPlanName}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </CommandItem>
                         ))}
@@ -484,6 +545,35 @@ export default function CreateNewFindingPage() {
                 </Command>
               </PopoverContent>
             </Popover>
+            
+            {/* Show selected assignment details */}
+            {selectedAssignment && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Selected Assignment Details</h4>
+                <div className="space-y-2 text-sm">
+                  <div><span className="font-medium">Name:</span> {selectedAssignment.name}</div>
+                  {selectedAssignment.description && (
+                    <div><span className="font-medium">Description:</span> {selectedAssignment.description}</div>
+                  )}
+                  {selectedAssignment.status && (
+                    <div><span className="font-medium">Status:</span> 
+                      <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
+                        {selectedAssignment.status}
+                      </span>
+                    </div>
+                  )}
+                  {selectedAssignment.auditPlanName && (
+                    <div><span className="font-medium">Audit Plan:</span> {selectedAssignment.auditPlanName}</div>
+                  )}
+                  {selectedAssignment.startDate && (
+                    <div><span className="font-medium">Start Date:</span> {new Date(selectedAssignment.startDate).toLocaleDateString()}</div>
+                  )}
+                  {selectedAssignment.endDate && (
+                    <div><span className="font-medium">Due Date:</span> {new Date(selectedAssignment.endDate).toLocaleDateString()}</div>
+                  )}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -687,11 +777,30 @@ export default function CreateNewFindingPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-end items-center gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={() => handleSubmit("saveDraft")}>
-            <Save className="mr-2 h-4 w-4" /> Save Draft
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => handleSubmit("saveDraft")}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            {isSubmitting ? "Saving..." : "Save Draft"}
           </Button>
-          <Button type="button" onClick={() => handleSubmit("submitForVerification")}>
-            <Send className="mr-2 h-4 w-4" /> Submit for Verification
+          <Button 
+            type="button" 
+            onClick={() => handleSubmit("submitForVerification")}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="mr-2 h-4 w-4" />
+            )}
+            {isSubmitting ? "Submitting..." : "Submit for Verification"}
           </Button>
         </div>
       </form>
