@@ -201,15 +201,15 @@ export default function AppSidebar() {
               <Avatar className="h-9 w-9">
                 <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Name" />
                 <AvatarFallback>
-                  {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
+                  {user && user.firstName && user.lastName ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-sm font-medium">
-                  {user ? `${user.firstName} ${user.lastName}` : "User"}
+                  {user && user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : "User"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {user ? user.roleName : "Unknown Role"}
+                  {user && user.roleName ? user.roleName : "Unknown Role"}
                 </p>
               </div>
             </div>
@@ -220,14 +220,14 @@ export default function AppSidebar() {
                 <Avatar className="h-9 w-9 mx-auto cursor-pointer">
                   <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Name" />
                   <AvatarFallback>
-                    {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
+                    {user && user.firstName && user.lastName ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
                   </AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
               <TooltipContent side="right" align="center">
-                <p>{user ? `${user.firstName} ${user.lastName}` : "User"}</p>
+                <p>{user && user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : "User"}</p>
                 <p className="text-xs text-muted-foreground">
-                  {user ? user.roleName : "Unknown Role"}
+                  {user && user.roleName ? user.roleName : "Unknown Role"}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -236,7 +236,7 @@ export default function AppSidebar() {
             <Avatar className="h-9 w-9 mx-auto">
               <AvatarImage src="/placeholder.svg?width=40&height=40" alt="User Name" />
               <AvatarFallback>
-                {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
+                {user && user.firstName && user.lastName ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "UA"}
               </AvatarFallback>
             </Avatar>
           )}

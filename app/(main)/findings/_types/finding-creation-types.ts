@@ -54,7 +54,7 @@ export interface FindingCreationData {
   impactRiskAssociated: string
   severity: FindingSeverity
   recommendation: string
-  affectedBusinessUnit?: string
+  affectedBusinessUnit: string
   rootCause?: string
   attachments: File[]
 }

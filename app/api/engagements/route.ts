@@ -7,29 +7,52 @@ export async function GET(request: NextRequest) {
     
     const engagements = await query(
       `SELECT e.EngagementID, e.EngagementTitle, e.Objective, e.Scope, e.StartDate, e.EndDate, 
-              es.EngagementStatus, ps.PrimaryStakeholder, u.FirstName, u.LastName
+              es.EngagementStatus, ps.PrimaryStakeholder, u.FirstName, u.LastName,
+              GROUP_CONCAT(DISTINCT CONCAT(a.AssignmentID, ':', a.AssignmentName) ORDER BY a.AssignmentName SEPARATOR '|') as AssignmentData,
+              COUNT(DISTINCT a.AssignmentID) as AssignmentCount
        FROM engagements e
        LEFT JOIN primarystakeholders ps ON ps.PrimaryStakeholderID = e.PrimaryStakeholderID
        LEFT JOIN users u ON u.UserID = e.EngagementManagerID
        LEFT JOIN engagementstatuses es ON es.EngagementStatusID = e.StatusID
+       LEFT JOIN engagementassignments ea ON ea.EngagementID = e.EngagementID
+       LEFT JOIN assignments a ON a.AssignmentID = ea.AssignmentID AND IFNULL(a.IsDeleted, 0) = 0
        WHERE e.IsDeleted = 0
+       GROUP BY e.EngagementID, e.EngagementTitle, e.Objective, e.Scope, e.StartDate, e.EndDate, 
+                es.EngagementStatus, ps.PrimaryStakeholder, u.FirstName, u.LastName
        ORDER BY e.CreatedDate DESC`
     ) as any[]
 
     console.log('Engagements query result:', engagements.length, 'engagements found')
 
     // Transform the data to match the expected format
-    const transformedEngagements = engagements.map(engagement => ({
-      id: engagement.EngagementID,
-      title: engagement.EngagementTitle,
-      objective: engagement.Objective,
-      scope: engagement.Scope,
-      startDate: engagement.StartDate ? new Date(engagement.StartDate).toISOString().split('T')[0] : null,
-      endDate: engagement.EndDate ? new Date(engagement.EndDate).toISOString().split('T')[0] : null,
-      status: engagement.EngagementStatus,
-      stakeholder: engagement.PrimaryStakeholder,
-      manager: `${engagement.FirstName} ${engagement.LastName}`
-    }))
+    const transformedEngagements = engagements.map(engagement => {
+      // Parse assignment data (format: "id:name|id:name")
+      let assignments = []
+      let assignmentNames = 'No assignments'
+      
+      if (engagement.AssignmentData) {
+        assignments = engagement.AssignmentData.split('|').map(assignment => {
+          const [id, name] = assignment.split(':')
+          return { id, name }
+        })
+        assignmentNames = assignments.map(a => a.name).join(', ')
+      }
+
+      return {
+        id: engagement.EngagementID,
+        title: engagement.EngagementTitle,
+        objective: engagement.Objective,
+        scope: engagement.Scope,
+        startDate: engagement.StartDate ? new Date(engagement.StartDate).toISOString().split('T')[0] : null,
+        endDate: engagement.EndDate ? new Date(engagement.EndDate).toISOString().split('T')[0] : null,
+        status: engagement.EngagementStatus,
+        stakeholder: engagement.PrimaryStakeholder,
+        manager: `${engagement.FirstName} ${engagement.LastName}`,
+        assignments: assignmentNames,
+        assignmentCount: engagement.AssignmentCount || 0,
+        assignmentList: assignments
+      }
+    })
 
     return NextResponse.json(transformedEngagements)
 

@@ -42,6 +42,11 @@ type EngagementKpi = {
   overdueActions?: number
 }
 
+type Assignment = {
+  id: string
+  name: string
+}
+
 type Engagement = {
   id: string
   title: string
@@ -52,6 +57,9 @@ type Engagement = {
   status: string
   objective?: string
   scope?: string
+  assignments?: string
+  assignmentCount?: number
+  assignmentList?: Assignment[]
   created_at: string
   updated_at: string
 }
@@ -238,6 +246,9 @@ export default function EngagementsPage() {
       // setData(prevData => prevData.filter(eng => eng.id !== engagementId));
     }
   }
+  const handleAssignmentClick = (assignmentId: string) => {
+    router.push(`/assignments/${assignmentId}`)
+  }
 
   // Placeholder for KPI click navigation
   const handleKpiClick = (engagementTitle: string, kpiType: "findings" | "actions") => {
@@ -321,6 +332,7 @@ export default function EngagementsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Engagement Title</TableHead>
+                <TableHead>Assignments</TableHead>
                 <TableHead>Primary Stakeholder</TableHead>
                 <TableHead>Engagement Manager</TableHead>
                 <TableHead>Start Date</TableHead>
@@ -335,7 +347,7 @@ export default function EngagementsPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                       <span>Loading engagements...</span>
@@ -346,6 +358,35 @@ export default function EngagementsPage() {
                 filteredEngagements.map((engagement) => (
                   <TableRow key={engagement.id} className="hover:bg-muted/50">
                     <TableCell className="font-medium">{engagement.title}</TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {engagement.assignmentCount && engagement.assignmentCount > 0 ? (
+                          <div>
+                            <div className="font-medium text-primary">{engagement.assignmentCount} assignment{engagement.assignmentCount !== 1 ? 's' : ''}</div>
+                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                              {engagement.assignmentList && engagement.assignmentList.length > 0 ? (
+                                <div className="space-y-1">
+                                  {engagement.assignmentList.map((assignment, index) => (
+                                    <div
+                                      key={assignment.id}
+                                      className="cursor-pointer text-blue-400 hover:text-blue-600 hover:underline transition-colors"
+                                      onClick={() => handleAssignmentClick(assignment.id)}
+                                      title={`Click to view ${assignment.name}`}
+                                    >
+                                      {assignment.name}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span title={engagement.assignments}>{engagement.assignments}</span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">No assignments</span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{engagement.stakeholder}</TableCell>
                     <TableCell>{engagement.manager}</TableCell>
                                     <TableCell>{engagement.startDate ? new Date(engagement.startDate).toLocaleDateString() : 'Not set'}</TableCell>
@@ -401,7 +442,7 @@ export default function EngagementsPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
+                  <TableCell colSpan={9} className="h-24 text-center">
                     No engagements found.
                   </TableCell>
                 </TableRow>

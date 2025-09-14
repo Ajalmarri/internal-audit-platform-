@@ -1,32 +1,20 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { query } from "@/lib/database"
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    console.log('Primary Stakeholders API called')
+    console.log('Fetching primary stakeholders...')
     
-    const stakeholders = await query(
-      `SELECT PrimaryStakeholderID, PrimaryStakeholder 
-       FROM primarystakeholders 
-       WHERE IsDeleted = 0 
-       ORDER BY PrimaryStakeholder`
+    const rows = await query(
+      'SELECT PrimaryStakeholderID as id, PrimaryStakeholder as name FROM primarystakeholders WHERE IFNULL(IsDeleted, 0) = 0 ORDER BY PrimaryStakeholder'
     ) as any[]
 
-    console.log('Primary stakeholders query result:', stakeholders.length, 'stakeholders found')
+    console.log('Primary stakeholders query result:', rows)
 
-    // Transform the data to match the expected format
-    const transformedStakeholders = stakeholders.map(stakeholder => ({
-      id: stakeholder.PrimaryStakeholderID.toString(),
-      name: stakeholder.PrimaryStakeholder
-    }))
-
-    return NextResponse.json(transformedStakeholders)
-
+    return NextResponse.json(rows)
   } catch (error) {
-    console.error("Primary stakeholders error:", error)
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    )
+    console.error('Failed to fetch primary stakeholders:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ message: 'Failed to fetch primary stakeholders.', error: message }, { status: 500 })
   }
 }

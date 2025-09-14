@@ -35,11 +35,17 @@ import {
 import type { FindingCreationData, FindingSeverity, MockAssignment } from "../_types/finding-creation-types" // Added MockAssignment
 import {
   mockFindingTemplates,
-  mockBusinessUnits,
   initialFindingCreationData,
   // mockAssignments is no longer imported here
 } from "../_types/finding-creation-types"
 import { SaveModeIndicator, useSaveMode } from "@/components/ui/save-mode-indicator"
+import { Uploader } from "./_components/Uploader"
+
+// Interface for business units from API
+interface BusinessUnitFromAPI {
+  id: string
+  name: string
+}
 
 // Mock AI Processor Function (remains unchanged)
 const mockAiProcessor = async (notes: string): Promise<Partial<FindingCreationData>> => {
@@ -87,13 +93,36 @@ export default function CreateNewFindingPage() {
   const [aiNotes, setAiNotes] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [evidenceTempPath, setEvidenceTempPath] = useState<string>("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Safety timeout to prevent stuck loading states
+  useEffect(() => {
+    if (isSubmitting) {
+      const timeout = setTimeout(() => {
+        console.warn('Form submission timeout - resetting states')
+        setIsSubmitting(false)
+        toast({
+          title: "Submission Timeout",
+          description: "The submission took longer than expected. Please try again.",
+          variant: "destructive",
+        })
+      }, 30000) // 30 second timeout
+
+      return () => clearTimeout(timeout)
+    }
+  }, [isSubmitting])
 
   // State for assignments
   const [availableAssignments, setAvailableAssignments] = useState<MockAssignment[]>([])
   const [assignmentsLoading, setAssignmentsLoading] = useState(true)
   const [assignmentsError, setAssignmentsError] = useState<string | null>(null)
   const [assignmentPopoverOpen, setAssignmentPopoverOpen] = useState(false)
+
+  // State for business units
+  const [businessUnits, setBusinessUnits] = useState<BusinessUnitFromAPI[]>([])
+  const [businessUnitsLoading, setBusinessUnitsLoading] = useState(true)
+  const [businessUnitsError, setBusinessUnitsError] = useState<string | null>(null)
 
   // Computed values
   const selectedAssignment = availableAssignments.find(a => a.id === formData.parentAssignmentId)
@@ -166,8 +195,27 @@ export default function CreateNewFindingPage() {
     }
   }
 
+  const fetchBusinessUnits = async () => {
+    setBusinessUnitsLoading(true)
+    setBusinessUnitsError(null)
+    try {
+      const response = await fetch('/api/primary-stakeholders')
+      if (!response.ok) {
+        throw new Error('Failed to fetch business units')
+      }
+      const data = await response.json()
+      setBusinessUnits(data)
+    } catch (error) {
+      console.error('Error fetching business units:', error)
+      setBusinessUnitsError(error instanceof Error ? error.message : 'Failed to fetch business units')
+    } finally {
+      setBusinessUnitsLoading(false)
+    }
+  }
+
   useEffect(() => {
     fetchAssignments()
+    fetchBusinessUnits()
   }, [])
 
   useEffect(() => {
@@ -251,32 +299,24 @@ export default function CreateNewFindingPage() {
     markUnsaved()
   }
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const newFiles = Array.from(event.target.files)
-      const uniqueNewFiles = newFiles.filter((file) => !formData.attachments.some((f) => f.name === file.name))
-      setFormData((prev) => ({
-        ...prev,
-        attachments: [...prev.attachments, ...uniqueNewFiles],
-      }))
-    }
-  }
+
 
   const handleRemoveFile = (fileName: string) => {
     setFormData((prev) => ({
       ...prev,
       attachments: prev.attachments.filter((file) => file.name !== fileName),
     }))
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+    // Clear evidence temp path if no files remain
+    if (formData.attachments.length <= 1) {
+      setEvidenceTempPath("")
     }
   }
 
   const handleSubmit = async (action: "saveDraft" | "submitForVerification") => {
-    if (!formData.observationTitle || !formData.detailedObservation) {
+    if (!formData.observationTitle || !formData.detailedObservation || !formData.affectedBusinessUnit) {
       toast({
         title: "Missing Information",
-        description: "Please fill in at least the Observation Title and Detailed Observation.",
+        description: "Please fill in the Observation Title, Detailed Observation, and Business Unit.",
         variant: "destructive",
       })
       return
@@ -300,6 +340,7 @@ export default function CreateNewFindingPage() {
       effect: formData.impactRiskAssociated,
       recommendation: formData.recommendation,
       responsibleBusinessOwner: formData.affectedBusinessUnit,
+      evidenceTempPath: evidenceTempPath,
     }
 
     try {
@@ -320,10 +361,21 @@ export default function CreateNewFindingPage() {
         const result = await response.json()
         console.log("Finding saved successfully:", result)
 
+        // Show success message
+        const message = `Title: ${formData.observationTitle}`
+        const engagementInfo = result.engagement ? `. Linked to engagement: ${result.engagement.title}` : ""
+        const attachmentInfo = formData.attachments.length > 0 ? ` ${formData.attachments.length} evidence file(s) attached.` : ""
+        const fullMessage = message + engagementInfo + ". You can view it on the engagement dashboard." + attachmentInfo
+
         toast({
           title: `Finding ${action === "saveDraft" ? "Saved as Draft" : "Submitted for Verification"}`,
-          description: `Title: ${formData.observationTitle}`,
+          description: fullMessage,
         })
+
+        // Navigate back to findings list
+        setTimeout(() => {
+          router.push("/findings")
+        }, 2000)
 
         // Reset form after successful save
         setFormData({
@@ -332,11 +384,6 @@ export default function CreateNewFindingPage() {
         })
         setSelectedTemplateId(mockFindingTemplates[0].id)
         setAiNotes("")
-
-        // Navigate back to findings list after a brief delay to show success message
-        setTimeout(() => {
-          router.push("/findings")
-        }, 1500)
       })
     } catch (error) {
       console.error('Error submitting finding:', error)
@@ -351,6 +398,23 @@ export default function CreateNewFindingPage() {
   }
 
 
+
+  // Show loading state if submitting
+  if (isSubmitting) {
+    return (
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="text-center">
+            <h2 className="text-lg font-semibold">Saving Finding...</h2>
+            <p className="text-muted-foreground">
+              Please wait while we save your finding to the database.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -572,6 +636,17 @@ export default function CreateNewFindingPage() {
                     <div><span className="font-medium">Due Date:</span> {new Date(selectedAssignment.endDate).toLocaleDateString()}</div>
                   )}
                 </div>
+                
+                {/* Show linked engagement information */}
+                <div className="mt-4 pt-4 border-t border-blue-200">
+                  <h5 className="font-medium text-blue-900 mb-2">Linked Engagement</h5>
+                  <div className="text-sm text-blue-700">
+                    <p>✅ This finding will be automatically linked to the engagement associated with the selected assignment.</p>
+                    <p className="mt-1 text-xs text-blue-600">
+                      After creation, you can view this finding on the engagement dashboard under the "Linked Items" section.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>
@@ -663,24 +738,43 @@ export default function CreateNewFindingPage() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="affectedBusinessUnit">Affected Business Unit / Department (Optional)</Label>
+                <Label htmlFor="affectedBusinessUnit">Business Unit *</Label>
                 <Select
                   name="affectedBusinessUnit"
                   value={formData.affectedBusinessUnit}
                   onValueChange={(value) => handleSelectChange(value, "affectedBusinessUnit")}
+                  disabled={businessUnitsLoading}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select unit/department..." />
+                    <SelectValue placeholder={
+                      businessUnitsLoading 
+                        ? "Loading business units..." 
+                        : businessUnitsError 
+                          ? "Error loading business units" 
+                          : "Select business unit..."
+                    } />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="NONE">None / Not Applicable</SelectItem>
-                    {mockBusinessUnits.map((unit) => (
-                      <SelectItem key={unit.id} value={unit.name}>
-                        {unit.name}
-                      </SelectItem>
-                    ))}
+                    {businessUnitsError ? (
+                      <div className="px-2 py-1.5 text-sm text-red-500">
+                        Error: {businessUnitsError}
+                      </div>
+                    ) : businessUnits.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        No business units available
+                      </div>
+                    ) : (
+                      businessUnits.map((unit) => (
+                        <SelectItem key={unit.id} value={unit.name}>
+                          {unit.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
+                {businessUnitsError && (
+                  <p className="text-xs text-red-500 mt-1">Failed to load business units. Please refresh the page.</p>
+                )}
               </div>
             </div>
             <div>
@@ -730,42 +824,47 @@ export default function CreateNewFindingPage() {
             <CardDescription>Attach relevant documents, images, or other evidence.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="p-6 border-2 border-dashed border-muted rounded-lg text-center">
-              <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
-              <Label
-                htmlFor="file-upload"
-                className="mt-2 text-sm font-medium text-primary hover:underline cursor-pointer"
-              >
-                Click to browse or drag and drop files
-              </Label>
-              <Input
-                id="file-upload"
-                ref={fileInputRef}
-                type="file"
-                multiple
-                onChange={handleFileChange}
-                className="sr-only"
-              />
-              <p className="mt-1 text-xs text-muted-foreground">Supported formats: PDF, DOCX, XLSX, PNG, JPG, etc.</p>
-            </div>
+            <Uploader 
+              onUploaded={(file) => {
+                setEvidenceTempPath(file.tempPath)
+                // Create a File-like object for the attachment
+                const newAttachment = new File(
+                  [new Blob()], // Empty blob as placeholder
+                  file.fileName,
+                  { type: file.mime }
+                )
+                setFormData(prev => ({
+                  ...prev,
+                  attachments: [...prev.attachments, newAttachment]
+                }))
+              }}
+            />
+            
+            {/* Hidden input for form submission */}
+            <input 
+              type="hidden" 
+              id="evidenceTempPath" 
+              name="evidenceTempPath" 
+              value={evidenceTempPath}
+            />
+            
             {formData.attachments.length > 0 && (
               <div className="mt-4 space-y-2">
-                <h4 className="text-sm font-medium">Selected Files:</h4>
+                <h4 className="text-sm font-medium">Uploaded Files:</h4>
                 <ul className="list-disc list-inside space-y-1 text-sm">
                   {formData.attachments.map((file, index) => (
                     <li key={index} className="flex justify-between items-center p-2 bg-muted/50 rounded-md">
                       <span>
-                        {file.name} ({(file.size / 1024).toFixed(2)} KB)
+                        {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
                       </span>
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
                         onClick={() => handleRemoveFile(file.name)}
-                        className="text-destructive hover:text-destructive-hover"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
                       >
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Remove file</span>
+                        <X className="h-3 w-3" />
                       </Button>
                     </li>
                   ))}

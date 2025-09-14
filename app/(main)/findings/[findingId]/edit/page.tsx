@@ -1,644 +1,488 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import type React from "react"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import Link from "next/link"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { ArrowLeft, Save, Loader2 } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
-import {
-  ArrowLeft,
-  Save,
-  Send,
-  Info,
-  ShieldCheck,
-  ClipboardCheck,
-  Hourglass,
-  Lock,
-  MessageSquare,
-  ThumbsUp,
-  ThumbsDown,
-  CalendarPlus,
-  PlusCircle,
-  Trash2,
-  ListChecks,
-} from "lucide-react"
-import type { Finding, FindingStatus, ActionPlan, ActionPlanItem } from "../../_types/finding-types"
-import { mockFindings } from "../../_types/finding-types"
-import { DatePicker } from "@/components/ui/date-picker"
 
-// Mock current user (replace with actual auth context)
-const currentAuditor = { name: "Current Auditor User", role: "Auditor" }
-const currentBusinessOwner = { name: "Current Business Owner", role: "BusinessOwner" }
-// Simulate current user role for UI logic
-const currentUserRole = "Auditor" // Change to "BusinessOwner" to test BO view
+// Form validation schema
+const editFindingSchema = z.object({
+  Title: z.string().min(3, "Title must be at least 3 characters"),
+  FindingDescription: z.string().optional(),
+  AssignmentID: z.number().int().positive("Please select an assignment"),
+  FindingStatusID: z.number().int().positive("Please select a status"),
+  SeverityID: z.number().int().positive("Please select a severity"),
+  BusinessOwnerID: z.number().int().positive("Please select a business owner"),
+  Recommendation: z.string().optional(),
+  Criteria: z.string().optional(),
+  Impact: z.string().optional(),
+  RootCause: z.string().optional(),
+  ManagementResponse: z.boolean().optional(),
+  ManagementComment: z.string().optional()
+})
+
+type EditFindingForm = z.infer<typeof editFindingSchema>
+
+interface Finding {
+  id: string
+  title: string
+  description?: string
+  assignment_id?: string
+  status_id?: number
+  severity_id?: number
+  business_owner?: string
+  criteria?: string
+  impact?: string
+  recommendations?: string
+  cause?: string
+  management_response?: number
+  management_comment?: string
+}
+
+interface DropdownOption {
+  id: number
+  name: string
+}
 
 export default function EditFindingPage() {
-  const router = useRouter()
   const params = useParams()
+  const router = useRouter()
   const findingId = params.findingId as string
 
   const [finding, setFinding] = useState<Finding | null>(null)
-  const [formData, setFormData] = useState<Partial<Finding>>({})
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // State for Business Owner Action Plan Creation
-  const [isFindingAcceptedByBOState, setIsFindingAcceptedByBOState] = useState(false)
-  const [managementCommentsState, setManagementCommentsState] = useState("")
-  const [actionPlanObjectiveState, setActionPlanObjectiveState] = useState("")
-  const [actionPlanItemsState, setActionPlanItemsState] = useState<ActionPlanItem[]>([])
+  // Dropdown data
+  const [statuses, setStatuses] = useState<DropdownOption[]>([])
+  const [severities, setSeverities] = useState<DropdownOption[]>([])
+  const [businessOwners, setBusinessOwners] = useState<DropdownOption[]>([])
+  const [assignments, setAssignments] = useState<DropdownOption[]>([])
 
-  // State for Auditor Review of Action Plan
-  const [auditorCommentsOnPlanState, setAuditorCommentsOnPlanState] = useState("")
-  const [newDueDateForExtension, setNewDueDateForExtension] = useState<Date | undefined>()
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors }
+  } = useForm<EditFindingForm>({
+    resolver: zodResolver(editFindingSchema)
+  })
 
-  // State for Remediation Evidence
-  const [remediationEvidenceDescription, setRemediationEvidenceDescription] = useState("")
-  const [remediationFile, setRemediationFile] = useState<File | null>(null)
-  const [targetActionItemIdForEvidence, setTargetActionItemIdForEvidence] = useState<string | undefined>()
+  const managementResponse = watch("ManagementResponse")
+
+  const fetchFinding = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/findings/${findingId}`)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError("Finding not found")
+        } else {
+          throw new Error(`HTTP ${response.status}`)
+        }
+        return
+      }
+      
+      const data = await response.json()
+      setFinding(data)
+      
+      // Prefill form with existing data
+      setValue("Title", data.title || "")
+      setValue("FindingDescription", data.description || "")
+      setValue("AssignmentID", data.assignment_id ? parseInt(data.assignment_id) : 0)
+      setValue("FindingStatusID", data.status_id || 0)
+      setValue("SeverityID", data.severity_id || 0)
+      setValue("BusinessOwnerID", data.business_owner ? parseInt(data.business_owner) : 0)
+      setValue("Recommendation", data.recommendations || "")
+      setValue("Criteria", data.criteria || "")
+      setValue("Impact", data.impact || "")
+      setValue("RootCause", data.cause || "")
+      setValue("ManagementResponse", data.management_response === 1)
+      setValue("ManagementComment", data.management_comment || "")
+    } catch (error) {
+      console.error('Error loading finding:', error)
+      setError('Failed to load finding details')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchDropdownData = async () => {
+    try {
+      // Fetch all dropdown data in parallel
+      const [statusesRes, severitiesRes, stakeholdersRes, assignmentsRes] = await Promise.all([
+        fetch('/api/finding-statuses'),
+        fetch('/api/severities'),
+        fetch('/api/primary-stakeholders'),
+        fetch('/api/assignments')
+      ])
+
+      if (statusesRes.ok) {
+        const statusesData = await statusesRes.json()
+        setStatuses(statusesData.map((s: any) => ({ id: s.FindingStatusID, name: s.FindingStatus })))
+      }
+
+      if (severitiesRes.ok) {
+        const severitiesData = await severitiesRes.json()
+        setSeverities(severitiesData.map((s: any) => ({ id: s.SeverityID, name: s.Severity })))
+      }
+
+      if (stakeholdersRes.ok) {
+        const stakeholdersData = await stakeholdersRes.json()
+        setBusinessOwners(stakeholdersData.map((s: any) => ({ id: s.id, name: s.name })))
+      }
+
+      if (assignmentsRes.ok) {
+        const assignmentsData = await assignmentsRes.json()
+        setAssignments(assignmentsData.map((a: any) => ({ id: a.id, name: a.title })))
+      }
+    } catch (error) {
+      console.error('Error loading dropdown data:', error)
+    }
+  }
 
   useEffect(() => {
-    const fetchedFinding = mockFindings.find((f) => f.id === findingId)
-    if (fetchedFinding) {
-      setFinding(fetchedFinding)
-      setFormData({
-        /* ... (prefill as before) ... */
-        title: fetchedFinding.title,
-        description: fetchedFinding.description,
-        criteria: fetchedFinding.criteria,
-        condition: fetchedFinding.condition,
-        cause: fetchedFinding.cause,
-        effect: fetchedFinding.effect,
-        recommendation: fetchedFinding.recommendation,
-        severity: fetchedFinding.severity,
-        associatedRisks: fetchedFinding.associatedRisks,
-        responsibleBusinessOwner: fetchedFinding.responsibleBusinessOwner,
-      })
-      setIsFindingAcceptedByBOState(fetchedFinding.isFindingAcceptedByBO || false)
-      setManagementCommentsState(fetchedFinding.managementComments || "")
-      if (fetchedFinding.actionPlan) {
-        setActionPlanObjectiveState(fetchedFinding.actionPlan.overallObjective || "")
-        setActionPlanItemsState(fetchedFinding.actionPlan.items || [])
-        setAuditorCommentsOnPlanState(fetchedFinding.actionPlan.auditorCommentsOnPlan || "")
-      } else {
-        // Initialize with one blank action item if no plan exists yet
-        setActionPlanItemsState([
-          {
-            id: `item-${Date.now()}`,
-            action: "",
-            responsiblePerson: fetchedFinding.responsibleBusinessOwner,
-            dueDate: "",
-            status: "To Do",
-          },
-        ])
-      }
-    } else {
-      toast({ title: "Error", description: "Finding not found.", variant: "destructive" })
+    if (findingId) {
+      fetchFinding()
+      fetchDropdownData()
     }
-    setIsLoading(false)
   }, [findingId])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const onSubmit = async (data: EditFindingForm) => {
+    try {
+      setIsSubmitting(true)
+      
+      const response = await fetch(`/api/findings/${findingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
 
-  const handleSelectChange = (value: string, fieldName: keyof Finding) => {
-    setFormData((prev) => ({ ...prev, [fieldName]: value as any }))
-  }
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || `HTTP ${response.status}`)
+      }
 
-  const handleSaveChanges = () => {
-    if (!finding) return
-    const updatedFinding: Finding = {
-      ...finding,
-      ...formData,
-      lastUpdated: new Date().toISOString(),
-    }
-    setFinding(updatedFinding)
-    const index = mockFindings.findIndex((f) => f.id === finding.id)
-    if (index !== -1) mockFindings[index] = updatedFinding
-    toast({ title: "Changes Saved", description: "Finding details have been updated." })
-  }
-
-  const handleWorkflowAction = (newStatus: FindingStatus, actionSpecificData?: Partial<Finding>) => {
-    if (!finding) return
-    const updatedFindingData: Finding = {
-      ...finding,
-      status: newStatus,
-      lastUpdated: new Date().toISOString(),
-      ...actionSpecificData,
-    }
-    setFinding(updatedFindingData)
-    const index = mockFindings.findIndex((f) => f.id === finding.id)
-    if (index !== -1) mockFindings[index] = updatedFindingData
-    toast({ title: "Workflow Updated", description: `Finding status changed to ${newStatus}.` })
-  }
-
-  // --- Business Owner: Action Plan Submission ---
-  const handleActionPlanItemChange = (index: number, field: keyof ActionPlanItem, value: string | Date) => {
-    const newItems = [...actionPlanItemsState]
-    if (field === "dueDate" && value instanceof Date) {
-      newItems[index] = { ...newItems[index], [field]: value.toISOString().split("T")[0] }
-    } else {
-      newItems[index] = { ...newItems[index], [field]: value as string }
-    }
-    setActionPlanItemsState(newItems)
-  }
-
-  const addActionPlanItem = () => {
-    setActionPlanItemsState([
-      ...actionPlanItemsState,
-      {
-        id: `item-${Date.now()}`,
-        action: "",
-        responsiblePerson: finding?.responsibleBusinessOwner || "",
-        dueDate: "",
-        status: "To Do",
-      },
-    ])
-  }
-
-  const removeActionPlanItem = (id: string) => {
-    setActionPlanItemsState(actionPlanItemsState.filter((item) => item.id !== id))
-  }
-
-  const submitManagementResponseAndActionPlan = () => {
-    if (!isFindingAcceptedByBOState) {
+      const result = await response.json()
+      
       toast({
-        title: "Acceptance Required",
-        description: "Please accept the finding before submitting an action plan.",
+        title: "Finding Updated",
+        description: "The finding has been successfully updated.",
+      })
+
+      // Navigate back to finding details
+      router.push(`/findings/${findingId}`)
+      
+    } catch (error) {
+      console.error('Error updating finding:', error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update finding",
         variant: "destructive",
       })
-      return
+    } finally {
+      setIsSubmitting(false)
     }
-    if (
-      !actionPlanObjectiveState.trim() ||
-      actionPlanItemsState.some((item) => !item.action.trim() || !item.dueDate.trim())
-    ) {
-      toast({
-        title: "Action Plan Incomplete",
-        description: "Please provide an overall objective and complete all action item details (action, due date).",
-        variant: "destructive",
-      })
-      return
-    }
-
-    const newActionPlan: ActionPlan = {
-      overallObjective: actionPlanObjectiveState,
-      items: actionPlanItemsState,
-      submittedDate: new Date().toISOString(),
-      dueDateExtensionsCount: finding?.actionPlan?.dueDateExtensionsCount || 0,
-      lastDueDate:
-        actionPlanItemsState.length > 0
-          ? actionPlanItemsState.reduce((latest, item) =>
-              new Date(item.dueDate) > new Date(latest.dueDate) ? item : latest,
-            ).dueDate
-          : new Date().toISOString(),
-      status: "Not Started", // Default status for new action plan items
-    }
-    handleWorkflowAction("Action Plan Submitted", {
-      isFindingAcceptedByBO: isFindingAcceptedByBOState,
-      managementComments: managementCommentsState,
-      actionPlan: newActionPlan,
-    })
   }
-
-  // --- Auditor: Review Action Plan ---
-  const approveActionPlan = () => {
-    handleWorkflowAction("Action Plan Accepted", {
-      actionPlan: finding?.actionPlan
-        ? {
-            ...finding.actionPlan,
-            isPlanAcceptedByAuditor: true,
-            actionPlanApprovalDate: new Date().toISOString(),
-            auditorCommentsOnPlan: auditorCommentsOnPlanState,
-          }
-        : undefined,
-      isActionPlanApprovedByAuditor: true, // Top-level flag
-      actionPlanApprovalDate: new Date().toISOString(),
-      auditorCommentsOnActionPlan: auditorCommentsOnPlanState,
-    })
-  }
-
-  const rejectActionPlan = () => {
-    // Could revert to "Sent to Business Owner" or a new "Action Plan Rejected" status
-    handleWorkflowAction("Sent to Business Owner", {
-      // Or a new status like "Action Plan Rejected"
-      actionPlan: finding?.actionPlan
-        ? { ...finding.actionPlan, isPlanAcceptedByAuditor: false, auditorCommentsOnPlan: auditorCommentsOnPlanState }
-        : undefined,
-      isActionPlanApprovedByAuditor: false,
-      auditorCommentsOnActionPlan: auditorCommentsOnPlanState,
-    })
-    toast({ title: "Action Plan Needs Revision", description: "Comments sent to Business Owner.", variant: "default" })
-  }
-
-  const extendActionPlanDueDate = () => {
-    if (!newDueDateForExtension || !finding?.actionPlan) {
-      toast({ title: "Invalid Date", description: "Please select a new due date.", variant: "destructive" })
-      return
-    }
-    if (finding.actionPlan.dueDateExtensionsCount >= 3) {
-      toast({
-        title: "Extension Limit Reached",
-        description: "Cannot extend due date more than 3 times.",
-        variant: "destructive",
-      })
-      return
-    }
-    const updatedActionPlan: ActionPlan = {
-      ...finding.actionPlan,
-      lastDueDate: newDueDateForExtension.toISOString(), // Update the last due date
-      dueDateExtensionsCount: finding.actionPlan.dueDateExtensionsCount + 1,
-    }
-    // Potentially update individual item due dates or just the overall plan's last due date
-    handleWorkflowAction(finding.status, { actionPlan: updatedActionPlan }) // Status remains the same
-    setNewDueDateForExtension(undefined)
-  }
-
-  // Other workflow handlers (submitForVerification, auditorVerifyFinding, etc. from previous step)
-  const submitForVerification = () => handleWorkflowAction("Pending Verification")
-  const auditorVerifyFinding = () =>
-    handleWorkflowAction("Verified", {
-      verifiedByAuditor: { name: currentAuditor.name, date: new Date().toISOString() },
-    })
-  const sendToBusinessOwner = () =>
-    handleWorkflowAction("Sent to Business Owner", { sentToBusinessOwnerDate: new Date().toISOString() })
-  const startRemediation = () => handleWorkflowAction("In Remediation") // After Action Plan Accepted
-  const requestRemediationVerification = () => handleWorkflowAction("Remediation Pending Verification")
-  const auditorVerifyRemediation = () =>
-    handleWorkflowAction("Resolved", {
-      remediationVerifiedByAuditor: { name: currentAuditor.name, date: new Date().toISOString() },
-    })
-  const closeFinding = () => handleWorkflowAction("Closed", { closedDate: new Date().toISOString() })
 
   if (isLoading) {
-    /* ... loading UI ... */ return <p>Loading...</p>
-  }
-  if (!finding) {
-    /* ... not found UI ... */ return <p>Finding not found.</p>
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2">Loading finding details...</span>
+      </div>
+    )
   }
 
-  const isFindingDetailsEditable = finding.status === "Draft" || finding.status === "Pending Verification"
-  const canBORespond = finding.status === "Sent to Business Owner" && currentUserRole === "BusinessOwner"
-  const canAuditorReviewPlan = finding.status === "Action Plan Submitted" && currentUserRole === "Auditor"
-  const canAuditorManageRemediation =
-    (finding.status === "Action Plan Accepted" ||
-      finding.status === "In Remediation" ||
-      finding.status === "Remediation Pending Verification") &&
-    currentUserRole === "Auditor"
+  if (error || !finding) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Finding Not Found</h2>
+          <p className="text-gray-600 mb-4">
+            {error || "The finding you're looking for doesn't exist or has been removed."}
+          </p>
+          <Button onClick={() => router.back()}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Go Back
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-      {/* Header and Basic Finding Details (as before) */}
-      <div className="mb-6">
-        <Button variant="outline" size="sm" asChild className="mb-4">
-          <Link href={finding.assignmentId ? `/assignments/${finding.assignmentId}` : "/dashboard"}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-          </Link>
-        </Button>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-          <h1 className="text-3xl font-semibold text-foreground flex-grow mr-4 break-words">
-            Manage Finding: {finding.title}
-          </h1>
-          <Badge className="mt-2 sm:mt-0 text-sm px-3 py-1 whitespace-nowrap">{finding.status}</Badge>
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Edit Finding</h1>
+            <p className="text-muted-foreground">Update finding details and information</p>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          Created: {new Date(finding.dateCreated).toLocaleDateString()} | Last Updated:{" "}
-          {new Date(finding.lastUpdated).toLocaleString()}
-        </p>
       </div>
 
-      {/* Finding Details Form (conditionally editable) */}
-      <Card className="mb-6">
+      {/* Edit Form */}
+      <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <Info className="mr-2 h-5 w-5 text-primary" />
-            Finding Details
-          </CardTitle>
+          <CardTitle>Finding Details</CardTitle>
+          <CardDescription>
+            Update the finding information below. All required fields must be completed.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* ... Title, Description, Criteria, etc. fields ... */}
-          {/* Example for title: */}
-          <div>
-            <Label htmlFor="title">Finding Title / Headline</Label>
-            <Input
-              id="title"
-              name="title"
-              value={formData.title || ""}
-              onChange={handleInputChange}
-              readOnly={!isFindingDetailsEditable}
-            />
-          </div>
-          {/* Add other finding detail fields here, similar to the create page, with readOnly={!isFindingDetailsEditable} */}
-          <div>
-            <Label htmlFor="description">Detailed Description (Observation)</Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={formData.description || ""}
-              onChange={handleInputChange}
-              rows={5}
-              readOnly={!isFindingDetailsEditable}
-            />
-          </div>
-          {/* ... other fields ... */}
-          {isFindingDetailsEditable && currentUserRole === "Auditor" && (
-            <div className="text-right">
-              <Button onClick={handleSaveChanges}>
-                <Save className="mr-2 h-4 w-4" /> Save Finding Details
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Basic Information */}
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="Title">Title *</Label>
+                <Input
+                  id="Title"
+                  {...register("Title")}
+                  placeholder="Enter finding title"
+                />
+                {errors.Title && (
+                  <p className="text-sm text-red-500">{errors.Title.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="AssignmentID">Assignment *</Label>
+                <Select
+                  value={watch("AssignmentID")?.toString() || ""}
+                  onValueChange={(value) => setValue("AssignmentID", parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select assignment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assignments.map((assignment) => (
+                      <SelectItem key={assignment.id} value={assignment.id.toString()}>
+                        {assignment.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.AssignmentID && (
+                  <p className="text-sm text-red-500">{errors.AssignmentID.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="FindingDescription">Description</Label>
+              <Textarea
+                id="FindingDescription"
+                {...register("FindingDescription")}
+                placeholder="Enter finding description"
+                rows={4}
+              />
+              {errors.FindingDescription && (
+                <p className="text-sm text-red-500">{errors.FindingDescription.message}</p>
+              )}
+            </div>
+
+            {/* Status and Severity */}
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="FindingStatusID">Status *</Label>
+                <Select
+                  value={watch("FindingStatusID")?.toString() || ""}
+                  onValueChange={(value) => setValue("FindingStatusID", parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statuses.map((status) => (
+                      <SelectItem key={status.id} value={status.id.toString()}>
+                        {status.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.FindingStatusID && (
+                  <p className="text-sm text-red-500">{errors.FindingStatusID.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="SeverityID">Severity *</Label>
+                <Select
+                  value={watch("SeverityID")?.toString() || ""}
+                  onValueChange={(value) => setValue("SeverityID", parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select severity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {severities.map((severity) => (
+                      <SelectItem key={severity.id} value={severity.id.toString()}>
+                        {severity.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.SeverityID && (
+                  <p className="text-sm text-red-500">{errors.SeverityID.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Business Owner */}
+            <div className="space-y-2">
+              <Label htmlFor="BusinessOwnerID">Business Owner *</Label>
+              <Select
+                value={watch("BusinessOwnerID")?.toString() || ""}
+                onValueChange={(value) => setValue("BusinessOwnerID", parseInt(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select business owner" />
+                </SelectTrigger>
+                <SelectContent>
+                  {businessOwners.map((owner) => (
+                    <SelectItem key={owner.id} value={owner.id.toString()}>
+                      {owner.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.BusinessOwnerID && (
+                <p className="text-sm text-red-500">{errors.BusinessOwnerID.message}</p>
+              )}
+            </div>
+
+            {/* Analysis Fields */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Analysis Details</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="Criteria">Criteria</Label>
+                <Textarea
+                  id="Criteria"
+                  {...register("Criteria")}
+                  placeholder="Enter criteria"
+                  rows={3}
+                />
+                {errors.Criteria && (
+                  <p className="text-sm text-red-500">{errors.Criteria.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="Impact">Impact</Label>
+                <Textarea
+                  id="Impact"
+                  {...register("Impact")}
+                  placeholder="Enter impact description"
+                  rows={3}
+                />
+                {errors.Impact && (
+                  <p className="text-sm text-red-500">{errors.Impact.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="RootCause">Root Cause</Label>
+                <Textarea
+                  id="RootCause"
+                  {...register("RootCause")}
+                  placeholder="Enter root cause analysis"
+                  rows={3}
+                />
+                {errors.RootCause && (
+                  <p className="text-sm text-red-500">{errors.RootCause.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="Recommendation">Recommendation</Label>
+                <Textarea
+                  id="Recommendation"
+                  {...register("Recommendation")}
+                  placeholder="Enter recommendations"
+                  rows={3}
+                />
+                {errors.Recommendation && (
+                  <p className="text-sm text-red-500">{errors.Recommendation.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Management Response */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Management Response</h3>
+              
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="ManagementResponse"
+                  checked={managementResponse || false}
+                  onCheckedChange={(checked) => setValue("ManagementResponse", checked)}
+                />
+                <Label htmlFor="ManagementResponse">Management Response Required</Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ManagementComment">Management Comment</Label>
+                <Textarea
+                  id="ManagementComment"
+                  {...register("ManagementComment")}
+                  placeholder="Enter management comment"
+                  rows={3}
+                />
+                {errors.ManagementComment && (
+                  <p className="text-sm text-red-500">{errors.ManagementComment.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Submit Buttons */}
+            <div className="flex justify-end gap-4 pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Update Finding
+                  </>
+                )}
               </Button>
             </div>
-          )}
+          </form>
         </CardContent>
       </Card>
-
-      {/* --- Business Owner: Management Response & Action Plan Creation --- */}
-      {finding.status === "Sent to Business Owner" && (
-        <Card className="mb-6 border-blue-500">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center text-blue-700">
-              <MessageSquare className="mr-2 h-5 w-5" /> Management Response & Action Plan
-            </CardTitle>
-            <CardDescription>
-              Please review the finding and provide your comments and a detailed action plan.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="acceptFinding"
-                checked={isFindingAcceptedByBOState}
-                onCheckedChange={(checked) => setIsFindingAcceptedByBOState(!!checked)}
-                disabled={currentUserRole !== "BusinessOwner"}
-              />
-              <Label htmlFor="acceptFinding" className="font-medium">
-                I acknowledge and accept this finding.
-              </Label>
-            </div>
-            <div>
-              <Label htmlFor="managementComments">Management Comments</Label>
-              <Textarea
-                id="managementComments"
-                value={managementCommentsState}
-                onChange={(e) => setManagementCommentsState(e.target.value)}
-                placeholder="Provide your comments on this finding..."
-                rows={3}
-                disabled={currentUserRole !== "BusinessOwner"}
-              />
-            </div>
-            <div>
-              <Label htmlFor="actionPlanObjective">Overall Action Plan Objective</Label>
-              <Textarea
-                id="actionPlanObjective"
-                value={actionPlanObjectiveState}
-                onChange={(e) => setActionPlanObjectiveState(e.target.value)}
-                placeholder="Describe the main goal of your action plan..."
-                rows={2}
-                disabled={currentUserRole !== "BusinessOwner"}
-              />
-            </div>
-
-            <Label className="font-medium">Action Plan Items</Label>
-            {actionPlanItemsState.map((item, index) => (
-              <Card key={item.id} className="p-3 space-y-2 bg-muted/50">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm font-semibold">Action Item #{index + 1}</p>
-                  {actionPlanItemsState.length > 1 && currentUserRole === "BusinessOwner" && (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => removeActionPlanItem(item.id)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <div>
-                  <Label htmlFor={`action-${item.id}`}>Action</Label>
-                  <Textarea
-                    id={`action-${item.id}`}
-                    value={item.action}
-                    onChange={(e) => handleActionPlanItemChange(index, "action", e.target.value)}
-                    placeholder="Specific action to be taken"
-                    rows={2}
-                    disabled={currentUserRole !== "BusinessOwner"}
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div>
-                    <Label htmlFor={`responsible-${item.id}`}>Responsible Person</Label>
-                    <Input
-                      id={`responsible-${item.id}`}
-                      value={item.responsiblePerson}
-                      onChange={(e) => handleActionPlanItemChange(index, "responsiblePerson", e.target.value)}
-                      placeholder="Name or Team"
-                      disabled={currentUserRole !== "BusinessOwner"}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`dueDate-${item.id}`}>Due Date</Label>
-                    <Input
-                      id={`dueDate-${item.id}`}
-                      type="date"
-                      value={item.dueDate}
-                      onChange={(e) => handleActionPlanItemChange(index, "dueDate", e.target.value)}
-                      disabled={currentUserRole !== "BusinessOwner"}
-                    />
-                  </div>
-                </div>
-              </Card>
-            ))}
-            {currentUserRole === "BusinessOwner" && (
-              <Button variant="outline" size="sm" onClick={addActionPlanItem} className="mt-2">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Action Item
-              </Button>
-            )}
-
-            {currentUserRole === "BusinessOwner" && (
-              <div className="pt-4 text-right">
-                <Button onClick={submitManagementResponseAndActionPlan} disabled={!isFindingAcceptedByBOState}>
-                  <Send className="mr-2 h-4 w-4" /> Submit Response & Action Plan
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* --- Auditor: Review & Manage Action Plan --- */}
-      {finding.status === "Action Plan Submitted" && finding.actionPlan && (
-        <Card className="mb-6 border-yellow-500">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center text-yellow-700">
-              <ListChecks className="mr-2 h-5 w-5" /> Review Submitted Action Plan
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {finding.isFindingAcceptedByBO && (
-              <p className="text-sm font-semibold text-green-600">Finding Accepted by Business Owner.</p>
-            )}
-            {finding.managementComments && (
-              <div>
-                <Label className="font-medium">Management Comments:</Label>
-                <p className="text-sm p-2 bg-muted rounded whitespace-pre-wrap">{finding.managementComments}</p>
-              </div>
-            )}
-            <div>
-              <Label className="font-medium">Overall Action Plan Objective:</Label>
-              <p className="text-sm p-2 bg-muted rounded whitespace-pre-wrap">{finding.actionPlan.overallObjective}</p>
-            </div>
-            <Label className="font-medium">Action Plan Items:</Label>
-            {finding.actionPlan.items.map((item, index) => (
-              <div key={item.id} className="text-sm p-2 border rounded bg-muted/30">
-                <p>
-                  <strong>#{index + 1}:</strong> {item.action}
-                </p>
-                <p>
-                  <strong>Responsible:</strong> {item.responsiblePerson}
-                </p>
-                <p>
-                  <strong>Due:</strong> {new Date(item.dueDate).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
-            <p className="text-xs text-muted-foreground">
-              Submitted on: {new Date(finding.actionPlan.submittedDate).toLocaleString()}
-            </p>
-
-            {currentUserRole === "Auditor" && (
-              <>
-                <div className="mt-4">
-                  <Label htmlFor="auditorCommentsOnPlan">Auditor Comments on Action Plan (Optional)</Label>
-                  <Textarea
-                    id="auditorCommentsOnPlan"
-                    value={auditorCommentsOnPlanState}
-                    onChange={(e) => setAuditorCommentsOnPlanState(e.target.value)}
-                    placeholder="Provide feedback or comments on the action plan..."
-                    rows={3}
-                  />
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 pt-4">
-                  <Button onClick={approveActionPlan} className="bg-green-600 hover:bg-green-700">
-                    <ThumbsUp className="mr-2 h-4 w-4" /> Approve Action Plan
-                  </Button>
-                  <Button onClick={rejectActionPlan} variant="destructive">
-                    <ThumbsDown className="mr-2 h-4 w-4" /> Request Revision
-                  </Button>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* --- Auditor: Extend Due Date (Visible when plan is accepted/in progress) --- */}
-      {(finding.status === "Action Plan Accepted" || finding.status === "In Remediation") &&
-        finding.actionPlan &&
-        currentUserRole === "Auditor" && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <CalendarPlus className="mr-2 h-5 w-5" /> Manage Action Plan Timeline
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm">
-                Current Overall Due Date:{" "}
-                <span className="font-semibold">
-                  {finding.actionPlan.lastDueDate
-                    ? new Date(finding.actionPlan.lastDueDate).toLocaleDateString()
-                    : "N/A"}
-                </span>
-              </p>
-              <p className="text-sm">
-                Extensions Used: <span className="font-semibold">{finding.actionPlan.dueDateExtensionsCount} / 3</span>
-              </p>
-              {finding.actionPlan.dueDateExtensionsCount < 3 ? (
-                <div className="flex flex-col sm:flex-row items-end gap-2">
-                  <div className="flex-grow">
-                    <Label htmlFor="newDueDateExtension">New Due Date</Label>
-                    <DatePicker date={newDueDateForExtension} setDate={setNewDueDateForExtension} />
-                  </div>
-                  <Button onClick={extendActionPlanDueDate} disabled={!newDueDateForExtension}>
-                    Extend Due Date
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-sm text-destructive">Maximum due date extensions reached.</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-      {/* Workflow Buttons for Auditor (Verify Finding, Send to BO, etc.) */}
-      {currentUserRole === "Auditor" && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Auditor Workflow Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-2">
-            {finding.status === "Draft" && (
-              <Button onClick={submitForVerification}>
-                <Send className="mr-2 h-4 w-4" /> Submit for Verification
-              </Button>
-            )}
-            {finding.status === "Pending Verification" && (
-              <Button onClick={auditorVerifyFinding} className="bg-yellow-500 hover:bg-yellow-600 text-white">
-                <ShieldCheck className="mr-2 h-4 w-4" /> Verify Finding
-              </Button>
-            )}
-            {finding.status === "Verified" && (
-              <Button onClick={sendToBusinessOwner} className="bg-green-600 hover:bg-green-700 text-white">
-                <Send className="mr-2 h-4 w-4" /> Send to Business Owner
-              </Button>
-            )}
-            {finding.status === "Action Plan Accepted" && (
-              <Button onClick={startRemediation}>
-                <Hourglass className="mr-2 h-4 w-4" /> Start Remediation Tracking
-              </Button>
-            )}
-            {/* ... other auditor actions for remediation verification, closing ... */}
-            {finding.status === "In Remediation" && (
-              <Button onClick={requestRemediationVerification}>
-                <ClipboardCheck className="mr-2 h-4 w-4" /> Request Remediation Verification
-              </Button>
-            )}
-            {finding.status === "Remediation Pending Verification" && (
-              <Button onClick={auditorVerifyRemediation} className="bg-yellow-500 hover:bg-yellow-600 text-white">
-                <ShieldCheck className="mr-2 h-4 w-4" /> Verify Remediation
-              </Button>
-            )}
-            {finding.status === "Resolved" && (
-              <Button onClick={closeFinding} className="bg-green-600 hover:bg-green-700 text-white">
-                <Lock className="mr-2 h-4 w-4" /> Close Finding
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {finding.status === "Closed" && (
-        <Card className="mb-6 bg-gray-100 border-gray-300">
-          <CardHeader>
-            <CardTitle className="text-gray-700">Finding Closed</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              This finding was closed on{" "}
-              {finding.closedDate ? new Date(finding.closedDate).toLocaleDateString() : "N/A"}. No further actions are
-              required.
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

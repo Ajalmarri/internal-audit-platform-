@@ -20,6 +20,7 @@ interface ActionPlan {
   finding_description: string
   objective: string
   priority_id: number
+  priority_name: string
   effort: string
   created_date: string
   is_approved: boolean
@@ -73,17 +74,15 @@ export default function ActionPlanDetailPage() {
     return <Clock className="h-4 w-4 text-yellow-500" />
   }
 
-  const getPriorityColor = (priorityId: number) => {
-    switch (priorityId) {
-      case 1:
+  const getPriorityColor = (priorityName: string) => {
+    switch (priorityName?.toLowerCase()) {
+      case 'critical':
         return 'bg-red-500 hover:bg-red-600 text-white'
-      case 2:
+      case 'high':
         return 'bg-orange-500 hover:bg-orange-600 text-white'
-      case 3:
+      case 'medium':
         return 'bg-yellow-500 hover:bg-yellow-600 text-black'
-      case 4:
-        return 'bg-blue-500 hover:bg-blue-600 text-white'
-      case 5:
+      case 'low':
         return 'bg-green-500 hover:bg-green-600 text-white'
       default:
         return 'bg-gray-500 hover:bg-gray-600 text-white'
@@ -195,8 +194,8 @@ export default function ActionPlanDetailPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Priority</label>
-                  <Badge className={`mt-1 ${getPriorityColor(actionPlan.priority_id)}`}>
-                    Priority {actionPlan.priority_id}
+                  <Badge className={`mt-1 ${getPriorityColor(actionPlan.priority_name)}`}>
+                    {actionPlan.priority_name || `Priority ${actionPlan.priority_id}`}
                   </Badge>
                 </div>
               </div>

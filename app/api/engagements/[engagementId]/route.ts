@@ -67,20 +67,42 @@ export async function GET(
       findings = []
     }
 
-    // Fetch related evidence from the new evidence table
+    // Fetch related evidence from the DOCUMENTS table
     let evidence: any[] = []
     try {
       evidence = await query(
-        `SELECT e.EvidenceID, e.EvidenceTitle, e.EvidenceType, e.UploadDate, e.Status
-         FROM evidence e
-         WHERE e.EngagementID = ? AND e.IsDeleted = 0
-         ORDER BY e.UploadDate DESC`,
+        `SELECT d.DocumentID, d.DocumentName, d.DocumentFileName, d.DocumentFileType, d.DocumentFileSize, d.CreatedDate, f.Title as FindingTitle
+         FROM DOCUMENTS d
+         LEFT JOIN FINDINGS f ON d.FindingID = f.FindingID
+         WHERE d.EngagementID = ? AND d.IsDeleted = 0
+         ORDER BY d.CreatedDate DESC`,
         [engagementId]
       ) as any[]
       console.log(`Found ${evidence.length} evidence items for engagement ${engagementId}`)
     } catch (error) {
       console.warn(`Could not fetch evidence for engagement ${engagementId}:`, error)
       evidence = []
+    }
+
+    // Fetch related action plans from the actionplans table
+    let actionPlans: any[] = []
+    try {
+      actionPlans = await query(
+        `SELECT ap.ActionPlanID, ap.ActionPlanDescription, ap.DueDate, aps.ActionPlanStatus, ap.FindingID,
+                f.Title as FindingTitle, ps.PrimaryStakeholder as BusinessOwnerName, s.Severity as PriorityName
+         FROM actionplans ap
+         LEFT JOIN actionplanstatuses aps ON ap.ActionPlanStatusID = aps.ActionPlanStatusID
+         INNER JOIN findings f ON ap.FindingID = f.FindingID
+         LEFT JOIN primarystakeholders ps ON ap.ResponsibleID = ps.PrimaryStakeholderID
+         LEFT JOIN severities s ON ap.PriorityID = s.SeverityID
+         WHERE f.EngagementID = ? AND ap.IsDeleted = 0
+         ORDER BY ap.DueDate ASC`,
+        [engagementId]
+      ) as any[]
+      console.log(`Found ${actionPlans.length} action plans for engagement ${engagementId}`)
+    } catch (error) {
+      console.warn(`Could not fetch action plans for engagement ${engagementId}:`, error)
+      actionPlans = []
     }
 
     // Transform the data to match the expected format
@@ -112,11 +134,24 @@ export async function GET(
         date: f.CreatedDate ? new Date(f.CreatedDate).toISOString().split('T')[0] : null
       })),
       evidence: evidence.map(e => ({
-        id: e.EvidenceID,
-        title: e.EvidenceTitle,
-        type: e.EvidenceType || 'Document',
-        date: e.UploadDate ? new Date(e.UploadDate).toISOString().split('T')[0] : null,
-        status: e.Status || 'Pending Review'
+        id: e.DocumentID,
+        title: e.DocumentName,
+        fileName: e.DocumentFileName,
+        fileType: e.DocumentFileType,
+        fileSize: e.DocumentFileSize,
+        findingTitle: e.FindingTitle,
+        date: e.CreatedDate ? new Date(e.CreatedDate).toISOString().split('T')[0] : null
+      })),
+      actionPlans: actionPlans.map(ap => ({
+        id: ap.ActionPlanID,
+        description: ap.ActionPlanDescription,
+        status: ap.ActionPlanStatus || 'To Do',
+        dueDate: ap.DueDate ? new Date(ap.DueDate).toISOString().split('T')[0] : null,
+        findingId: ap.FindingID,
+        findingTitle: ap.FindingTitle || 'Unknown Finding',
+        businessOwnerName: ap.BusinessOwnerName || 'Unknown Owner',
+        priorityName: ap.PriorityName || 'Medium',
+        statusName: ap.ActionPlanStatus || 'To Do'
       }))
     }
 
@@ -125,7 +160,8 @@ export async function GET(
       title: transformedEngagement.title,
       assignmentsCount: transformedEngagement.assignments.length,
       findingsCount: transformedEngagement.findings.length,
-      evidenceCount: transformedEngagement.evidence.length
+      evidenceCount: transformedEngagement.evidence.length,
+      actionPlansCount: transformedEngagement.actionPlans.length
     })
     
     return NextResponse.json(transformedEngagement)

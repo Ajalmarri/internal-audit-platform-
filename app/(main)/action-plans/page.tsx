@@ -47,6 +47,7 @@ interface ActionPlanFromDB {
   finding_description: string
   objective: string
   priority_id: number
+  priority_name: string
   effort: string
   created_date: string
   is_approved: boolean
@@ -64,6 +65,7 @@ interface ActionPlan {
   finding_description: string
   objective: string
   priority_id: number
+  priority_name: string
   effort: string
   created_date: string
   is_approved: boolean
@@ -78,6 +80,22 @@ const actionPlanStatusConfig: Record<
   "Not Started": { icon: Clock, color: "text-gray-500", badgeVariant: "secondary" },
   "In Progress": { icon: Rocket, color: "text-blue-500", badgeVariant: "default" },
   "Completed": { icon: CheckCircle, color: "text-green-500", badgeVariant: "default" },
+}
+
+// Configuration for Priority display
+const getPriorityColor = (priorityName: string) => {
+  switch (priorityName?.toLowerCase()) {
+    case 'critical':
+      return 'bg-red-500 hover:bg-red-600 text-white'
+    case 'high':
+      return 'bg-orange-500 hover:bg-orange-600 text-white'
+    case 'medium':
+      return 'bg-yellow-500 hover:bg-yellow-600 text-black'
+    case 'low':
+      return 'bg-green-500 hover:bg-green-600 text-white'
+    default:
+      return 'bg-gray-500 hover:bg-gray-600 text-white'
+  }
 }
 
 export default function ActionPlansPage() {
@@ -137,8 +155,27 @@ export default function ActionPlansPage() {
     return currentPlans
   }, [actionPlans, searchTerm, statusFilters])
 
-  const handleDeleteActionPlan = (planId: string) => {
-    setActionPlans((prevPlans) => prevPlans.filter((p) => p.id !== planId))
+  const handleDeleteActionPlan = async (planId: string) => {
+    // Show confirmation dialog
+    if (!confirm('Are you sure you want to delete this action plan? This action cannot be undone.')) {
+      return
+    }
+    
+    try {
+      const response = await fetch(`/api/action-plans/${planId}`, {
+        method: 'DELETE',
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete action plan')
+      }
+      
+      // Only update local state if API call was successful
+      setActionPlans((prevPlans) => prevPlans.filter((p) => p.id !== planId))
+    } catch (error) {
+      console.error('Error deleting action plan:', error)
+      alert('Failed to delete action plan. Please try again.')
+    }
   }
 
   return (
@@ -266,8 +303,8 @@ export default function ActionPlansPage() {
                           {plan.due_date ? new Date(plan.due_date).toLocaleDateString() : 'N/A'}
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant="outline" className="text-xs">
-                            {plan.priority_id}
+                          <Badge className={`text-xs ${getPriorityColor(plan.priority_name)}`}>
+                            {plan.priority_name || `Priority ${plan.priority_id}`}
                           </Badge>
                         </TableCell>
                         <TableCell>

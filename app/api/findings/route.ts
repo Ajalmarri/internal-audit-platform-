@@ -8,8 +8,11 @@ interface FindingFromDB {
   status?: string
   severity?: string
   assignment_id?: string
+  engagement_id?: string
   created_at?: string
   updated_at?: string
+  business_unit?: string
+  business_owner_id?: string
 }
 
 interface CreateFindingRequest {
@@ -24,11 +27,39 @@ interface CreateFindingRequest {
   effect?: string
   recommendation?: string
   responsibleBusinessOwner?: string
+  evidenceTempPath?: string
+}
+
+// Function to clean up orphaned findings
+async function cleanupOrphanedFindings() {
+  try {
+    // Find and clean up findings that have EngagementID but are no longer linked to valid engagement-assignment relationships
+    await query(`
+      UPDATE findings f
+      SET EngagementID = NULL
+      WHERE f.EngagementID IS NOT NULL 
+      AND f.IsDeleted = 0
+      AND NOT EXISTS (
+        SELECT 1 
+        FROM engagementassignments ea 
+        WHERE ea.EngagementID = f.EngagementID 
+        AND ea.AssignmentID = f.AssignmentID 
+        AND ea.IsDeleted = 0
+      )
+    `)
+    
+    console.log('Orphaned findings cleanup completed')
+  } catch (error) {
+    console.warn('Could not cleanup orphaned findings:', error)
+  }
 }
 
 export async function GET() {
   try {
-    // Get findings with proper column mapping
+    // Clean up orphaned findings first
+    await cleanupOrphanedFindings()
+    
+    // Get findings with proper column mapping including engagement_id and business unit
     const rows = (await query(
       `SELECT 
          CAST(f.FindingID AS CHAR) AS id,
@@ -37,11 +68,15 @@ export async function GET() {
          fs.FindingStatus AS status,
          s.Severity AS severity,
          CAST(f.AssignmentID AS CHAR) AS assignment_id,
+         CAST(f.EngagementID AS CHAR) AS engagement_id,
          f.CreatedDate AS created_at,
-         f.ModifiedDate AS updated_at
+         f.ModifiedDate AS updated_at,
+         COALESCE(ps.PrimaryStakeholder, 'Unknown') AS business_unit,
+         CAST(f.BusinessOwnerID AS CHAR) AS business_owner_id
        FROM findings f
        LEFT JOIN findingstatuses fs ON fs.FindingStatusID = f.FindingStatusID
        LEFT JOIN severities s ON s.SeverityID = f.SeverityID
+       LEFT JOIN primarystakeholders ps ON ps.PrimaryStakeholderID = f.BusinessOwnerID
        WHERE IFNULL(f.IsDeleted, 0) = 0
        ORDER BY f.CreatedDate DESC`
     )) as FindingFromDB[]
@@ -94,6 +129,20 @@ export async function POST(request: Request) {
       assignmentId = Array.isArray(assignmentResult) && assignmentResult.length > 0 ? (assignmentResult[0] as any).AssignmentID : 1
     }
 
+    // Get the engagement ID for this assignment
+    let engagementId = null
+    try {
+      const engagementResult = await query(
+        'SELECT EngagementID FROM engagementassignments WHERE AssignmentID = ? AND IsDeleted = 0',
+        [assignmentId]
+      ) as any[]
+      if (Array.isArray(engagementResult) && engagementResult.length > 0) {
+        engagementId = (engagementResult[0] as any).EngagementID
+      }
+    } catch (error) {
+      console.warn('Could not find engagement for assignment:', assignmentId, error)
+    }
+
     // Get default business owner ID (required field)
     const businessOwnerResult = await query('SELECT PrimaryStakeholderID FROM primarystakeholders LIMIT 1')
     const businessOwnerId = Array.isArray(businessOwnerResult) && businessOwnerResult.length > 0 ? (businessOwnerResult[0] as any).PrimaryStakeholderID : 1
@@ -102,12 +151,13 @@ export async function POST(request: Request) {
     const userResult = await query('SELECT UserID FROM users LIMIT 1')
     const userId = Array.isArray(userResult) && userResult.length > 0 ? (userResult[0] as any).UserID : 1
 
-    // Insert new finding using the correct schema
+    // Insert new finding using the correct schema with EngagementID
     const result = await query(
       `INSERT INTO findings (
         Title, 
         FindingDescription, 
         AssignmentID,
+        EngagementID,
         FindingStatusID, 
         SeverityID, 
         BusinessOwnerID,
@@ -120,11 +170,12 @@ export async function POST(request: Request) {
         CreatedBy,
         ModifiedBy,
         IsDeleted
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, 0)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, 0)`,
       [
         body.title,
         body.description || '',
         assignmentId,
+        engagementId,
         statusId,
         severityId,
         businessOwnerId,
@@ -140,6 +191,34 @@ export async function POST(request: Request) {
     const insertResult = result as any
     const newFindingId = insertResult.insertId
 
+    // Handle evidence file if provided
+    if (body.evidenceTempPath) {
+      try {
+        const { rename } = await import('fs/promises')
+        const { join } = await import('path')
+        
+        const tempDir = join(process.cwd(), 'tmp')
+        const permanentDir = join(process.cwd(), 'public', 'uploads', 'evidence')
+        
+        // Create permanent directory if it doesn't exist
+        const { mkdir } = await import('fs/promises')
+        await mkdir(permanentDir, { recursive: true })
+        
+        const tempFilePath = join(tempDir, body.evidenceTempPath)
+        const permanentFilePath = join(permanentDir, body.evidenceTempPath)
+        
+        // Move file from temp to permanent storage
+        await rename(tempFilePath, permanentFilePath)
+        
+        // TODO: Later integrate with SharePoint/S3 for cloud storage
+        console.log(`Evidence file moved from temp to permanent storage: ${body.evidenceTempPath}`)
+        
+      } catch (error) {
+        console.warn('Could not move evidence file to permanent storage:', error)
+        // Don't fail the finding creation if file move fails
+      }
+    }
+
     // Fetch the newly created finding
     const newFinding = await query(
       `SELECT 
@@ -149,6 +228,7 @@ export async function POST(request: Request) {
          fs.FindingStatus AS status,
          s.Severity AS severity,
          CAST(f.AssignmentID AS CHAR) AS assignment_id,
+         CAST(f.EngagementID AS CHAR) AS engagement_id,
          f.CreatedDate AS created_at,
          f.ModifiedDate AS updated_at
        FROM findings f
@@ -158,9 +238,29 @@ export async function POST(request: Request) {
       [newFindingId]
     )
 
+    // Get engagement details for the response
+    let engagementInfo = null
+    if (engagementId) {
+      try {
+        const engagementResult = await query(
+          'SELECT EngagementTitle FROM engagements WHERE EngagementID = ?',
+          [engagementId]
+        ) as any[]
+        if (Array.isArray(engagementResult) && engagementResult.length > 0) {
+          engagementInfo = {
+            id: engagementId,
+            title: engagementResult[0].EngagementTitle
+          }
+        }
+      } catch (error) {
+        console.warn('Could not fetch engagement details:', error)
+      }
+    }
+
     return NextResponse.json({
       message: "Finding created successfully",
-      finding: Array.isArray(newFinding) ? newFinding[0] : newFinding
+      finding: Array.isArray(newFinding) ? newFinding[0] : newFinding,
+      engagement: engagementInfo
     }, { status: 201 })
 
   } catch (error) {

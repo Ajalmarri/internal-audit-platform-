@@ -25,7 +25,6 @@ import {
   MoreVertical,
   AlertOctagon,
   Clock,
-  DollarSign,
   Target,
   User,
   Calendar,
@@ -53,8 +52,12 @@ interface EngagementData {
     progress: number
     openHighRiskFindings: number
     overdueTasks: number
-    budgetConsumed: number // percentage
-    budgetTotal: number // currency amount
+    findingsBySeverity: {
+      High: number
+      Medium: number
+      Low: number
+      Critical: number
+    }
   }
   details: {
     primaryStakeholder: string
@@ -84,6 +87,17 @@ interface EngagementData {
     type: string
     date: string | null
     status: string
+  }>
+  actionPlans: Array<{
+    id: string
+    description: string
+    status: string
+    dueDate: string | null
+    findingId: string
+    findingTitle: string
+    businessOwnerName: string
+    priorityName: string
+    statusName: string
   }>
 }
 
@@ -118,11 +132,24 @@ export default function EngagementDetailPage() {
           
           if (foundEngagement) {
             // Calculate real metrics from the data
-            const highRiskFindings = foundEngagement.findings?.filter(f => f.severity === 'High')?.length || 0
-            const overdueTasks = foundEngagement.assignments?.filter(a => {
+            const highRiskFindings = foundEngagement.findings?.filter((f: any) => f.severity === 'High')?.length || 0
+            const overdueTasks = foundEngagement.assignments?.filter((a: any) => {
               if (!a.dueDate) return false
               return new Date(a.dueDate) < new Date()
             })?.length || 0
+            
+            // Calculate dynamic progress based on assignments and action plans
+            const totalAssignments = foundEngagement.assignments?.length || 0
+            const completedAssignments = foundEngagement.assignments?.filter((a: any) => a.status === 'Completed')?.length || 0
+            const totalActionPlans = foundEngagement.actionPlans?.length || 0
+            const completedActionPlans = foundEngagement.actionPlans?.filter((ap: any) => ap.status === 'Completed')?.length || 0
+            
+            let progress = 0
+            if (totalAssignments > 0 || totalActionPlans > 0) {
+              const assignmentProgress = totalAssignments > 0 ? (completedAssignments / totalAssignments) * 100 : 0
+              const actionPlanProgress = totalActionPlans > 0 ? (completedActionPlans / totalActionPlans) * 100 : 0
+              progress = Math.round((assignmentProgress + actionPlanProgress) / 2)
+            }
             
             // Transform the real data to match our interface
             const transformedEngagement: EngagementData = {
@@ -130,11 +157,15 @@ export default function EngagementDetailPage() {
               title: foundEngagement.title,
               status: foundEngagement.status,
               healthMetrics: {
-                progress: 65, // Default progress for now
+                progress: progress,
                 openHighRiskFindings: highRiskFindings,
                 overdueTasks: overdueTasks,
-                budgetConsumed: 45,
-                budgetTotal: 50000,
+                findingsBySeverity: {
+                  High: foundEngagement.findings?.filter((f: any) => f.severity === 'High')?.length || 0,
+                  Medium: foundEngagement.findings?.filter((f: any) => f.severity === 'Medium')?.length || 0,
+                  Low: foundEngagement.findings?.filter((f: any) => f.severity === 'Low')?.length || 0,
+                  Critical: foundEngagement.findings?.filter((f: any) => f.severity === 'Critical')?.length || 0,
+                },
               },
               details: {
                 primaryStakeholder: foundEngagement.stakeholder,
@@ -147,6 +178,7 @@ export default function EngagementDetailPage() {
               assignments: foundEngagement.assignments || [],
               findings: foundEngagement.findings || [],
               evidence: foundEngagement.evidence || [],
+              actionPlans: foundEngagement.actionPlans || [],
             }
             setEngagement(transformedEngagement)
           } else {
@@ -221,10 +253,22 @@ export default function EngagementDetailPage() {
 
   const healthMetricsDisplay = [
     {
-      value: `${engagement.healthMetrics.openHighRiskFindings}`,
-      label: "Open High-Risk Findings",
+      value: `${engagement.healthMetrics.findingsBySeverity.Critical + engagement.healthMetrics.findingsBySeverity.High}`,
+      label: "Critical & High Risk",
       icon: AlertOctagon,
-      variant: engagement.healthMetrics.openHighRiskFindings > 0 ? "critical" : "default",
+      variant: (engagement.healthMetrics.findingsBySeverity.Critical + engagement.healthMetrics.findingsBySeverity.High) > 0 ? "critical" : "default",
+    },
+    {
+      value: `${engagement.healthMetrics.findingsBySeverity.Medium}`,
+      label: "Medium Risk",
+      icon: AlertTriangle,
+      variant: engagement.healthMetrics.findingsBySeverity.Medium > 0 ? "warning" : "default",
+    },
+    {
+      value: `${engagement.healthMetrics.findingsBySeverity.Low}`,
+      label: "Low Risk",
+      icon: Clock,
+      variant: "default",
     },
     {
       value: `${engagement.healthMetrics.overdueTasks}`,
@@ -242,29 +286,46 @@ export default function EngagementDetailPage() {
     if (engagementId) {
       setIsRefreshing(true)
       try {
-        const response = await fetch(`/api/engagements/${engagementId}`)
-        if (response.ok) {
-          const foundEngagement = await response.json()
-          
-          if (foundEngagement) {
-            // Calculate real metrics from the data
-            const highRiskFindings = foundEngagement.findings?.filter(f => f.severity === 'High')?.length || 0
-            const overdueTasks = foundEngagement.assignments?.filter(a => {
-              if (!a.dueDate) return false
-              return new Date(a.dueDate) < new Date()
-            })?.length || 0
-            
-            // Transform the real data to match our interface
-            const transformedEngagement: EngagementData = {
-              id: foundEngagement.id,
-              title: foundEngagement.title,
-              status: foundEngagement.status,
-              healthMetrics: {
-                progress: 65, // Default progress for now
+                    const response = await fetch(`/api/engagements/${engagementId}`)
+            if (response.ok) {
+              const foundEngagement = await response.json()
+              
+              if (foundEngagement) {
+                // Calculate real metrics from the data
+                const highRiskFindings = foundEngagement.findings?.filter((f: any) => f.severity === 'High')?.length || 0
+                const overdueTasks = foundEngagement.assignments?.filter((a: any) => {
+                  if (!a.dueDate) return false
+                  return new Date(a.dueDate) < new Date()
+                })?.length || 0
+                
+                // Calculate dynamic progress based on assignments and action plans
+                const totalAssignments = foundEngagement.assignments?.length || 0
+                const completedAssignments = foundEngagement.assignments?.filter((a: any) => a.status === 'Completed')?.length || 0
+                const totalActionPlans = foundEngagement.actionPlans?.length || 0
+                const completedActionPlans = foundEngagement.actionPlans?.filter((ap: any) => ap.status === 'Completed')?.length || 0
+                
+                let progress = 0
+                if (totalAssignments > 0 || totalActionPlans > 0) {
+                  const assignmentProgress = totalAssignments > 0 ? (completedAssignments / totalAssignments) * 100 : 0
+                  const actionPlanProgress = totalActionPlans > 0 ? (completedActionPlans / totalActionPlans) * 100 : 0
+                  progress = Math.round((assignmentProgress + actionPlanProgress) / 2)
+                }
+                
+                // Transform the real data to match our interface
+                const transformedEngagement: EngagementData = {
+                  id: foundEngagement.id,
+                  title: foundEngagement.title,
+                  status: foundEngagement.status,
+                  healthMetrics: {
+                    progress: progress,
                 openHighRiskFindings: highRiskFindings,
                 overdueTasks: overdueTasks,
-                budgetConsumed: 45,
-                budgetTotal: 50000,
+                findingsBySeverity: {
+                  High: foundEngagement.findings?.filter((f: any) => f.severity === 'High')?.length || 0,
+                  Medium: foundEngagement.findings?.filter((f: any) => f.severity === 'Medium')?.length || 0,
+                  Low: foundEngagement.findings?.filter((f: any) => f.severity === 'Low')?.length || 0,
+                  Critical: foundEngagement.findings?.filter((f: any) => f.severity === 'Critical')?.length || 0,
+                },
               },
               details: {
                 primaryStakeholder: foundEngagement.stakeholder,
@@ -277,6 +338,7 @@ export default function EngagementDetailPage() {
               assignments: foundEngagement.assignments || [],
               findings: foundEngagement.findings || [],
               evidence: foundEngagement.evidence || [],
+              actionPlans: foundEngagement.actionPlans || [],
             }
             setEngagement(transformedEngagement)
           }
@@ -428,40 +490,7 @@ export default function EngagementDetailPage() {
                 </CardContent>
               </Card>
             ))}
-            <Card>
-              <CardContent className="p-4 flex items-center gap-3">
-                <DollarSign className="h-6 w-6 text-green-600" />
-                <div>
-                  <p className="text-2xl font-bold">
-                    $
-                    {(
-                      (engagement.healthMetrics.budgetConsumed / 100) *
-                      engagement.healthMetrics.budgetTotal
-                    ).toLocaleString()}
-                    <span className="text-sm text-muted-foreground">
-                      {" "}
-                      / ${engagement.healthMetrics.budgetTotal.toLocaleString()}
-                    </span>
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Budget vs. Actual ({engagement.healthMetrics.budgetConsumed}%)
-                  </p>
-                </div>
-              </CardContent>
-              <div className="px-4 pb-2">
-                <Progress
-                  value={engagement.healthMetrics.budgetConsumed}
-                  className="h-2"
-                  indicatorClassName={
-                    engagement.healthMetrics.budgetConsumed > 85
-                      ? "bg-red-500"
-                      : engagement.healthMetrics.budgetConsumed > 60
-                        ? "bg-yellow-500"
-                        : "bg-green-500"
-                  }
-                />
-              </div>
-            </Card>
+
           </div>
         </CardContent>
       </Card>
@@ -540,6 +569,16 @@ export default function EngagementDetailPage() {
                     size="sm"
                     asChild
                   >
+                    <Link href="/action-plans/new">
+                      <Target className="mr-2 h-4 w-4" />
+                      New Action Plan
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                  >
                     <Link href={`/engagements/${engagementId}/evidence/new`}>
                       <Paperclip className="mr-2 h-4 w-4" />
                       Upload Evidence
@@ -547,9 +586,10 @@ export default function EngagementDetailPage() {
                   </Button>
                 </div>
               </div>
-              <TabsList className="grid w-full grid-cols-3 mt-2">
+              <TabsList className="grid w-full grid-cols-4 mt-2">
                 <TabsTrigger value="assignments">Assignments ({engagement.assignments.length})</TabsTrigger>
                 <TabsTrigger value="findings">Findings ({engagement.findings.length})</TabsTrigger>
+                <TabsTrigger value="action-plans">Action Plans ({engagement.actionPlans.length})</TabsTrigger>
                 <TabsTrigger value="evidence">Evidence ({engagement.evidence.length})</TabsTrigger>
               </TabsList>
             </CardHeader>
@@ -560,7 +600,12 @@ export default function EngagementDetailPage() {
                     <div className="flex items-center gap-3">
                       <Briefcase className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="font-medium">{item.title}</p>
+                        <Link 
+                          href={`/engagements/${engagementId}/assignments/${item.id}`}
+                          className="block hover:text-primary transition-colors"
+                        >
+                          <p className="font-medium cursor-pointer">{item.title}</p>
+                        </Link>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant={
                             item.status === 'Completed' ? 'default' :
@@ -586,7 +631,7 @@ export default function EngagementDetailPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleUnlinkAssignment(item.id)}
+                        onClick={() => handleUnlinkAssignment(parseInt(item.id))}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         Unlink
@@ -605,36 +650,45 @@ export default function EngagementDetailPage() {
               </TabsContent>
               <TabsContent value="findings" className="mt-4 space-y-2">
                 {engagement.findings.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <AlertOctagon className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{item.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant={
-                            item.severity === 'High' ? 'destructive' :
-                            item.severity === 'Medium' ? 'secondary' :
-                            'outline'
-                          }>
-                            {item.severity}
-                          </Badge>
-                          <Badge variant={
-                            item.status === 'Open' ? 'destructive' :
-                            item.status === 'In Progress' ? 'secondary' :
-                            'default'
-                          }>
-                            {item.status}
-                          </Badge>
-                          {item.date && (
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(item.date).toLocaleDateString()}
-                            </span>
-                          )}
+                  <Link 
+                    key={item.id} 
+                    href={`/findings/${item.id}`}
+                    className="block transition-all duration-200 hover:bg-muted/50 hover:shadow-sm"
+                  >
+                    <div className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:border-primary/50 group">
+                      <div className="flex items-center gap-3">
+                        <AlertOctagon className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-foreground group-hover:text-primary transition-colors">{item.title}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant={
+                              item.severity === 'High' ? 'destructive' :
+                              item.severity === 'Medium' ? 'secondary' :
+                              'outline'
+                            }>
+                              {item.severity}
+                            </Badge>
+                            <Badge variant={
+                              item.status === 'Open' ? 'destructive' :
+                              item.status === 'In Progress' ? 'secondary' :
+                              'default'
+                            }>
+                              {item.status}
+                            </Badge>
+                            {item.date && (
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(item.date).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <span className="text-xs text-primary font-medium">Click to view details →</span>
+                          </div>
                         </div>
                       </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  </div>
+                  </Link>
                 ))}
                 {engagement.findings.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
@@ -644,34 +698,98 @@ export default function EngagementDetailPage() {
                   </div>
                 )}
               </TabsContent>
-              <TabsContent value="evidence" className="mt-4 space-y-2">
-                {engagement.evidence.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Paperclip className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{item.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline">
-                            {item.type}
-                          </Badge>
-                          <Badge variant={
-                            item.status === 'Approved' ? 'default' :
-                            item.status === 'Pending Review' ? 'secondary' :
-                            'outline'
-                          }>
-                            {item.status}
-                          </Badge>
-                          {item.date && (
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(item.date).toLocaleDateString()}
-                            </span>
-                          )}
+              <TabsContent value="action-plans" className="mt-4 space-y-2">
+                {engagement.actionPlans.map((item) => (
+                  <Link 
+                    key={item.id} 
+                    href={`/action-plans/${item.id}`}
+                    className="block transition-all duration-200 hover:bg-muted/50 hover:shadow-sm"
+                  >
+                    <div className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:border-primary/50 group">
+                      <div className="flex items-center gap-3">
+                        <Target className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-foreground group-hover:text-primary transition-colors">{item.description}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {item.findingTitle}
+                            </Badge>
+                            <Badge variant={
+                              item.statusName === 'Completed' ? 'default' :
+                              item.statusName === 'In Progress' ? 'secondary' :
+                              item.statusName === 'Submitted' ? 'outline' :
+                              'destructive'
+                            }>
+                              {item.statusName}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {item.priorityName}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {item.businessOwnerName}
+                            </Badge>
+                            {item.dueDate && (
+                              <Badge variant={
+                                new Date(item.dueDate) < new Date() ? 'destructive' : 'secondary'
+                              }>
+                                {new Date(item.dueDate) < new Date() ? 'Overdue' : `Due: ${new Date(item.dueDate).toLocaleDateString()}`}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <span className="text-xs text-primary font-medium">Click to view details →</span>
+                          </div>
                         </div>
                       </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </Link>
+                ))}
+                {engagement.actionPlans.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Target className="h-8 w-8 mx-auto mb-2" />
+                    <p>No action plans created yet.</p>
+                    <p className="text-xs mt-1">Action plans will appear here when created for findings</p>
                   </div>
+                )}
+              </TabsContent>
+              <TabsContent value="evidence" className="mt-4 space-y-2">
+                {engagement.evidence.map((item) => (
+                  <Link 
+                    key={item.id} 
+                    href={`/engagements/${engagementId}/evidence/${item.id}`}
+                    className="block transition-all duration-200 hover:bg-muted/50 hover:shadow-sm"
+                  >
+                    <div className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:border-primary/50 group">
+                      <div className="flex items-center gap-3">
+                        <Paperclip className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-foreground group-hover:text-primary transition-colors">{item.title}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline">
+                              {item.type}
+                            </Badge>
+                            <Badge variant={
+                              item.status === 'Approved' ? 'default' :
+                              item.status === 'Pending Review' ? 'secondary' :
+                              'outline'
+                            }>
+                              {item.status}
+                            </Badge>
+                            {item.date && (
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(item.date).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <span className="text-xs text-primary font-medium">Click to view details →</span>
+                          </div>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </Link>
                 ))}
                 {engagement.evidence.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">

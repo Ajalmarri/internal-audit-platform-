@@ -24,7 +24,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart"
-import type { FindingStatus } from "../../../findings/_types/finding-types"
+import type { FindingStatus } from "../../findings/_types/finding-types"
 import { TimerOff, ShieldAlert, FileClock, type LucideIcon } from "lucide-react"
 
 const taskCompletionData = [
@@ -175,7 +175,7 @@ export default function InsightHubCard() {
                   <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={10} interval={0} dy={10} />
                   <YAxis tickLine={false} axisLine={false} fontSize={10} />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} verticalAlign="bottom" />
+                  <ChartLegend content={<ChartLegendContent payload={[]} />} verticalAlign="bottom" />
                   <Bar dataKey="completed" fill="var(--color-completed)" radius={4} />
                   <Bar dataKey="pending" fill="var(--color-pending)" radius={4} />
                 </BarChart>
@@ -191,7 +191,7 @@ export default function InsightHubCard() {
                   <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={10} interval={0} dy={10} />
                   <YAxis tickLine={false} axisLine={false} fontSize={10} />
                   <ChartTooltip content={<ChartTooltipContent indicator="line" />} />
-                  <ChartLegend content={<ChartLegendContent />} verticalAlign="bottom" />
+                  <ChartLegend content={<ChartLegendContent payload={[]} />} verticalAlign="bottom" />
                   <Line
                     type="monotone"
                     dataKey="riskScore"
@@ -229,7 +229,7 @@ export default function InsightHubCard() {
                       />
                     ))}
                   </Pie>
-                  <ChartLegend content={<ChartLegendContent nameKey="label" />} verticalAlign="bottom" />
+                  <ChartLegend content={<ChartLegendContent payload={[]} />} verticalAlign="bottom" />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -258,7 +258,7 @@ export default function InsightHubCard() {
                     cursor={{ fill: "hsl(var(--muted) / 0.5)" }}
                     content={<ChartTooltipContent nameKey="label" indicator="line" />}
                   />
-                  <ChartLegend content={<ChartLegendContent nameKey="label" />} verticalAlign="bottom" />
+                  <ChartLegend content={<ChartLegendContent payload={[]} />} verticalAlign="bottom" />
                   <Bar dataKey="value" radius={4} onClick={handleActionPlanBarClick} className="cursor-pointer">
                     {actionPlanStatusData.map((entry) => (
                       <Cell
@@ -289,7 +289,7 @@ export default function InsightHubCard() {
                     <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={10} interval={0} dy={10} />
                     <YAxis tickLine={false} axisLine={false} fontSize={10} unit="h" />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <ChartLegend content={<ChartLegendContent />} verticalAlign="bottom" />
+                    <ChartLegend content={<ChartLegendContent payload={[]} />} verticalAlign="bottom" />
                     <Bar dataKey="plannedWork" fill="var(--color-plannedWork)" radius={4} name="Planned Work (hrs)" />
                     <Bar
                       dataKey="teamCapacity"

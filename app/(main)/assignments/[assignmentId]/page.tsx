@@ -33,6 +33,7 @@ import {
   BarChart3,
   Activity
 } from "lucide-react"
+import { useToast } from '@/hooks/use-toast'
 import type {
   Assignment,
   AuditTask,
@@ -53,6 +54,7 @@ export default function AssignmentDetailPage() {
   const [tasks, setTasks] = useState<AuditTask[]>(defaultTasks)
   const [relatedRisksData, setRelatedRisksData] = useState<RelatedRiskEntry[]>(defaultRelatedRisks)
   const [documents, setDocuments] = useState<DocumentFile[]>(defaultDocuments)
+  const { toast } = useToast()
   const [availableUsers, setAvailableUsers] = useState<UserStub[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
@@ -131,7 +133,8 @@ export default function AssignmentDetailPage() {
         await Promise.all([
           fetchTasks(params.assignmentId),
           fetchRisksAndControls(params.assignmentId),
-          fetchTeamMembers(params.assignmentId)
+          fetchTeamMembers(params.assignmentId),
+          fetchDocuments(params.assignmentId)
         ])
         
         console.log('=== ASSIGNMENT DETAIL PAGE DEBUG ===')
@@ -188,6 +191,82 @@ export default function AssignmentDetailPage() {
       setTasks([])
     }
   }
+  const fetchDocuments = async (assignmentId: string) => {
+    try {
+      const res = await fetch(`/api/assignments/${assignmentId}/documents`, { cache: 'no-store' })
+      if (!res.ok) {
+        setDocuments([])
+        return
+      }
+      const data = await res.json()
+      const mapped: DocumentFile[] = (data || []).map((d: any) => ({
+        id: String(d.DocumentID),
+        name: d.DocumentName,
+        type: d.DocumentFileType || 'Unknown',
+        size: d.DocumentFileSize ? `${Math.round(d.DocumentFileSize / 1024)} KB` : '—',
+        uploadDate: d.CreatedDate ? new Date(d.CreatedDate).toLocaleDateString() : '',
+        uploader: ''
+      }))
+      setDocuments(mapped)
+    } catch (e) {
+      console.error('Failed to load documents', e)
+      setDocuments([])
+    }
+  }
+
+  const handleUploadDocument = async () => {
+    try {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.multiple = false
+      input.onchange = async () => {
+        const file = input.files?.[0]
+        if (!file) return
+
+        // Step 1: upload to temp
+        const form = new FormData()
+        form.append('file', file)
+        const tmpRes = await fetch('/api/files', { method: 'POST', body: form })
+        const tmp = await tmpRes.json()
+        if (!tmpRes.ok || !tmp?.ok) {
+          toast({ title: 'Upload failed', description: tmp?.error || 'Could not upload file', variant: 'destructive' })
+          return
+        }
+
+        // Step 2: commit to assignment docs
+        const commitRes = await fetch(`/api/assignments/${params.assignmentId}/documents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tempPath: tmp.tempPath, originalName: tmp.fileName, mime: tmp.mime, size: tmp.size })
+        })
+
+        if (!commitRes.ok) {
+          const j = await commitRes.json().catch(() => ({} as any))
+          toast({ title: 'Save failed', description: j?.message || 'Could not save document', variant: 'destructive' })
+          return
+        }
+
+        toast({ title: 'Document uploaded', description: file.name })
+        await fetchDocuments(params.assignmentId)
+      }
+      input.click()
+    } catch (e) {
+      console.error('Upload failed', e)
+      toast({ title: 'Upload failed', variant: 'destructive' })
+    }
+  }
+
+  const handleDeleteDocument = async (documentId: string) => {
+    if (!confirm('Delete this document?')) return
+    const res = await fetch(`/api/assignments/${params.assignmentId}/documents?documentId=${documentId}`, { method: 'DELETE' })
+    if (res.ok) {
+      toast({ title: 'Document deleted' })
+      setDocuments(prev => prev.filter(d => d.id !== documentId))
+    } else {
+      toast({ title: 'Delete failed', variant: 'destructive' })
+    }
+  }
+
 
   const fetchRisksAndControls = async (assignmentId: string) => {
     try {
@@ -1129,7 +1208,7 @@ export default function AssignmentDetailPage() {
                   </CardTitle>
                   <CardDescription>Assignment-related documents and files</CardDescription>
                 </div>
-                <Button>
+                <Button type="button" onClick={handleUploadDocument}>
                   <Plus className="h-4 w-4 mr-2" />
                   Upload Document
                 </Button>
@@ -1153,13 +1232,10 @@ export default function AssignmentDetailPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button type="button" variant="ghost" size="sm" onClick={() => window.open(`/api/files/download?assignmentId=${params.assignmentId}&documentId=${doc.id}`, '_blank')}>
                         <Download className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button type="button" variant="ghost" size="sm" onClick={() => handleDeleteDocument(doc.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

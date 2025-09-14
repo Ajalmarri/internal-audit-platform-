@@ -31,17 +31,20 @@ import {
   ExternalLink
 } from "lucide-react"
 import Link from "next/link"
+import { EvidencePanel } from "./evidence/EvidencePanel"
 
 interface Finding {
   id: string
   title: string
   description: string
   assignment_id: string
+  engagement_id?: string
   assignment_title?: string
   status: string
   severity: string
   business_owner: string
   business_owner_name?: string
+  business_unit?: string
   created_date: string
   updated_date: string
   auditor_in_charge: string
@@ -66,14 +69,7 @@ interface ActionItem {
   progress: number
 }
 
-interface EvidenceItem {
-  id: string
-  name: string
-  type: string
-  uploadedBy: string
-  uploadDate: string
-  size: string
-}
+
 
 interface TimelineEvent {
   id: string
@@ -113,24 +109,7 @@ export default function FindingDetailPage() {
     }
   ])
 
-  const [evidenceItems] = useState<EvidenceItem[]>([
-    {
-      id: "1",
-      name: "Policy_Violation_Report.pdf",
-      type: "PDF Document",
-      uploadedBy: "John Auditor",
-      uploadDate: "2025-08-23",
-      size: "2.4 MB"
-    },
-    {
-      id: "2",
-      name: "Screenshot_System_Access.png",
-      type: "Image",
-      uploadedBy: "John Auditor",
-      uploadDate: "2025-08-23",
-      size: "1.2 MB"
-    }
-  ])
+
 
   const [timelineEvents] = useState<TimelineEvent[]>([
     {
@@ -156,35 +135,41 @@ export default function FindingDetailPage() {
     }
   ])
 
-  useEffect(() => {
-    const fetchFinding = async () => {
-      try {
-        setIsLoading(true)
-        const response = await fetch(`/api/findings/${findingId}`)
-        
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError("Finding not found")
-          } else {
-            throw new Error(`HTTP ${response.status}`)
-          }
-          return
+  const fetchFinding = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/findings/${findingId}`)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError("Finding not found")
+        } else {
+          throw new Error(`HTTP ${response.status}`)
         }
-        
-        const data = await response.json()
-        setFinding(data)
-      } catch (error) {
-        console.error('Error loading finding:', error)
-        setError('Failed to load finding details')
-      } finally {
-        setIsLoading(false)
+        return
       }
+      
+      const data = await response.json()
+      console.log('Finding data loaded:', data)
+      console.log('Finding engagement_id:', data.engagement_id)
+      setFinding(data)
+    } catch (error) {
+      console.error('Error loading finding:', error)
+      setError('Failed to load finding details')
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+
+
+  useEffect(() => {
     if (findingId) {
       fetchFinding()
     }
   }, [findingId])
+
+  // Evidence is now handled by the EvidencePanel component
 
   const getStatusIcon = (status: string | undefined) => {
     if (!status) return <Clock className="h-4 w-4 text-gray-500" />
@@ -234,6 +219,10 @@ export default function FindingDetailPage() {
         return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
+
+
+
+
 
   if (isLoading) {
     return (
@@ -391,6 +380,14 @@ export default function FindingDetailPage() {
                     <div>
                       <p className="text-sm font-medium">Business Owner</p>
                       <p className="text-sm text-muted-foreground">{finding.business_owner_name || finding.business_owner || 'Not assigned'}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Business Unit</p>
+                      <p className="text-sm text-muted-foreground">{finding.business_unit || 'Not assigned'}</p>
                     </div>
                   </div>
                   
@@ -620,60 +617,7 @@ export default function FindingDetailPage() {
 
         {/* Evidence Tab */}
         <TabsContent value="evidence" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Paperclip className="h-5 w-5 text-purple-500" />
-                  Evidence & Documentation
-                </CardTitle>
-                <Button size="sm">
-                  <Paperclip className="mr-2 h-4 w-4" />
-                  Upload Evidence
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {evidenceItems.length > 0 ? (
-                <div className="space-y-3">
-                  {evidenceItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <FileText className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>{item.type}</span>
-                            <span>{item.size}</span>
-                            <span>By: {item.uploadedBy}</span>
-                            <span>{new Date(item.uploadDate).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Paperclip className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>No evidence uploaded yet</p>
-                  <Button variant="outline" size="sm" className="mt-3">
-                    Upload First Evidence
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <EvidencePanel findingId={findingId} />
         </TabsContent>
 
         {/* Timeline Tab */}

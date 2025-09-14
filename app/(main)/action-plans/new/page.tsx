@@ -1,5 +1,5 @@
 "use client"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -9,9 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Badge } from "@/components/ui/badge"
 import { toast } from "@/components/ui/use-toast"
 import {
   ArrowLeft,
@@ -20,11 +17,7 @@ import {
   PlusCircle,
   Trash2,
   FileText,
-  Target,
   Users,
-  ChevronsUpDown,
-  Check,
-  X,
 } from "lucide-react"
 
 // Types
@@ -41,35 +34,43 @@ interface ActionPlanFormData {
   findingId: string
   findingTitle: string
   businessOwner: string
-  overallObjective: string
   items: ActionPlanItem[]
-  targetCompletionDate: Date | undefined
+  status: "Accepted" | "Not Accepted"
   priority: "Low" | "Medium" | "High" | "Critical"
-  estimatedEffort: string
-  successCriteria: string
-  riskMitigation: string
-  relatedCompanyGoal: string
-  mappedControlIds: string[]
 }
 
-// Mock data for dropdowns
-const mockFindings = [
-  { id: "FND001", title: "Unsecured S3 Bucket Exposing Sensitive Data" },
-  { id: "FND002", title: "Lack of Segregation of Duties in Financial Reporting" },
-  { id: "FND003", title: "Outdated Anti-Virus Signatures on Critical Servers" },
-  { id: "FND004", title: "Inadequate Password Policy for Admin Accounts" },
-  { id: "FND005", title: "Missing Backup Verification Procedures" },
-]
+interface FindingFromAPI {
+  id: string
+  title: string
+  description?: string
+  status?: string
+  severity?: string
+  assignment_id?: string
+  engagement_id?: string
+  created_at?: string
+  updated_at?: string
+  business_unit?: string
+  business_owner_id?: string
+}
 
-const mockBusinessOwners = [
-  "IT Security Manager",
-  "Finance Department Head",
-  "IT Operations Lead",
-  "Data Management Lead",
-  "Compliance Officer",
-  "HR Director",
-  "Operations Manager",
-]
+interface BusinessOwnerFromAPI {
+  id: string
+  name: string
+}
+
+interface AssignmentFromAPI {
+  id: string
+  title: string
+  description?: string
+  status?: string
+  audit_plan_id?: string
+  start_date?: string
+  end_date?: string
+  created_at?: string
+  updated_at?: string
+}
+
+// Mock data for other dropdowns (keeping these as they don't have API endpoints yet)
 
 const mockPersonnel = [
   "Cloud Security Team",
@@ -84,29 +85,11 @@ const mockPersonnel = [
   "Disaster Recovery Team",
 ]
 
-const mockCompanyGoals = [
-  { value: "enhance_data_security", label: "Enhance Data Security Posture" },
-  { value: "improve_financial_reporting", label: "Improve Financial Reporting Accuracy" },
-  { value: "optimize_operational_efficiency", label: "Optimize Operational Efficiency" },
-  { value: "ensure_regulatory_compliance", label: "Ensure Regulatory Compliance" },
-  { value: "strengthen_it_governance", label: "Strengthen IT Governance" },
-]
-
-const mockControls = [
-  { id: "CTRL001", name: "C001 - Access Control Policy Review", category: "Access Management" },
-  { id: "CTRL002", name: "C002 - Data Encryption Standards", category: "Data Security" },
-  { id: "CTRL003", name: "C003 - Change Management Procedures", category: "IT Operations" },
-  { id: "CTRL004", name: "C004 - Segregation of Duties Matrix", category: "Financial Controls" },
-  { id: "CTRL005", name: "C005 - Vulnerability Scanning & Patching", category: "IT Security" },
-  { id: "CTRL006", name: "C006 - Incident Response Plan", category: "IT Security" },
-  { id: "CTRL007", name: "C007 - Backup and Recovery Procedures", category: "Business Continuity" },
-]
 
 const initialFormData: ActionPlanFormData = {
   findingId: "",
   findingTitle: "",
   businessOwner: "",
-  overallObjective: "",
   items: [
     {
       id: `item-${Date.now()}`,
@@ -117,13 +100,8 @@ const initialFormData: ActionPlanFormData = {
       description: "",
     },
   ],
-  targetCompletionDate: undefined,
+  status: "Accepted",
   priority: "Medium",
-  estimatedEffort: "",
-  successCriteria: "",
-  riskMitigation: "",
-  relatedCompanyGoal: "",
-  mappedControlIds: [],
 }
 
 export default function CreateActionPlanPage() {
@@ -132,26 +110,155 @@ export default function CreateActionPlanPage() {
   const findingIdParam = searchParams.get("findingId")
 
   const [formData, setFormData] = useState<ActionPlanFormData>(() => {
-    if (findingIdParam) {
-      const finding = mockFindings.find((f) => f.id === findingIdParam)
-      return {
-        ...initialFormData,
-        findingId: findingIdParam,
-        findingTitle: finding?.title || "",
-      }
-    }
     return initialFormData
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [controlsPopoverOpen, setControlsPopoverOpen] = useState(false)
+  const [findings, setFindings] = useState<FindingFromAPI[]>([])
+  const [isLoadingFindings, setIsLoadingFindings] = useState(true)
+  const [findingsError, setFindingsError] = useState<string | null>(null)
+  const [businessOwners, setBusinessOwners] = useState<BusinessOwnerFromAPI[]>([])
+  const [isLoadingBusinessOwners, setIsLoadingBusinessOwners] = useState(true)
+  const [businessOwnersError, setBusinessOwnersError] = useState<string | null>(null)
+  const [businessUnitMismatchError, setBusinessUnitMismatchError] = useState<string | null>(null)
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>("all")
+  const [filteredFindings, setFilteredFindings] = useState<FindingFromAPI[]>([])
+  const [assignments, setAssignments] = useState<AssignmentFromAPI[]>([])
+  const [isLoadingAssignments, setIsLoadingAssignments] = useState(true)
+  const [assignmentsError, setAssignmentsError] = useState<string | null>(null)
+
+  // Fetch findings from API
+  useEffect(() => {
+    const fetchFindings = async () => {
+      try {
+        setIsLoadingFindings(true)
+        setFindingsError(null)
+        const response = await fetch('/api/findings')
+        if (!response.ok) {
+          throw new Error('Failed to fetch findings')
+        }
+        const data = await response.json()
+        setFindings(data)
+      } catch (error) {
+        console.error('Error fetching findings:', error)
+        setFindingsError(error instanceof Error ? error.message : 'Failed to fetch findings')
+      } finally {
+        setIsLoadingFindings(false)
+      }
+    }
+
+    fetchFindings()
+  }, [])
+
+  // Fetch business owners from API
+  useEffect(() => {
+    const fetchBusinessOwners = async () => {
+      try {
+        setIsLoadingBusinessOwners(true)
+        setBusinessOwnersError(null)
+        const response = await fetch('/api/primary-stakeholders')
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(`Failed to fetch business owners: ${response.status} ${response.statusText}${errorData.message ? ` - ${errorData.message}` : ''}`)
+        }
+        const data = await response.json()
+        setBusinessOwners(data)
+      } catch (error) {
+        console.error('Error fetching business owners:', error)
+        setBusinessOwnersError(error instanceof Error ? error.message : 'Failed to fetch business owners')
+      } finally {
+        setIsLoadingBusinessOwners(false)
+      }
+    }
+
+    fetchBusinessOwners()
+  }, [])
+
+  // Fetch assignments from API
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      setIsLoadingAssignments(true)
+      setAssignmentsError(null)
+      try {
+        const response = await fetch('/api/assignments')
+        if (!response.ok) {
+          throw new Error('Failed to fetch assignments')
+        }
+        const data = await response.json()
+        setAssignments(data)
+      } catch (error) {
+        console.error('Error fetching assignments:', error)
+        setAssignmentsError(error instanceof Error ? error.message : 'Failed to fetch assignments')
+      } finally {
+        setIsLoadingAssignments(false)
+      }
+    }
+
+    fetchAssignments()
+  }, [])
+
+  // Set initial finding if findingIdParam is provided
+  useEffect(() => {
+    if (findingIdParam && findings.length > 0) {
+      const finding = findings.find((f) => f.id === findingIdParam)
+      if (finding) {
+        setFormData((prev) => ({
+          ...prev,
+          findingId: findingIdParam,
+          findingTitle: finding.title,
+        }))
+      }
+    }
+  }, [findingIdParam, findings])
+
+  // Validate business unit compatibility whenever form data changes
+  useEffect(() => {
+    if (formData.findingId && formData.businessOwner) {
+      const selectedFinding = filteredFindings.find(f => f.id === formData.findingId)
+      const selectedBusinessOwner = businessOwners.find(bo => bo.name === formData.businessOwner)
+      
+      if (selectedFinding && selectedBusinessOwner) {
+        if (selectedFinding.business_unit && selectedFinding.business_unit !== selectedBusinessOwner.name) {
+          setBusinessUnitMismatchError(
+            `The selected finding belongs to "${selectedFinding.business_unit}" but you selected "${selectedBusinessOwner.name}" as the business owner. Please select a business owner from the same business unit or choose a different finding.`
+          )
+        } else {
+          // Clear error if they match
+          setBusinessUnitMismatchError(null)
+        }
+      }
+    } else {
+      // Clear error if either field is empty
+      setBusinessUnitMismatchError(null)
+    }
+  }, [formData.findingId, formData.businessOwner, filteredFindings, businessOwners])
+
+  // Filter findings based on selected assignment
+  useEffect(() => {
+    if (selectedAssignmentId && selectedAssignmentId !== "all") {
+      const filtered = findings.filter(finding => finding.assignment_id === selectedAssignmentId)
+      setFilteredFindings(filtered)
+    } else {
+      setFilteredFindings(findings)
+    }
+  }, [selectedAssignmentId, findings])
 
   const handleInputChange = (field: keyof ActionPlanFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleAssignmentChange = (assignmentId: string) => {
+    setSelectedAssignmentId(assignmentId)
+    // Clear selected finding when assignment changes
+    setFormData((prev) => ({
+      ...prev,
+      findingId: "",
+      findingTitle: "",
+    }))
+  }
+
   const handleFindingChange = (findingId: string) => {
-    const finding = mockFindings.find((f) => f.id === findingId)
+    const finding = filteredFindings.find((f) => f.id === findingId)
     setFormData((prev) => ({
       ...prev,
       findingId,
@@ -189,18 +296,6 @@ export default function CreateActionPlanPage() {
     }
   }
 
-  const handleMappedControlsChange = (controlId: string) => {
-    setFormData((prev) => {
-      const newMappedControlIds = prev.mappedControlIds.includes(controlId)
-        ? prev.mappedControlIds.filter((id) => id !== controlId)
-        : [...prev.mappedControlIds, controlId]
-      return { ...prev, mappedControlIds: newMappedControlIds }
-    })
-  }
-
-  const selectedControls = useMemo(() => {
-    return mockControls.filter((control) => formData.mappedControlIds.includes(control.id))
-  }, [formData.mappedControlIds])
 
   const validateForm = (): boolean => {
     if (!formData.findingId) {
@@ -221,14 +316,6 @@ export default function CreateActionPlanPage() {
       return false
     }
 
-    if (!formData.overallObjective.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Please provide an overall objective for the action plan.",
-        variant: "destructive",
-      })
-      return false
-    }
 
     const incompleteItems = formData.items.filter(
       (item) => !item.action.trim() || !item.responsiblePerson || !item.dueDate,
@@ -249,20 +336,42 @@ export default function CreateActionPlanPage() {
   const handleSubmit = async (action: "draft" | "submit") => {
     if (!validateForm()) return
 
+    // Check for business unit mismatch
+    if (businessUnitMismatchError) {
+      toast({
+        title: "Business Unit Mismatch",
+        description: businessUnitMismatchError,
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
       const actionPlanData = {
         ...formData,
         status: action === "draft" ? "Draft" : "Submitted",
-        createdDate: new Date().toISOString(),
-        lastUpdated: new Date().toISOString(),
       }
 
       console.log("Action Plan Data:", actionPlanData)
+
+      // Call the API to create the action plan
+      const response = await fetch('/api/action-plans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(actionPlanData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+      }
+
+      const result = await response.json()
+      console.log("Action plan created successfully:", result)
 
       toast({
         title: `Action Plan ${action === "draft" ? "Saved as Draft" : "Submitted"}`,
@@ -272,9 +381,10 @@ export default function CreateActionPlanPage() {
       // Navigate back to action plans list
       router.push("/action-plans")
     } catch (error) {
+      console.error("Error creating action plan:", error)
       toast({
         title: "Error",
-        description: "Failed to save action plan. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to save action plan. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -307,23 +417,92 @@ export default function CreateActionPlanPage() {
             <CardDescription>Link this action plan to a specific finding and assign ownership.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <Label htmlFor="finding">Related Finding *</Label>
-                <Select value={formData.findingId} onValueChange={handleFindingChange} disabled={!!findingIdParam}>
+                <Label htmlFor="assignment">Assignment</Label>
+                <Select 
+                  value={selectedAssignmentId} 
+                  onValueChange={handleAssignmentChange}
+                  disabled={isLoadingAssignments}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a finding..." />
+                    <SelectValue placeholder={
+                      isLoadingAssignments 
+                        ? "Loading assignments..." 
+                        : assignmentsError 
+                          ? "Error loading assignments" 
+                          : "Select assignment to filter findings..."
+                    } />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockFindings.map((finding) => (
-                      <SelectItem key={finding.id} value={finding.id}>
-                        {finding.id} - {finding.title}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="all">All Assignments</SelectItem>
+                    {assignmentsError ? (
+                      <div className="px-2 py-1.5 text-sm text-red-500">
+                        Error: {assignmentsError}
+                      </div>
+                    ) : assignments.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        No assignments available
+                      </div>
+                    ) : (
+                      assignments.map((assignment) => (
+                        <SelectItem key={assignment.id} value={assignment.id}>
+                          {assignment.title}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {assignmentsError && (
+                  <p className="text-xs text-red-500 mt-1">Failed to load assignments. Please refresh the page.</p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="finding">Related Finding *</Label>
+                <Select 
+                  value={formData.findingId} 
+                  onValueChange={handleFindingChange} 
+                  disabled={!!findingIdParam || isLoadingFindings}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={
+                      isLoadingFindings 
+                        ? "Loading findings..." 
+                        : findingsError 
+                          ? "Error loading findings" 
+                          : selectedAssignmentId && selectedAssignmentId !== "all"
+                            ? "Select a finding from this assignment..."
+                            : "Select a finding..."
+                    } />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {findingsError ? (
+                      <div className="px-2 py-1.5 text-sm text-red-500">
+                        Error: {findingsError}
+                      </div>
+                    ) : filteredFindings.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        {selectedAssignmentId && selectedAssignmentId !== "all" ? "No findings found for this assignment" : "No findings available"}
+                      </div>
+                    ) : (
+                      filteredFindings.map((finding) => (
+                        <SelectItem key={finding.id} value={finding.id}>
+                          {finding.id} - {finding.title}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
                 {findingIdParam && (
                   <p className="text-xs text-muted-foreground mt-1">Pre-selected from finding context</p>
+                )}
+                {findingsError && (
+                  <p className="text-xs text-red-500 mt-1">Failed to load findings. Please refresh the page.</p>
+                )}
+                {selectedAssignmentId && selectedAssignmentId !== "all" && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    Showing findings from: {assignments.find(a => a.id === selectedAssignmentId)?.title}
+                  </p>
                 )}
               </div>
               <div>
@@ -331,18 +510,45 @@ export default function CreateActionPlanPage() {
                 <Select
                   value={formData.businessOwner}
                   onValueChange={(value) => handleInputChange("businessOwner", value)}
+                  disabled={isLoadingBusinessOwners}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select business owner..." />
+                    <SelectValue placeholder={
+                      isLoadingBusinessOwners 
+                        ? "Loading business owners..." 
+                        : businessOwnersError 
+                          ? "Error loading business owners" 
+                          : "Select business owner..."
+                    } />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockBusinessOwners.map((owner) => (
-                      <SelectItem key={owner} value={owner}>
-                        {owner}
-                      </SelectItem>
-                    ))}
+                    {businessOwnersError ? (
+                      <div className="px-2 py-1.5 text-sm text-red-500">
+                        Error: {businessOwnersError}
+                      </div>
+                    ) : businessOwners.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        No business owners available
+                      </div>
+                    ) : (
+                      businessOwners.map((owner) => (
+                        <SelectItem key={owner.id} value={owner.name}>
+                          {owner.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
+                {businessOwnersError && (
+                  <p className="text-xs text-red-500 mt-1">Failed to load business owners. Please refresh the page.</p>
+                )}
+                {businessUnitMismatchError && (
+                  <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <p className="text-sm text-amber-800">
+                      <strong>⚠️ Business Unit Mismatch:</strong> {businessUnitMismatchError}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -361,162 +567,25 @@ export default function CreateActionPlanPage() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="targetCompletionDate">Target Completion Date</Label>
-                <DatePicker
-                  date={formData.targetCompletionDate}
-                  setDate={(date) => handleInputChange("targetCompletionDate", date)}
-                  placeholder="Select target date"
-                />
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleInputChange("status", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Accepted">Accepted</SelectItem>
+                    <SelectItem value="Not Accepted">Not Accepted</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Objectives and Planning */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center">
-              <Target className="mr-2 h-5 w-5 text-primary" />
-              Objectives & Planning
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label htmlFor="overallObjective">Overall Objective *</Label>
-              <Textarea
-                id="overallObjective"
-                value={formData.overallObjective}
-                onChange={(e) => handleInputChange("overallObjective", e.target.value)}
-                placeholder="Describe the main goal and expected outcome of this action plan..."
-                rows={4}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="successCriteria">Success Criteria</Label>
-              <Textarea
-                id="successCriteria"
-                value={formData.successCriteria}
-                onChange={(e) => handleInputChange("successCriteria", e.target.value)}
-                placeholder="Define how success will be measured and what constitutes completion..."
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="estimatedEffort">Estimated Effort</Label>
-                <Input
-                  id="estimatedEffort"
-                  value={formData.estimatedEffort}
-                  onChange={(e) => handleInputChange("estimatedEffort", e.target.value)}
-                  placeholder="e.g., 40 hours, 2 weeks, 3 person-months"
-                />
-              </div>
-              <div>
-                <Label htmlFor="riskMitigation">Risk Mitigation</Label>
-                <Textarea
-                  id="riskMitigation"
-                  value={formData.riskMitigation}
-                  onChange={(e) => handleInputChange("riskMitigation", e.target.value)}
-                  placeholder="Identify potential risks and mitigation strategies..."
-                  rows={3}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Strategic Alignment & Control Mapping */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center">
-              <Target className="mr-2 h-5 w-5 text-primary" /> {/* Re-using Target icon, could be Link or other */}
-              Strategic Alignment & Control Mapping
-            </CardTitle>
-            <CardDescription>Align this action plan with company goals and map to relevant controls.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label htmlFor="relatedCompanyGoal">Related Company Goal</Label>
-              <Select
-                value={formData.relatedCompanyGoal}
-                onValueChange={(value) => handleInputChange("relatedCompanyGoal", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a company goal..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockCompanyGoals.map((goal) => (
-                    <SelectItem key={goal.value} value={goal.value}>
-                      {goal.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="mappedControls">Mapped Controls</Label>
-              <Popover open={controlsPopoverOpen} onOpenChange={setControlsPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={controlsPopoverOpen}
-                    className="w-full justify-between"
-                  >
-                    {selectedControls.length > 0
-                      ? `${selectedControls.length} control${selectedControls.length > 1 ? "s" : ""} selected`
-                      : "Select controls..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                  <Command>
-                    <CommandInput placeholder="Search controls..." />
-                    <CommandList>
-                      <CommandEmpty>No controls found.</CommandEmpty>
-                      <CommandGroup>
-                        {mockControls.map((control) => (
-                          <CommandItem
-                            key={control.id}
-                            value={control.name} // Search by name
-                            onSelect={() => {
-                              handleMappedControlsChange(control.id)
-                              setControlsPopoverOpen(false) // Close popover after selection
-                            }}
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 ${
-                                formData.mappedControlIds.includes(control.id) ? "opacity-100" : "opacity-0"
-                              }`}
-                            />
-                            {control.name} ({control.category})
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {selectedControls.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {selectedControls.map((control) => (
-                    <Badge key={control.id} variant="secondary">
-                      {control.name}
-                      <button
-                        type="button"
-                        className="ml-1.5 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        onClick={() => handleMappedControlsChange(control.id)}
-                      >
-                        <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Action Items */}
         <Card>

@@ -1,9 +1,26 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/database"
+import { z } from "zod"
 
 interface RouteParams {
   params: Promise<{ id: string }>
 }
+
+// Validation schema for finding updates
+const updateFindingSchema = z.object({
+  Title: z.string().min(3, "Title must be at least 3 characters"),
+  FindingDescription: z.string().nullish(),
+  AssignmentID: z.number().int().positive("Assignment ID must be a positive integer"),
+  FindingStatusID: z.number().int().positive("Status ID must be a positive integer"),
+  SeverityID: z.number().int().positive("Severity ID must be a positive integer"),
+  BusinessOwnerID: z.number().int().positive("Business Owner ID must be a positive integer"),
+  Recommendation: z.string().nullish(),
+  Criteria: z.string().nullish(),
+  Impact: z.string().nullish(),
+  RootCause: z.string().nullish(),
+  ManagementResponse: z.boolean().optional(),
+  ManagementComment: z.string().nullish()
+})
 
 export async function GET(_request: Request, { params }: RouteParams) {
   try {
@@ -19,6 +36,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
          f.Title AS title,
          f.FindingDescription AS description,
          CAST(f.AssignmentID AS CHAR) AS assignment_id,
+         CAST(f.EngagementID AS CHAR) AS engagement_id,
          f.FindingStatusID AS status_id,
          COALESCE(fs.FindingStatus, 'Unknown') AS status,
          f.SeverityID AS severity_id,
@@ -38,11 +56,13 @@ export async function GET(_request: Request, { params }: RouteParams) {
          f.AttachmentFileSize AS attachment_file_size,
          f.ManagementResponse AS management_response,
          COALESCE(a.AssignmentName, CONCAT('Assignment ', CAST(f.AssignmentID AS CHAR))) AS assignment_title,
-         CONCAT('User ', CAST(f.BusinessOwnerID AS CHAR)) AS business_owner_name
+         COALESCE(ps.PrimaryStakeholder, CONCAT('User ', CAST(f.BusinessOwnerID AS CHAR))) AS business_owner_name,
+         COALESCE(ps.PrimaryStakeholder, 'Unknown') AS business_unit
        FROM findings f
        LEFT JOIN findingstatuses fs ON fs.FindingStatusID = f.FindingStatusID
        LEFT JOIN severities s ON s.SeverityID = f.SeverityID
        LEFT JOIN assignments a ON a.AssignmentID = f.AssignmentID
+       LEFT JOIN primarystakeholders ps ON ps.PrimaryStakeholderID = f.BusinessOwnerID
        WHERE f.FindingID = ? AND IFNULL(f.IsDeleted, 0) = 0`
     , [id])) as any[]
 
@@ -105,64 +125,62 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const body = await request.json()
     
-    // Update finding with provided data
-    const updateFields = []
-    const updateValues = []
-    
-    if (body.title !== undefined) {
-      updateFields.push('Title = ?')
-      updateValues.push(body.title)
+    // Validate the request body
+    const validationResult = updateFindingSchema.safeParse(body)
+    if (!validationResult.success) {
+      return NextResponse.json({ 
+        message: "Validation failed", 
+        errors: validationResult.error.errors 
+      }, { status: 400 })
     }
+
+    const validatedData = validationResult.data
+
+    // Check if finding exists
+    const existingFinding = await query(
+      'SELECT FindingID FROM findings WHERE FindingID = ? AND IFNULL(IsDeleted, 0) = 0',
+      [id]
+    ) as any[]
     
-    if (body.description !== undefined) {
-      updateFields.push('FindingDescription = ?')
-      updateValues.push(body.description)
+    if (existingFinding.length === 0) {
+      return NextResponse.json({ message: "Finding not found" }, { status: 404 })
     }
+
+    // Update finding with validated data
+    const updateQuery = `
+      UPDATE findings 
+      SET Title = ?,
+          FindingDescription = ?,
+          AssignmentID = ?,
+          FindingStatusID = ?,
+          SeverityID = ?,
+          BusinessOwnerID = ?,
+          Recommendation = ?,
+          Criteria = ?,
+          Impact = ?,
+          RootCause = ?,
+          ManagementResponse = ?,
+          ManagementComment = ?,
+          ModifiedDate = NOW(),
+          ModifiedBy = 1
+      WHERE FindingID = ? AND IFNULL(IsDeleted, 0) = 0
+    `
     
-    if (body.severity !== undefined) {
-      updateFields.push('SeverityID = ?')
-      updateValues.push(body.severity)
-    }
-    
-    if (body.status !== undefined) {
-      updateFields.push('FindingStatusID = ?')
-      updateValues.push(body.status)
-    }
-    
-    if (body.assignment_id !== undefined) {
-      updateFields.push('AssignmentID = ?')
-      updateValues.push(body.assignment_id)
-    }
-    
-    if (body.impact !== undefined) {
-      updateFields.push('Impact = ?')
-      updateValues.push(body.impact)
-    }
-    
-    if (body.recommendations !== undefined) {
-      updateFields.push('Recommendation = ?')
-      updateValues.push(body.recommendations)
-    }
-    
-    if (body.criteria !== undefined) {
-      updateFields.push('Criteria = ?')
-      updateValues.push(body.criteria)
-    }
-    
-    if (body.business_owner !== undefined) {
-      updateFields.push('BusinessOwnerID = ?')
-      updateValues.push(body.business_owner)
-    }
-    
-    // Always update the modified date
-    updateFields.push('ModifiedDate = NOW()')
-    
-    if (updateFields.length === 0) {
-      return NextResponse.json({ message: "No fields to update" }, { status: 400 })
-    }
-    
-    const updateQuery = `UPDATE findings SET ${updateFields.join(', ')} WHERE FindingID = ?`
-    updateValues.push(id)
+    const updateValues = [
+      validatedData.Title,
+      validatedData.FindingDescription || null,
+      validatedData.AssignmentID,
+      validatedData.FindingStatusID,
+      validatedData.SeverityID,
+      validatedData.BusinessOwnerID,
+      validatedData.Recommendation || null,
+      validatedData.Criteria || null,
+      validatedData.Impact || null,
+      validatedData.RootCause || null,
+      validatedData.ManagementResponse ? 1 : 0,
+      validatedData.ManagementComment || null,
+      id
+    ]
     
     await query(updateQuery, updateValues)
     
@@ -191,7 +209,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
          f.AttachmentFileType AS attachment_file_type,
          f.AttachmentFileSize AS attachment_file_size,
          f.ManagementResponse AS management_response,
-         COALESCE(a.Title, CONCAT('Assignment ', CAST(f.AssignmentID AS CHAR))) AS assignment_title,
+         COALESCE(a.AssignmentName, CONCAT('Assignment ', CAST(f.AssignmentID AS CHAR))) AS assignment_title,
          CONCAT('User ', CAST(f.BusinessOwnerID AS CHAR)) AS business_owner_name
        FROM findings f
        LEFT JOIN findingstatuses fs ON fs.FindingStatusID = f.FindingStatusID
@@ -205,7 +223,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       return NextResponse.json({ message: "Finding not found after update" }, { status: 404 })
     }
     
-    return NextResponse.json(updatedFinding[0])
+    return NextResponse.json({ ok: true, finding: updatedFinding[0] })
   } catch (error) {
     console.error('Failed to update finding:', error)
     const message = error instanceof Error ? error.message : 'Unknown error'

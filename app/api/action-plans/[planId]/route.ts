@@ -7,7 +7,7 @@ interface RouteParams {
 
 export async function GET(_request: Request, { params }: RouteParams) {
   try {
-    const { planId } = params
+    const { planId } = await params
     if (!planId) {
       return NextResponse.json({ message: "Action Plan ID is required" }, { status: 400 })
     }
@@ -25,6 +25,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
          f.FindingDescription AS finding_description,
          ap.Objective AS objective,
          ap.PriorityID AS priority_id,
+         s.Severity AS priority_name,
          ap.Effort AS effort,
          ap.CreatedDate AS created_date,
          ap.IsApproved AS is_approved,
@@ -32,6 +33,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
          ap.Criteria AS criteria
        FROM actionplans ap
        LEFT JOIN findings f ON ap.FindingID = f.FindingID
+       LEFT JOIN severities s ON s.SeverityID = ap.PriorityID
        WHERE ap.ActionPlanID = ? AND IFNULL(ap.IsDeleted, 0) = 0`
     , [planId])) as any[]
 
@@ -49,7 +51,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
   try {
-    const { planId } = params
+    const { planId } = await params
     if (!planId) {
       return NextResponse.json({ message: "Action Plan ID is required" }, { status: 400 })
     }
